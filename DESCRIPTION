@@ -1,0 +1,13 @@
+Package: heritable
+Title: Calculate various heritability summary statistics from field crop trials
+Version: 0.0.0.9000
+Authors@R: 
+    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+License: CC BY 4.0
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
