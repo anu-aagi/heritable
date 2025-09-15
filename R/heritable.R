@@ -28,9 +28,35 @@ H2 <- function(model, ...) {
 #' @inheritParams h2
 #'
 #' @export
-H2_cullis <- function(model, ...) {
-  UseMethod("H2_cullis")
+H2_Cullis <- function(model, ...) {
+  UseMethod("H2_Cullis")
 }
+
+#' @export
+H2_Oakey <- function(model, ...) {
+  UseMethod("H2_Oakey")
+}
+
+#' @export
+H2_BLUE <- function(model, ...) {
+  UseMethod("H2_BLUE")
+}
+
+#' @export
+H2_Piepho <- function(model, ...) {
+  UseMethod("H2_Piepho")
+}
+
+#' @export
+H2_Reg <- function(model, ...) {
+  UseMethod("H2_Reg")
+}
+
+#' @export
+H2_SumDiv <- function(model, ...) {
+  UseMethod("H2_SumDiv")
+}
+
 
 #' @export
 H2.default <- function(model, ...) {
