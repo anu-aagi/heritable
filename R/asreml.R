@@ -4,7 +4,7 @@
 H2.asreml <- function(model, target = NULL, method = c("cullis", "oakey")) {
   method <- match.arg(method)
   # if model has not converged, warn
-  if(model$converge) cli::cli_warn("The input model has not converged")
+  if(!model$converge) cli::cli_warn("The input model has not converged")
   H2 <- switch(method,
                cullis = H2_cullis.asreml(model, target),
                H2.default())
