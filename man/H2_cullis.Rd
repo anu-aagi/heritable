@@ -7,7 +7,9 @@
 H2_Cullis(model, ...)
 }
 \arguments{
-\item{model}{The fitted model.}
+\item{model}{A fitted model object. Currently only supports models with class \code{asreml}}
+
+\item{...}{Additional arguments passed to specific methods. See Details}
 }
 \description{
 Calculate broad-sense heritability using Cullis method

@@ -1,13 +1,21 @@
-
 #' Calculate narrow-sense heritability
+#' @description
 #'
-#' @param model The fitted model.
+#' @param model A fitted model object. Currently only supports models with class `asreml`
+#' @param target The name of the random effect for which heritability is to be calculated.
+#' @param method The method to use for calculating heritability. Options are "Cullis", "Oakey", "BLUE", "BLUP", "Piepho", "Reg", and "SumDiv". Default is "Cullis".
+#' @param ... Additional arguments passed to specific methods. See Details
+#' @details The following heritability methods are currently implemented:
 #'
+#' - Cullis: [#TODO Insert equation here]
+#' - Oakey: [#TODO Insert equation here]
+#' @references
+#' - Cullis et al. (2006) #TODO
+#' - Oakey et al. (2006) #TODO
 #' @export
 h2 <- function(model, ...) {
   UseMethod("h2")
 }
-
 
 #' @export
 h2.default <- function(model, ...) {
@@ -15,7 +23,6 @@ h2.default <- function(model, ...) {
 }
 
 #' Calculate broad-sense heritability
-#'
 #' @inheritParams h2
 #'
 #' @export
@@ -62,6 +69,3 @@ H2_SumDiv <- function(model, ...) {
 H2.default <- function(model, ...) {
   cli::cli_abort("{.fn H2} is not implemented for class {class(model)}")
 }
-
-
-
