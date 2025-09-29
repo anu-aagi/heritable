@@ -19,7 +19,7 @@ h2 <- function(model, ...) {
 
 #' @export
 h2.default <- function(model, ...) {
-  cli::cli_abort("{.fn h2} is not implemented for class {class(model)}")
+  cli::cli_abort("{.fn h2} is not implemented for class{?es} {.code {class(model)}}")
 }
 
 #' Calculate broad-sense heritability
@@ -67,5 +67,5 @@ H2_SumDiv <- function(model, ...) {
 
 #' @export
 H2.default <- function(model, ...) {
-  cli::cli_abort("{.fn H2} is not implemented for class {class(model)}")
+  cli::cli_abort("{.fn H2} is not implemented for class{?es} {.code {class(model)}}")
 }
