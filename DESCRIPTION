@@ -10,8 +10,6 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0),
     agridat
-Enhances:
-    asreml
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3
