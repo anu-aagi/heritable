@@ -54,3 +54,6 @@ rsconnect/
 # Generatable files
 *.html
 *_files/
+
+# Mac files
+.DS_Store
