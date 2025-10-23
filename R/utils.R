@@ -1,7 +1,14 @@
-fit_counterpart_model.asreml <- function(model, target = NULL){
-    # get the terms from model object
+
+pull_terms <- function(model){
     fixed_trms <- terms(formula(model)$fixed) |> labels() 
     ran_trms <- terms(formula(model)$random) |> labels() 
+    return(list(fixed = fixed_trms, random = ran_trms))
+}   
+
+fit_counterpart_model.asreml <- function(model, target = NULL){
+    # get the terms from model object
+    fixed_trms <- pull_terms(model)$fixed
+    ran_trms <- pull_terms(model)$random
     
     # when target is in random
     if(target %in% ran_trms){

@@ -57,3 +57,7 @@ rsconnect/
 
 # Mac files
 .DS_Store
+
+# Ignore folder
+ignore/
+
