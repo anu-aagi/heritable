@@ -26,4 +26,16 @@ test_that("counterpart model can be fitted", {
 
   expect_true("gen" %in% pull_terms(fit_counter)$fixed)
   expect_false("gen" %in% pull_terms(fit_counter)$random)
+
+   fit_fixed <- asreml::asreml(yield ~ rep + gen,
+    random = ~ rep:block,
+    data = agridat::john.alpha,
+    trace = FALSE
+  )
+
+  fit_counter <- fit_counterpart_model.asreml(fit_fixed, target = "gen")
+
+  expect_false("gen" %in% pull_terms(fit_counter)$fixed)
+  expect_true("gen" %in% pull_terms(fit_counter)$random)
+
 })

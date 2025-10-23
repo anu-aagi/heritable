@@ -67,3 +67,10 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   # Calculate Piepho's H2
   vc_g / (vc_g + (vdBLUE.avg / 2))
 }
+
+#' @export
+H2_Reg.asreml <- function(model, target = NULL) {
+  
+  
+  # Obtain BLUES
+}

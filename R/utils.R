@@ -57,8 +57,8 @@ fit_counterpart_model.asreml <- function(model, target = NULL){
     cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate Piepho's heritability.")
     # fit model with target as fixed effect
     model_counter <- asreml::asreml(
-        fixed = asreml::update.asreml(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
-        random = asreml::update.asreml(formula(model)$random, as.formula(paste("~ . -", target))), 
+        fixed = update(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
+        random = update(formula(model)$random, as.formula(paste("~ . -", target))), 
         data = model$mf,
         trace = FALSE
     )
@@ -66,8 +66,8 @@ fit_counterpart_model.asreml <- function(model, target = NULL){
     cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate Piepho's heritability.")
     # fit model with target as random effect
     model_counter <- asreml::asreml(
-        fixed = asreml::update.asreml(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
-        random = asreml::update.asreml(formula(model)$random, as.formula(paste("~ . +", target))),
+        fixed = update(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
+        random = update(formula(model)$random, as.formula(paste("~ . +", target))),
         data = model$mf,
         trace = FALSE
     )

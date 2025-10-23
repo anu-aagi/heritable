@@ -2,8 +2,8 @@ Package: heritable
 Title: Calculate various heritability summary statistics from breeding experiments
 Version: 0.0.0.9000
 Authors@R: 
-    c(person("Fonti", "Kar", , "fonti.kar@anu.edu.au", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-2760-3974")),
-        person("Emi", "Tanaka", "emi.tanaka@anu.edu.au", role = "aut" ,comment = c(ORCID = "0000-0002-1455-259X"))
+    c(person("Fonti", "Kar", email = "fonti.kar@anu.edu.au", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-2760-3974")),
+        person("Emi", "Tanaka", email = "emi.tanaka@anu.edu.au", role = "aut" ,comment = c(ORCID = "0000-0002-1455-259X"))
     )
 Description: Reporting heritability estimates is an important part of quantitative genetics in breeding experiments.
  This package provides functions to calculate various heritability summary statistics, including narrow-sense heritability, broad-sense heritability, and other related metrics
