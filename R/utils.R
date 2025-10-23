@@ -12,6 +12,8 @@
 #' @return A named list with components:
 #'   \item{fixed}{Character vector of labels for fixed-effect terms.}
 #'   \item{random}{Character vector of labels for random-effect terms.}
+#' @importFrom stats terms formula
+#' @keywords internal
 
 pull_terms <- function(model){
     fixed_trms <- terms(formula(model)$fixed) |> labels() 
@@ -40,50 +42,23 @@ pull_terms <- function(model){
 #'   appeared in the original model. The returned object is produced by
 #'   asreml::asreml and can be used for subsequent model comparisons or
 #'   variance-component calculations.
-#'
-#' @details
-#' - If `target` is found among the model's random terms, the function will:
-#'     1. Inform the user that the term was random and will be fitted as fixed.
-#'     2. Refit the model with `target` added to the fixed formula and removed
-#'        from the random formula.
-#' - If `target` is found among the model's fixed terms, the function will:
-#'     1. Inform the user that the term was fixed and will be fitted as random.
-#'     2. Refit the model with `target` removed from the fixed formula and
-#'        added to the random formula.
-#' - If `target` is not found in either set of terms, the function aborts with
-#'   an error via cli::cli_abort.
-#'
-#' @note
-#' - The function relies on asreml formula extraction and on the data stored in
-#'   the original model object; ensure those components are present before
-#'   calling this helper.
-#' - Re-fitting models may take time and may change convergence/status
-#'   information; inspect the returned model for warnings or fit issues.
-#'
-#' @examples
-#' \dontrun{
-#' # assume `m` is a previously fitted asreml model containing a term "geno"
-#' # fitted as random; refit with "geno" as fixed to compute fixed-effect
-#' # summaries or heritability estimates that require a fixed genotype.
-#' m_counter <- fit_counterpart_model.asreml(m, target = "geno")
-#' }
-#'
-#' @seealso asreml::asreml, cli::cli_inform, cli::cli_abort
-#' @export
-#' @importFrom asreml asreml
-#' @importFrom cli cli_inform cli_abort
+#' @importFrom stats as.formula update
+#' @keywords internal
+
 fit_counterpart_model.asreml <- function(model, target = NULL){
     # get the terms from model object
     fixed_trms <- pull_terms(model)$fixed
     ran_trms <- pull_terms(model)$random
     
+    # TODO: when target is in both random and fixed
+
     # when target is in random
     if(target %in% ran_trms){
     cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate Piepho's heritability.")
     # fit model with target as fixed effect
     model_counter <- asreml::asreml(
-        fixed = update(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
-        random = update(formula(model)$random, as.formula(paste("~ . -", target))), 
+        fixed = asreml::update.asreml(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
+        random = asreml::update.asreml(formula(model)$random, as.formula(paste("~ . -", target))), 
         data = model$mf,
         trace = FALSE
     )
@@ -91,8 +66,8 @@ fit_counterpart_model.asreml <- function(model, target = NULL){
     cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate Piepho's heritability.")
     # fit model with target as random effect
     model_counter <- asreml::asreml(
-        fixed = update(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
-        random = update(formula(model)$random, as.formula(paste("~ . +", target))),
+        fixed = asreml::update.asreml(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
+        random = asreml::update.asreml(formula(model)$random, as.formula(paste("~ . +", target))),
         data = model$mf,
         trace = FALSE
     )

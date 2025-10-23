@@ -9,8 +9,8 @@ test_that("heritability for asreml works", {
   )
 
   expect_equal(H2(fit, target = "gen"), 0.8090841)
-  expect_equal(H2(fit, target = "gen", method = "Piepho")), 0.8090841)
-}
+  expect_equal(H2(fit, target = "gen", method = "Piepho"), 0.8029759)
+})
 
 test_that("counterpart model can be fitted", {
   skip_if_not_installed("asreml")

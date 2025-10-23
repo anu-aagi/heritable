@@ -10,9 +10,9 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "BLUE"
 
   H2 <- switch(method,
     Cullis = H2_Cullis.asreml(model, target),
-    Oakey = H2_Oakey(model, target),
+    Oakey = H2_Oakey.asreml(model, target),
     Piepho = H2_Piepho.asreml(model, target),
-    H2.default()
+    H2.default(model)
   )
 
   structure(H2, class = c("heritable", class(H2)))
@@ -55,7 +55,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
-  model_fix <- fit_counterpart_model.asreml(model, target = target)
+  model_fix <- fit_counterpart_model.asreml(model, target)
 
   vdBLUE.mat <- asreml::predict.asreml(model_fix,
     classify = "gen",
