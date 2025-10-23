@@ -1,5 +1,4 @@
 #' Calculate narrow-sense heritability
-#' @description
 #'
 #' @param model A fitted model object. Currently only supports models with class `asreml`
 #' @param target The name of the random effect for which heritability is to be calculated.

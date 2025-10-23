@@ -7,16 +7,11 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "BLUE"
   # TODO: Check if target is in model, if not throw error
 
   # TODO Not all output is suppressed, even when I added surppressMessages()
-  
-    invisible(
-      capture.output(
-        H2 <- switch(method,
-          Cullis = H2_Cullis.asreml(model, target),
-          Oakey = H2_Oakey(model, target),
-          H2.default()
-        )
-      )
-    )
+
+  H2 <- switch(method,
+    Cullis = H2_Cullis.asreml(model, target),
+    Oakey = H2_Oakey(model, target),
+    H2.default()
   )
 
   structure(H2, class = c("heritable", class(H2)))
@@ -49,20 +44,22 @@ H2_Cullis.asreml <- function(model, target = NULL) {
   1 - (vdBLUP_avg / 2 / vc_g)
 }
 
-#TODO: How to best handle multiple model objects in this workflow?
+# TODO: How to best handle multiple model objects in this workflow?
+# What happens if user has target in both fixed and random
+# If G has an interaction with another parameter, needs to be isolated
 #' @export
 
-H2_Piepho.asreml <- function(model, model_fix, target = NULL) {
+H2_Piepho.asreml <- function(model, target = NULL) {
   # Obtain the requested random effect
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
-  vdBLUE.mat <- asreml::predict.asreml(model_fix, 
-    classify="gen", 
-    sed=TRUE
-    )$sed^2
+  vdBLUE.mat <- asreml::predict.asreml(model_fix,
+    classify = "gen",
+    sed = TRUE
+  )$sed^2
 
-vdBLUE.avg <- mean(vdBLUE.mat[upper.tri(vdBLUE.mat, diag=FALSE)]) 
+  vdBLUE.avg <- mean(vdBLUE.mat[upper.tri(vdBLUE.mat, diag = FALSE)])
 
   # Calculate Piepho's H2
   vc_g / (vc_g + (vdBLUE.avg / 2))
