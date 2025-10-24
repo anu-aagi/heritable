@@ -15,7 +15,7 @@ g.ran <- asreml(fixed = yield ~       rep,
                 data=dat)
 
 # BLUPs for genotype main effect
-g.pred  <- predict(g.ran, classify="gen", only="gen", sed=T, vcov=T)$pred
+g.pred  <- predict(g.ran, classify="gen", only="gen", sed=T, vcov=T)
 BLUPs.g <- data.table(g.pred$pvals[,c(1,2)]); names(BLUPs.g) <- c("gen","BLUP")
 
 ##########################
@@ -27,12 +27,17 @@ list.g <- levels(dat$gen) # list of genotype names
 n.g    <- length(list.g)  # number of genotypes
 
 # G.g (i.e. estimated G matrix of genotype main effect)
-vc.g <- summary(g.ran)$varcomp['gen!gen.var','component'] # VC genotype main effect
-G.g.wide <- diag(1, n.g) * vc.g; dimnames(G.g.wide) <- list(list.g, list.g) # G.g matrix
-G.g.long <- data.table(reshape::melt(G.g.wide)); names(G.g.long) <- c("gen1","gen2","sigma") # G.g matrix in long format
+vc.g <- summary(g.ran)$varcomp['gen','component'] # VC genotype main effect
+G.g.wide <- diag(1, n.g) * vc.g
+dimnames(G.g.wide) <- list(list.g, list.g) # G.g matrix
+G.g.long <- data.table(reshape::melt(G.g.wide))
+names(G.g.long) <- c("gen1","gen2","sigma") # G.g matrix in long format
 
 # Variance of a difference between genotypic BLUPs (based on C22.g/PEV matrix)
 vd.g.wide <- g.pred$sed^2; dimnames(vd.g.wide) <- list(list.g, list.g) # C22.g matrix
+# ensure vd.g.wide is a plain numeric matrix (remove any custom class/attributes) and square the s.e.
+vd.g.wide <- as.matrix(g.pred$sed^2)
+dimnames(vd.g.wide) <- list(list.g, list.g)
 vd.g.long <- data.table(reshape::melt(vd.g.wide)); names(vd.g.long) <- c("gen1","gen2","vd") # C22.g matrix in long format
 
 # merge BLUPs, G.g and C22.g information into "H2D.blup" table
