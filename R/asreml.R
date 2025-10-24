@@ -58,7 +58,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   model_fix <- fit_counterpart_model.asreml(model, target)
 
   vdBLUE.mat <- asreml::predict.asreml(model_fix,
-    classify = "gen",
+    classify = target,
     sed = TRUE
   )$sed^2
 
@@ -70,7 +70,18 @@ H2_Piepho.asreml <- function(model, target = NULL) {
 
 #' @export
 H2_Reg.asreml <- function(model, target = NULL) {
-  
-  
   # Obtain BLUES
+
+}
+
+#' @export
+H2_delta_BLUPS.asreml <- function(model, target = NULL) {
+  # Check if target is in random effects
+  if(! target %in% pull_terms(model)$random){
+    cli::cli_abort("{.var {target}} is not fitted as a random effect in the model. Cannot calculate H2 based on delta BLUPs.")
+  }
+
+  # Get BLUPS
+
+  
 }
