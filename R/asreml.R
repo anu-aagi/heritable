@@ -82,6 +82,16 @@ H2_delta_BLUPS.asreml <- function(model, target = NULL) {
   }
 
   # Get BLUPS
+  g.pred <- asreml::predict.asreml(model, 
+    classify = target,
+    only = target,
+    sed = TRUE,
+    vcov = TRUE
+    )
+
+  BLUPs.g <- g.pred$pvals[,c(1,2)]
+  names(BLUPs.g) <- c("gen","BLUP")
+
 
   
 }
