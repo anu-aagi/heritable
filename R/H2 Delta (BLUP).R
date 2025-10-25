@@ -9,7 +9,7 @@ model <- asreml::asreml(fixed = yield ~ rep,
 target = "gen"
 
 # BLUPs for genotype main effect
-g.pred  <- predict(model, classify = target, only = target, sed=T, vcov=T)
+g.pred  <- predict(model, classify = target, only = target, sed=TRUE, vcov=TRUE)
 
 BLUPs.g <- g.pred$pvals[,c(1,2)] |> 
   dplyr::rename(BLUP = predicted.value) 
@@ -32,20 +32,40 @@ G.g.wide <- diag(1, n.g) * vc.g
 dimnames(G.g.wide) <- list(list.g, list.g) # G.g matrix
 
 # Turning G matrix into long format 
-G.g.long <- data.table(reshape::melt(G.g.wide))
+G.g.df <- G.g.wide |> 
+  as.matrix() |> 
+  data.frame() 
 
-# Naming the long format G matrix
-names(G.g.long) <- c("gen1","gen2","sigma") 
+names(G.g.df) <- list.g 
+
+G.g.df$gen1 <- list.g
+  
+G.g.long.tidy <- G.g.df |> 
+  tidyr::pivot_longer(
+    cols = -gen1,
+    names_to = "gen2",
+    values_to = "sigma"
+  )
 
 # Variance of a difference between genotypic BLUPs (based on C22.g/PEV matrix)
 # Ensure vd.g.wide is a plain numeric matrix (remove any custom class/attributes) and square the s.e.
-vd.g.wide <- as.matrix(g.pred$sed^2)
+vd.g.wide <- as.matrix(g.pred$sed^2) 
 
 # Naming the vd.g matrix
 dimnames(vd.g.wide) <- list(list.g, list.g) # C22.g matrix
 
 # Turning vd.g matrix into long format
-vd.g.long <- data.table(reshape::melt(vd.g.wide)); names(vd.g.long) <- c("gen1","gen2","vd") # C22.g matrix in long format
+vd.g.df <- vd.g.wide |> 
+  data.frame()
+
+vd.g.df$gen1 <- list.g
+
+vd.g.long.tidy <- vd.g.df |> 
+  tidyr::pivot_longer(
+    cols = -gen1,
+    names_to = "gen2",
+    values_to = "vd"
+  )
 
 # merge BLUPs, G.g and C22.g information into "H2D.blup" table
 # Filtering when gen1 == gen2 to get variances only
@@ -84,9 +104,11 @@ H2D.blup[i.is.j==FALSE, Numerator   := var1 + var2 - 2*cov - vd]
 H2D.blup[i.is.j==FALSE, Denominator := var1 + var2 - 2*cov     ]
 H2D.blup[i.is.j==FALSE, H2D.ij := Numerator / Denominator]
 # H2 Delta i.
-H2D.blup[i.is.j==FALSE,                     H2D.i  := mean(H2D.ij), by="gen1"]
+# For each unique value in the gen1 column, calculate the mean of H2D.ij values (but only consider rows where i.is.j is FALSE), and store these means in a new column called H2D.i.
+H2D.blup[i.is.j==FALSE, H2D.i  := mean(H2D.ij), by="gen1"]
 # H2 Delta ..
-H2D.blup[i.is.j==FALSE & i.larger.j==FALSE, H2D    := mean(H2D.ij)]
+# Compute mean of H2D.ij where i.is.j is FALSE and i.larger.j is FALSE. across all rows
+H2D.blup[i.is.j==FALSE & i.larger.j==FALSE, H2D := mean(H2D.ij)]
 
 #######################
 ### H2 Delta (BLUP) ###
