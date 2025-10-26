@@ -69,22 +69,47 @@ vd.g.long.tidy <- vd.g.df |>
 
 # merge BLUPs, G.g and C22.g information into "H2D.blup" table
 # Filtering when gen1 == gen2 to get variances only
-g.var <- G.g.long[gen1==gen2, .(gen1, sigma)]
-# Naming the g.var table
-names(g.var) <- c("gen","var") # variances G.g
+# variances G.g
+g.var <- G.g.long.tidy |> 
+  dplyr::filter(gen1==gen2) |> 
+  dplyr::select(-gen2) |> 
+  dplyr::rename(gen = gen1, 
+        var = sigma
+        )
 
 # Filtering when gen1 != gen2 to get covariances only
-g.cov <- G.g.long[gen1!=gen2]     
-# Naming the g.cov table           
-names(g.cov) <- c("gen1","gen2","cov") # covariances of G.g
+g.cov <- G.g.long.tidy |> 
+  dplyr::filter(gen1!=gen2) |> 
+  dplyr::rename(cov = sigma)
 
 # Merging Variance deltas and covariances into one table
-H2D.blup   <- merge(vd.g.long, g.cov, all=T)
+vd.g.long.tidy |> 
+  dplyr::left_join(g.cov)
+  
+
+H2D.blup_pre <- merge(vd.g.long.tidy, g.cov, all=TRUE)
+
+vd.g.long.tidy  |> 
+  dplyr::full_join(g.cov)  |> 
+  dplyr::left_join(g.var, by = dplyr::join_by(gen1==gen))  |> 
+  dplyr::rename(var1=var)  |> 
+  dplyr::left_join(g.var, by = dplyr::join_by(gen2==gen)) 
+  dplyr::left_join(vd.g.long.tidy, by = dplyr::join_by(gen==gen1)) |> 
+
+  tibble::tibble()
+
+
+H2D.blup.tidy.not.correct  <- BLUPs.g  |> 
+  dplyr::left_join(g.var) |> 
+  dplyr::left_join(vd.g.long.tidy, by = dplyr::join_by(gen==gen1)) |> 
+  dplyr::semi_join(g.cov)  |> 
+  tibble::tibble()
+
 
 # Merging BLUPS with variances and then with BLUPS
 for (i in 1:2){
   temp <- merge(BLUPs.g, g.var, by="gen"); names(temp) <- c(paste0(names(temp),i)) # merge BLUPs and variances for each genotye
-  H2D.blup  <- merge(H2D.blup, temp, by=paste0("gen",i)) # merge this for both gen1 and gen2, respectively, to result table
+  H2D.blup  <- merge(1, temp, by=paste0("gen",i)) # merge this for both gen1 and gen2, respectively, to result table
 }
 
 # formatting
