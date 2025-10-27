@@ -2,8 +2,8 @@
 # Fit model #
 #############
 # Genotype as random effect
-model <- asreml::asreml(fixed = yield ~ rep, 
-                random=       ~ gen + rep:block, 
+model <- asreml::asreml(fixed = yield ~ rep,
+                random=       ~ gen + rep:block,
                 data=agridat::john.alpha)
 
 target = "gen"
@@ -11,19 +11,19 @@ target = "gen"
 # BLUPs for genotype main effect
 g.pred  <- predict(model, classify = target, only = target, sed=TRUE, vcov=TRUE)
 
-BLUPs.g <- g.pred$pvals[,c(1,2)] |> 
-  dplyr::rename(BLUP = predicted.value) 
+BLUPs.g <- g.pred$pvals[,c(1,2)] |>
+  dplyr::rename(BLUP = predicted.value)
 
 ##########################
 # Handle model estimates #
 ##########################
 # Genotype information
-list.g <- levels(g.ran$mf$gen) # list of genotype names
+list.g <- levels(model$mf$gen) # list of genotype names
 n.g    <- length(list.g)  # number of genotypes
 
 # G.g (i.e. estimated G matrix of genotype main effect)
 # Extracting the VC genotype main effect
-vc.g <- summary(g.ran)$varcomp[target,'component'] 
+vc.g <- summary(model)$varcomp[target,'component']
 
 # Creating G.g matrix
 G.g.wide <- diag(1, n.g) * vc.g
@@ -31,16 +31,16 @@ G.g.wide <- diag(1, n.g) * vc.g
 # Naming the G matrix
 dimnames(G.g.wide) <- list(list.g, list.g) # G.g matrix
 
-# Turning G matrix into long format 
-G.g.df <- G.g.wide |> 
-  as.matrix() |> 
-  data.frame() 
+# Turning G matrix into long format
+G.g.df <- G.g.wide |>
+  as.matrix() |>
+  data.frame()
 
-names(G.g.df) <- list.g 
+names(G.g.df) <- list.g
 
 G.g.df$gen1 <- list.g
-  
-G.g.long.tidy <- G.g.df |> 
+
+G.g.long.tidy <- G.g.df |>
   tidyr::pivot_longer(
     cols = -gen1,
     names_to = "gen2",
@@ -49,18 +49,18 @@ G.g.long.tidy <- G.g.df |>
 
 # Variance of a difference between genotypic BLUPs (based on C22.g/PEV matrix)
 # Ensure vd.g.wide is a plain numeric matrix (remove any custom class/attributes) and square the s.e.
-vd.g.wide <- as.matrix(g.pred$sed^2) 
+vd.g.wide <- as.matrix(g.pred$sed^2)
 
 # Naming the vd.g matrix
 dimnames(vd.g.wide) <- list(list.g, list.g) # C22.g matrix
 
 # Turning vd.g matrix into long format
-vd.g.df <- vd.g.wide |> 
+vd.g.df <- vd.g.wide |>
   data.frame()
 
 vd.g.df$gen1 <- list.g
 
-vd.g.long.tidy <- vd.g.df |> 
+vd.g.long.tidy <- vd.g.df |>
   tidyr::pivot_longer(
     cols = -gen1,
     names_to = "gen2",
@@ -70,39 +70,39 @@ vd.g.long.tidy <- vd.g.df |>
 # merge BLUPs, G.g and C22.g information into "H2D.blup" table
 # Filtering when gen1 == gen2 to get variances only
 # variances G.g
-g.var <- G.g.long.tidy |> 
-  dplyr::filter(gen1==gen2) |> 
-  dplyr::select(-gen2) |> 
-  dplyr::rename(gen = gen1, 
+g.var <- G.g.long.tidy |>
+  dplyr::filter(gen1==gen2) |>
+  dplyr::select(-gen2) |>
+  dplyr::rename(gen = gen1,
         var = sigma
         )
 
 # Filtering when gen1 != gen2 to get covariances only
-g.cov <- G.g.long.tidy |> 
-  dplyr::filter(gen1!=gen2) |> 
+g.cov <- G.g.long.tidy |>
+  dplyr::filter(gen1!=gen2) |>
   dplyr::rename(cov = sigma)
 
 # Merging Variance deltas and covariances into one table
-vd.g.long.tidy |> 
+vd.g.long.tidy |>
   dplyr::left_join(g.cov)
-  
+
 
 H2D.blup_pre <- merge(vd.g.long.tidy, g.cov, all=TRUE)
 
-vd.g.long.tidy  |> 
-  dplyr::full_join(g.cov)  |> 
-  dplyr::left_join(g.var, by = dplyr::join_by(gen1==gen))  |> 
-  dplyr::rename(var1=var)  |> 
-  dplyr::left_join(g.var, by = dplyr::join_by(gen2==gen)) 
-  dplyr::left_join(vd.g.long.tidy, by = dplyr::join_by(gen==gen1)) |> 
+vd.g.long.tidy  |>
+  dplyr::full_join(g.cov)  |>
+  dplyr::left_join(g.var, by = dplyr::join_by(gen1==gen))  |>
+  dplyr::rename(var1=var)  |>
+  dplyr::left_join(g.var, by = dplyr::join_by(gen2==gen))
+  dplyr::left_join(vd.g.long.tidy, by = dplyr::join_by(gen==gen1)) |>
 
   tibble::tibble()
 
 
-H2D.blup.tidy.not.correct  <- BLUPs.g  |> 
-  dplyr::left_join(g.var) |> 
-  dplyr::left_join(vd.g.long.tidy, by = dplyr::join_by(gen==gen1)) |> 
-  dplyr::semi_join(g.cov)  |> 
+H2D.blup.tidy.not.correct  <- BLUPs.g  |>
+  dplyr::left_join(g.var) |>
+  dplyr::left_join(vd.g.long.tidy, by = dplyr::join_by(gen==gen1)) |>
+  dplyr::semi_join(g.cov)  |>
   tibble::tibble()
 
 
@@ -120,7 +120,7 @@ H2D.blup <- H2D.blup[order(gen1, gen2)]
 
 # Creating identifiers for calculations
 H2D.blup[, i.is.j     := gen1==gen2]                          # i=j is not a pair
-H2D.blup[, i.larger.j := as.numeric(gen1) > as.numeric(gen2)] # i>j is a duplicate pair  
+H2D.blup[, i.larger.j := as.numeric(gen1) > as.numeric(gen2)] # i>j is a duplicate pair
 
 ### Compute H2 Delta based on BLUPs
 # H2 Delta ij

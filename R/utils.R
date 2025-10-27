@@ -1,4 +1,3 @@
-
 #' Pull fixed and random terms from a model formula
 #'
 #' Extract the labels of fixed and random terms from a model object that exposes
@@ -15,11 +14,11 @@
 #' @importFrom stats terms formula
 #' @keywords internal
 
-pull_terms <- function(model){
-    fixed_trms <- terms(formula(model)$fixed) |> labels() 
-    ran_trms <- terms(formula(model)$random) |> labels() 
+pull_terms <- function(model) {
+    fixed_trms <- terms(formula(model)$fixed) |> labels()
+    ran_trms <- terms(formula(model)$random) |> labels()
     return(list(fixed = fixed_trms, random = ran_trms))
-}   
+}
 
 #' Fit the counterpart of an asreml model by swapping a specified term between fixed and random
 #'
@@ -45,36 +44,49 @@ pull_terms <- function(model){
 #' @importFrom stats as.formula update
 #' @keywords internal
 
-fit_counterpart_model.asreml <- function(model, target = NULL){
+fit_counterpart_model.asreml <- function(model, target = NULL) {
     # get the terms from model object
     fixed_trms <- pull_terms(model)$fixed
     ran_trms <- pull_terms(model)$random
-    
+
     # TODO: when target is in both random and fixed
 
     # when target is in random
-    if(target %in% ran_trms){
-    cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate Piepho's heritability.")
-    # fit model with target as fixed effect
-    model_counter <- asreml::asreml(
-        fixed = update(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
-        random = update(formula(model)$random, as.formula(paste("~ . -", target))), 
-        data = model$mf,
-        trace = FALSE
-    )
-    } else if (target %in% fixed_trms){ # when target is in fixed
-    cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate Piepho's heritability.")
-    # fit model with target as random effect
-    model_counter <- asreml::asreml(
-        fixed = update(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
-        random = update(formula(model)$random, as.formula(paste("~ . +", target))),
-        data = model$mf,
-        trace = FALSE
-    )
+    if (target %in% ran_trms) {
+        cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate Piepho's heritability.")
+        # fit model with target as fixed effect
+        model_counter <- asreml::asreml(
+            fixed = update(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
+            random = update(formula(model)$random, as.formula(paste("~ . -", target))),
+            data = model$mf,
+            trace = FALSE
+        )
+    } else if (target %in% fixed_trms) { # when target is in fixed
+        cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate Piepho's heritability.")
+        # fit model with target as random effect
+        model_counter <- asreml::asreml(
+            fixed = update(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
+            random = update(formula(model)$random, as.formula(paste("~ . +", target))),
+            data = model$mf,
+            trace = FALSE
+        )
     } else {
-    cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+        cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
     }
-    
-    return(model_counter)
 
+    return(model_counter)
+}
+
+#' Print method for heritable objects
+#'
+#' @param x An object of class "heritable"
+#' @param digits Number of digits to print
+#' @param ... Additional arguments passed to print
+#'
+#' @export
+print.heritable <- function(x, digits = getOption("digits"), ...) {
+    # Print the heritability value with cli formatting
+    cli::cli_alert_info(
+        "Heritability estimate: {.val {format(round(x, digits))}}"
+    )
 }

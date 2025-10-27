@@ -30,8 +30,15 @@ This is a basic example which shows you how to solve a common problem:
 
 
 ``` r
-library(heritable)
-## basic example code
+library(heritable)  
+
+fit <- asreml::asreml(yield ~ rep,
+    random = ~ gen + rep:block,
+    data = agridat::john.alpha,
+    trace = FALSE
+  )
+
+ H2(fit, target = "gen") 
 ```
 
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
