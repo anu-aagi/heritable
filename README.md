@@ -1,10 +1,4 @@
----
-output: github_document
----
-
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-
 
 # heritable
 
@@ -13,7 +7,7 @@ output: github_document
 [![CRAN status](https://www.r-pkg.org/badges/version/heritable)](https://CRAN.R-project.org/package=heritable)
 <!-- badges: end -->
 
-The goal of heritable is to ...
+The goal of heritable is to be the one stop shop for heritability calculations in R. We currently support model outputs from `asreml` and support the calculations of broad-sense heritability using the methods of Cullis et al (2006), Oakey et al (2006) and Schmidt et al (2019).
 
 ## Installation
 
@@ -41,17 +35,3 @@ fit <- asreml::asreml(yield ~ rep,
  H2(fit, target = "gen") 
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
-
-
-``` r
-summary(cars)
-```
-
-You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-
-
-In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
