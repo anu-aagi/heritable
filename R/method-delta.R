@@ -8,15 +8,12 @@ H2_Delta <- function(model, target) {
                                     sed = TRUE,
                                     vcov = TRUE)
 
-  g_pred$sed
-
   genotype_names <- levels(model$mf[[target]]) # list of genotype names
   ngeno    <- length(genotype_names)  # number of genotypes
 
 
-  vc_g <- summary(model)$varcomp[target, 'component'] # varcomp of geno
-  # Change below to use elements of Kinship/relationship as necessary for
-  # narrowsense
+  vc_g <- asreml::summary.asreml(model)$varcomp[target, 'component'] # varcomp of geno
+  # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
   var1 <- vc_g
   var2 <- vc_g
   cov <- 0

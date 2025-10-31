@@ -77,6 +77,9 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
     return(model_counter)
 }
 
+
+
+
 #' Print method for heritable objects
 #'
 #' @param x An object of class "heritable"

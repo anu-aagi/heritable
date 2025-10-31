@@ -65,6 +65,11 @@ H2_SumDiv <- function(model, ...) {
 
 
 #' @export
+H2_Delta <- function(model, ...) {
+  UseMethod("H2_Delta")
+}
+
+#' @export
 H2.default <- function(model, ...) {
   cli::cli_abort("{.fn H2} is not implemented for class{?es} {.code {class(model)}}")
 }

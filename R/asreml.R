@@ -75,23 +75,32 @@ H2_Reg.asreml <- function(model, target = NULL) {
 }
 
 #' @export
-H2_delta_BLUPS.asreml <- function(model, target = NULL) {
+H2_Delta.asreml <- function(model, target = NULL) {
   # Check if target is in random effects
   if(! target %in% pull_terms(model)$random){
     cli::cli_abort("{.var {target}} is not fitted as a random effect in the model. Cannot calculate H2 based on delta BLUPs.")
   }
 
-  # Get BLUPS
-  g.pred <- asreml::predict.asreml(model, 
-    classify = target,
-    only = target,
-    sed = TRUE,
-    vcov = TRUE
-    )
+  # BLUPs for genotype main effect
+  g_pred  <- asreml::predict.asreml(model,
+                                    classify = target,
+                                    only = target,
+                                    sed = TRUE,
+                                    vcov = TRUE)
 
-  BLUPs.g <- g.pred$pvals[,c(1,2)]
-  names(BLUPs.g) <- c("gen","BLUP")
+  genotype_names <- levels(model$mf[[target]]) # list of genotype names
+  ngeno    <- length(genotype_names)  # number of genotypes
 
 
-  
+  vc_g <- asreml::summary.asreml(model)$varcomp[target, 'component'] # varcomp of geno
+  # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
+  var1 <- vc_g
+  var2 <- vc_g
+  cov <- 0
+  Vd_g <- g_pred$sed^2 # cov
+  dimnames(Vd_g) <- list(genotype_names, genotype_names)
+
+  v <- var1 + var2 - 2*cov
+  H2D_ij <- 1 - Vd_g/v
+  H2D_ij
 }
