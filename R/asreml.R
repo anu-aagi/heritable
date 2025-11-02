@@ -1,5 +1,5 @@
 #' @export
-H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv")) {
+H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta_blup", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv")) {
   method <- match.arg(method)
   # If model has not converged, warn
   if (!model$converge) cli::cli_warn("The input model has not converged")
@@ -12,6 +12,7 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "BLUE"
     Cullis = H2_Cullis.asreml(model, target),
     Oakey = H2_Oakey.asreml(model, target),
     Piepho = H2_Piepho.asreml(model, target),
+    Delta_blup = H2_Delta_blup.asreml(model, target),
     H2.default(model)
   )
 
@@ -45,11 +46,7 @@ H2_Cullis.asreml <- function(model, target = NULL) {
   1 - (vdBLUP_avg / 2 / vc_g)
 }
 
-# TODO: How to best handle multiple model objects in this workflow?
-# What happens if user has target in both fixed and random
-# If G has an interaction with another parameter, needs to be isolated
 #' @export
-
 H2_Piepho.asreml <- function(model, target = NULL) {
   # Obtain the requested random effect
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
@@ -75,18 +72,25 @@ H2_Reg.asreml <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Delta.asreml <- function(model, target = NULL) {
-  # Check if target is in random effects
+H2_Delta_blup.asreml <- function(model, target = NULL) {
+  # TODO Check if target is in fixed or random
+
+  # TODO If neither, throw error
   if(! target %in% pull_terms(model)$random){
     cli::cli_abort("{.var {target}} is not fitted as a random effect in the model. Cannot calculate H2 based on delta BLUPs.")
   }
 
+  # TODO If in random, proceed
+
+  # TODO If in fixed, fit counter model
+  
   # BLUPs for genotype main effect
   g_pred  <- asreml::predict.asreml(model,
                                     classify = target,
                                     only = target,
                                     sed = TRUE,
-                                    vcov = TRUE)
+                                    vcov = TRUE
+                                    )
 
   genotype_names <- levels(model$mf[[target]]) # list of genotype names
   ngeno    <- length(genotype_names)  # number of genotypes

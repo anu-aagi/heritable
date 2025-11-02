@@ -10,7 +10,8 @@ Description: Reporting heritability estimates is an important part of quantitati
  from asreml and soon to be lme4 model objects.
 License: CC BY 4.0 + file LICENSE
 Imports: 
-    cli
+    cli,
+    Matrix
 Suggests: 
     testthat (>= 3.0.0),
     agridat

@@ -63,10 +63,9 @@ H2_SumDiv <- function(model, ...) {
   UseMethod("H2_SumDiv")
 }
 
-
 #' @export
-H2_Delta <- function(model, ...) {
-  UseMethod("H2_Delta")
+H2_Delta_blup <- function(model, ...) {
+  UseMethod("H2_Delta_blup")
 }
 
 #' @export
