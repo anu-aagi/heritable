@@ -69,6 +69,11 @@ H2_Delta <- function(model, ...) {
 }
 
 #' @export
+H2_Naive <- function(model, ...) {
+  UseMethod("H2_Naive")
+}
+
+#' @export
 H2.default <- function(model, ...) {
   cli::cli_abort("{.fn H2} is not implemented for class{?es} {.code {class(model)}}")
 }

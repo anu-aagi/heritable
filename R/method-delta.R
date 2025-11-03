@@ -1,7 +1,7 @@
 H2_delta_blup <- function(model, target, by = "all") {
   # TODO Check if target exists in any terms
   if (!target %in% c(pull_terms(model)$fixed, pull_terms(model)$random)) {
-    cli::cli_abort("{.var {target}} is not fitted in the model. Cannot calculate H2 based on delta BLUEs.")
+    cli::cli_abort("{.var {target}} is not fitted in the model. Cannot calculate H2 Delta.")
   }
   # TODO If in fixed, fit counter model
   if (target %in% pull_terms(model)$fixed) {
@@ -53,7 +53,7 @@ H2_delta_blup <- function(model, target, by = "all") {
 H2_delta_blue <- function(model, target, by = "all") {
   # TODO Check if target exists in any terms
   if (!target %in% c(pull_terms(model)$fixed, pull_terms(model)$random)) {
-    cli::cli_abort("{.var {target}} is not fitted in the model. Cannot calculate H2 based on delta BLUEs.")
+    cli::cli_abort("{.var {target}} is not fitted in the model. Cannot calculate H2 Delta.")
   }
   # TODO If in random, fit counter model
   if (target %in% pull_terms(model)$random) {

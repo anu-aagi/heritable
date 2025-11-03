@@ -1,5 +1,5 @@
 #' @export
-H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta_blup", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv")) {
+H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta_blup", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv", "Naive")) {
   method <- match.arg(method)
   # If model has not converged, warn
   if (!model$converge) cli::cli_warn("The input model has not converged")
@@ -13,6 +13,7 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
     Oakey = H2_Oakey.asreml(model, target),
     Piepho = H2_Piepho.asreml(model, target),
     Delta_blup = H2_Delta_blup.asreml(model, target),
+    Naive = H2_Naive.asreml(model, target),
     H2.default(model)
   )
 
@@ -106,4 +107,12 @@ H2_Delta.asreml <- function(model, target = NULL, type = c("blup", "blue"), by =
   v <- var1 + var2 - 2 * cov
   H2D_ij <- 1 - Vd_g / v
   H2D_ij
+}
+
+#' @export
+H2_Naive.asreml <- function(model, target = NULL) {
+  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
+  vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
+
+  vc_g / (vc_g + vc_e)
 }
