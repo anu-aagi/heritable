@@ -12,6 +12,8 @@ test_that("delta method works", {
 
   target <- "gen"
 
-  H2(model, target, method = "Delta")
+  # H2(model, target, method = "Delta")
   H2_delta_blup(model, target, by = "all")
+  H2_delta_blup(model, target, by = "genotype")
+  H2_delta_blup(model, target, by = "pairwise")
 })
