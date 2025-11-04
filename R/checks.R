@@ -46,9 +46,9 @@ check_target_exists <- function(model, target) {
 }
 
 # Check if target is in fixed or random
-check_target_fixed <- function(model, target) {
+check_target_random <- function(model, target) {
     model_terms <- pull_terms(model)
-    if (target %in% model_terms$fixed) {
+    if (target %in% model_terms$random) {
         TRUE
     } else {
         FALSE

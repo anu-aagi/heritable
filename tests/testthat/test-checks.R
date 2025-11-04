@@ -1,4 +1,4 @@
-test_that("model level checks", {
+test_that("Inner checks are triggered", {
   # Genotype as random effect
   model_random <- asreml::asreml(
     fixed = yield ~ rep,
@@ -28,6 +28,12 @@ test_that("model level checks", {
   expect_error(H2(model = c(model_random, model_fixed), target = target))
   expect_warning(H2(model_failed_converge, target = target))
   expect_error(H2(model = model_random, target = "tamago"))
-  expect_true(check_target_fixed(model_fixed, target))
-  expect_false(check_target_fixed(model_random, target))
+
+  # Target level
+  expect_false(check_target_random(model_fixed, target))
+  expect_true(check_target_random(model_random, target))
+
+  # Method level
+  expect_message(H2(model_fixed, target, "Oakey"))
+  expect_message(H2(model_fixed, target, "Cullis"))
 })

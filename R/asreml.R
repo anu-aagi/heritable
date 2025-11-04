@@ -26,6 +26,11 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
 
 #' @export
 H2_Oakey.asreml <- function(model, target = NULL) {
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    model <- fit_counterpart_model.asreml(model, target)
+  }
+
   n_g <- model$noeff[[target]]
   vc_g <- summary(model)$varcomp[target, "component"]
   Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
@@ -38,6 +43,11 @@ H2_Oakey.asreml <- function(model, target = NULL) {
 
 #' @export
 H2_Cullis.asreml <- function(model, target = NULL) {
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    model <- fit_counterpart_model.asreml(model, target)
+  }
+
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
 
   vdBLUP_mat <- asreml::predict.asreml(model,
@@ -56,9 +66,12 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   # Obtain the requested random effect
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
 
-  # Calculate the mean variance of a difference of two genotypic BLUEs
-  model_fix <- fit_counterpart_model.asreml(model, target)
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    model_fix <- fit_counterpart_model.asreml(model, target)
+  }
 
+  # Calculate the mean variance of a difference of two genotypic BLUEs
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,
     sed = TRUE
