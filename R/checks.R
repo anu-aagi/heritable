@@ -16,15 +16,41 @@ check_model_convergence <- function(model) {
 
 # Check if model is of a supported
 ## Check if model is of class asreml
+check_model_class_asreml <- function(model) {
+    if (!inherits(model, "asreml")) {
+        cli::cli_abort("The input model must be of class {.code asreml}")
+    }
+}
 
 ## Check if model is of class lme4
-
-
-
+check_model_class_lme4 <- function(model) {
+    if (!inherits(model, "lmerMod")) {
+        cli::cli_abort("The input model must be of class {.code lmerMod}")
+    }
+}
 
 # Target level checks
 # Check if only one target has been supplied
+check_target_single <- function(target) {
+    if (length(target) > 1) {
+        cli::cli_abort("Only one target can be supplied to calculate heritability")
+    }
+}
 
 # Check if target is in model
+check_target_exists <- function(model, target) {
+    model_terms <- pull_terms(model)
+    if (!target %in% c(model_terms$fixed, model_terms$random)) {
+        cli::cli_abort("The specified target {.code {target}} is not found in the model")
+    }
+}
 
 # Check if target is in fixed or random
+check_target_fixed <- function(model, target) {
+    model_terms <- pull_terms(model)
+    if (target %in% model_terms$fixed) {
+        TRUE
+    } else {
+        FALSE
+    }
+}

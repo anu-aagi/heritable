@@ -16,16 +16,18 @@ test_that("model level checks", {
   )
 
   # Won't converge
-  model_failed_converge <- asreml::asreml(
-    fixed = yield ~ rep + gen,
-    random = ~ rep:block, # Add complex interaction
-    maxiter = 2, # Limit iterations
-    data = agridat::john.alpha,
-    trace = FALSE
-  )
+  model_failed_converge <- model_random
+  model_failed_converge$converge <- FALSE
+
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  # Fit a lme4 model and pass to asreml function
 
   target <- "gen"
 
   expect_error(H2(model = c(model_random, model_fixed), target = target))
-  H2(model_failed_converge, target = target)
+  expect_warning(H2(model_failed_converge, target = target))
+  expect_error(H2(model = model_random, target = "tamago"))
+  expect_true(check_target_fixed(model_fixed, target))
+  expect_false(check_target_fixed(model_random, target))
 })

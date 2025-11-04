@@ -5,7 +5,13 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
   # If model has not converged, warn
   check_model_convergence(model)
 
-  # TODO: Check if target is in model, if not throw error
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  check_model_class_asreml(model)
+
+  # Check if target is in model, if not throw error
+  check_target_exists(model, target)
+
   H2 <- switch(method,
     Cullis = H2_Cullis.asreml(model, target),
     Oakey = H2_Oakey.asreml(model, target),
