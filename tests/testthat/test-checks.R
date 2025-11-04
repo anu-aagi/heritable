@@ -1,4 +1,7 @@
 test_that("Inner checks are triggered", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+
   # Genotype as random effect
   model_random <- asreml::asreml(
     fixed = yield ~ rep,
@@ -26,7 +29,7 @@ test_that("Inner checks are triggered", {
   target <- "gen"
 
   expect_error(H2(model = c(model_random, model_fixed), target = target))
-  expect_warning(H2(model_failed_converge, target = target))
+  expect_snapshot_warning(H2(model_failed_converge, target = target))
   expect_error(H2(model = model_random, target = "tamago"))
 
   # Target level

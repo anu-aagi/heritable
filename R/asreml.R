@@ -95,7 +95,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   check_target_exists(model, target)
 
   # Check if target is random or fixed
-  if (!check_target_random(model, target)) {
+  if (check_target_random(model, target)) {
     model_fix <- fit_counterpart_model.asreml(model, target)
   }
 
