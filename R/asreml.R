@@ -55,15 +55,15 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   # Calculate the mean variance of a difference of two genotypic BLUEs
   model_fix <- fit_counterpart_model.asreml(model, target)
 
-  vdBLUE.mat <- asreml::predict.asreml(model_fix,
+  vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,
     sed = TRUE
   )$sed^2
 
-  vdBLUE.avg <- mean(vdBLUE.mat[upper.tri(vdBLUE.mat, diag = FALSE)])
+  vdBLUE_avg <- mean(vdBLUE_mat[upper.tri(vdBLUE_mat, diag = FALSE)])
 
   # Calculate Piepho's H2
-  vc_g / (vc_g + (vdBLUE.avg / 2))
+  vc_g / (vc_g + (vdBLUE_avg / 2))
 }
 
 #' @export
