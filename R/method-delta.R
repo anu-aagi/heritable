@@ -11,6 +11,7 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   check_target_exists(model, target)
 
   # Check if target is random or fixed
+  # TODO: How to handle if both fixed and random?
   # If fixed, compute H2 delta with BLUEs
   if(!check_target_random(model, target)) { 
     # Obtain BLUES
@@ -19,9 +20,7 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
 
     # Fit counterpart model with target as random for vc_g
     model <- fit_counterpart_model.asreml(model, target)
-  } 
-  # If random, compute H2 delta with BLUPs
-  if(check_target_random(model, target)) { 
+  } else if(check_target_random(model, target)) {  # If random, compute H2 delta with BLUPs
     # Obtain BLUPS
     g_pred <- asreml::predict.asreml(model,
     classify = target,
@@ -42,17 +41,22 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   var1 <- vc_g
   var2 <- vc_g
   cov <- 0
-
   v <- var1 + var2 - 2 * cov
-  H2D_ij <- 1 - Vd_g / v
-
-
+  
+  # For Delta BLUES
+  # Check if g_lsm exists
+  if(exists("g_lsm")){
+    H2D_ij <- 1 / (1 + (Vd_g / v))
+  } else {
+    # For Delta BLUPS
+    H2D_ij <- 1 - Vd_g / v
+  }
+  
   if(mean == "arithmetic") {
     H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
   } else if (mean == "harmonic") {
     H2D_ij <- length(H2D_ij[upper.tri(H2D_ij)]) / sum(1 / H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
   }
-
   H2D_ij
 }
 
