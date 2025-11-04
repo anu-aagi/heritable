@@ -3,7 +3,7 @@ test_that("delta method works", {
   skip_on_cran()
 
   # Genotype as random effect
-  model <- asreml::asreml(
+  model_random <- asreml::asreml(
     fixed = yield ~ rep,
     random = ~ gen + rep:block,
     data = agridat::john.alpha,
@@ -11,4 +11,6 @@ test_that("delta method works", {
   )
 
   target <- "gen"
+
+  H2_Delta.asreml(model_random, target)
 })

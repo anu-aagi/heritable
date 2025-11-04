@@ -1,5 +1,6 @@
 #' @export
 H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "BLUE", "BLUP", "Piepho", "Naive")) {
+  # TODO: This will change if we want to vectorise over multiple methods
   method <- match.arg(method)
 
   # If model has not converged, warn
@@ -95,9 +96,10 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   check_target_exists(model, target)
 
   # Check if target is random or fixed
+  # TODO: 3 way check here, if both do nothing, if random fit fixed, if fixed fit random
   if (check_target_random(model, target)) {
     model_fix <- fit_counterpart_model.asreml(model, target)
-  }
+  } 
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
   # Get genotype variance
