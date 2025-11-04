@@ -1,5 +1,5 @@
 #' @export
-H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv", "Naive")) {
+H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "BLUE", "BLUP", "Piepho", "Naive")) {
   method <- match.arg(method)
 
   # If model has not converged, warn
@@ -26,6 +26,16 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
 
 #' @export
 H2_Oakey.asreml <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  check_model_class_asreml(model)
+
+  # Check if target is in model, if not throw error
+  check_target_exists(model, target)
+
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     model <- fit_counterpart_model.asreml(model, target)
@@ -43,11 +53,22 @@ H2_Oakey.asreml <- function(model, target = NULL) {
 
 #' @export
 H2_Cullis.asreml <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  check_model_class_asreml(model)
+
+  # Check if target is in model, if not throw error
+  check_target_exists(model, target)
+
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     model <- fit_counterpart_model.asreml(model, target)
   }
 
+  # Get genotype variance
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
 
   vdBLUP_mat <- asreml::predict.asreml(model,
@@ -63,8 +84,15 @@ H2_Cullis.asreml <- function(model, target = NULL) {
 
 #' @export
 H2_Piepho.asreml <- function(model, target = NULL) {
-  # Obtain the requested random effect
-  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  check_model_class_asreml(model)
+
+  # Check if target is in model, if not throw error
+  check_target_exists(model, target)
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
@@ -72,6 +100,9 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   }
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
+  # Get genotype variance
+  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
+
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,
     sed = TRUE
@@ -84,50 +115,44 @@ H2_Piepho.asreml <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Reg.asreml <- function(model, target = NULL) {
-  # Obtain BLUES
-}
+H2_Delta.asreml <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
 
-#' @export
-H2_Delta.asreml <- function(model, target = NULL, type = c("blup", "blue"), by = "all") {
-  # TODO Check if target is in fixed or random
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  check_model_class_asreml(model)
 
-  # TODO If neither, throw error
-  if (!target %in% pull_terms(model)$random) {
-    cli::cli_abort("{.var {target}} is not fitted as a random effect in the model. Cannot calculate H2 based on delta BLUPs.")
+  # Check if target is in model, if not throw error
+  check_target_exists(model, target)
+
+  # Check if target is random - BLUPS
+  if (check_target_random(model, target)) {
+    # Calculate Delta BLUPS
   }
-
-  # TODO If in random, proceed
-
-  # TODO If in fixed, fit counter model
-
-  # BLUPs for genotype main effect
-  g_pred <- asreml::predict.asreml(model,
-    classify = target,
-    only = target,
-    sed = TRUE,
-    vcov = TRUE
-  )
-
-  genotype_names <- levels(model$mf[[target]]) # list of genotype names
-  ngeno <- length(genotype_names) # number of genotypes
-
-
-  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"] # varcomp of geno
-  # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
-  var1 <- vc_g
-  var2 <- vc_g
-  cov <- 0
-  Vd_g <- g_pred$sed^2 # cov
-  dimnames(Vd_g) <- list(genotype_names, genotype_names)
-
-  v <- var1 + var2 - 2 * cov
-  H2D_ij <- 1 - Vd_g / v
-  H2D_ij
+  # Check if target is fixed - BLUES
+  if (!check_target_random(model, target)) {
+    # Calculate Delta BLUEs
+  }
+  # If both - return both
 }
 
 #' @export
 H2_Naive.asreml <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # TODO: Check if model is of class asreml
+  # In the event someone calls the asreml function directly on a different class
+  check_model_class_asreml(model)
+
+  # Check if target is in model, if not throw error
+  check_target_exists(model, target)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    model <- fit_counterpart_model.asreml(model, target)
+  }
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
   vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
 
