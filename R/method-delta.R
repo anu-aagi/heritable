@@ -1,3 +1,19 @@
+H2_Delta <- function(model, target = NULL) {
+  # Chec
+}
+
+H2_Delta_by_genotype <- function(model, target = NULL) {
+
+}
+
+H2_Delta_pairwise <- function(model, target = NULL) {
+
+}
+
+
+
+
+
 H2_delta_blup <- function(model, target, by = "all") {
   # TODO Check if target exists in any terms
   if (!target %in% c(pull_terms(model)$fixed, pull_terms(model)$random)) {

@@ -75,5 +75,9 @@ H2_Naive <- function(model, ...) {
 
 #' @export
 H2.default <- function(model, ...) {
+  # Check if only one model has been supplied
+  check_single_model(model)
+
+  # Fall back if no S3 method is found for specified class
   cli::cli_abort("{.fn H2} is not implemented for class{?es} {.code {class(model)}}")
 }

@@ -1,18 +1,16 @@
 #' @export
-H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta_blup", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv", "Naive")) {
+H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "BLUE", "BLUP", "Piepho", "Reg", "SumDiv", "Naive")) {
   method <- match.arg(method)
+
   # If model has not converged, warn
-  if (!model$converge) cli::cli_warn("The input model has not converged")
+  check_model_convergence(model)
 
   # TODO: Check if target is in model, if not throw error
-
-  # TODO Not all output is suppressed, even when I added surppressMessages()
-
   H2 <- switch(method,
     Cullis = H2_Cullis.asreml(model, target),
     Oakey = H2_Oakey.asreml(model, target),
     Piepho = H2_Piepho.asreml(model, target),
-    Delta_blup = H2_Delta_blup.asreml(model, target),
+    Delta_blup = H2_Delta.asreml(model, target),
     Naive = H2_Naive.asreml(model, target),
     H2.default(model)
   )
