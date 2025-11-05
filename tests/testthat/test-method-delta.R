@@ -18,9 +18,20 @@ test_that("delta method works", {
     trace = FALSE
   )
 
+  # Genotype as both fixed and random effect
+  model_both <- asreml::asreml(
+    fixed = yield ~ gen,
+    random = ~ gen:block,
+    data = agridat::john.alpha,
+    trace = FALSE 
+  )
+
   target <- "gen"
 
   expect_equal(H2_Delta.asreml(model_random, target), 0.8090841)
   expect_equal(H2_Delta.asreml(model_fixed, target, mean = "harmonic"),  0.8029759) 
   expect_lt(H2_Delta.asreml(model_random, target, mean = "harmonic"), H2_Delta.asreml(model_random, target)) 
+  expect_error(H2_Delta.asreml(model_both, target, mean = "harmonic"))
+
+
 })

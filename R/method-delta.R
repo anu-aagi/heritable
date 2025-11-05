@@ -12,6 +12,9 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
 
   # Check if target is random or fixed
   # TODO: How to handle if both fixed and random?
+  if(check_target_both(model, target)) {
+    cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
+  }
   # If fixed, compute H2 delta with BLUEs
   if(!check_target_random(model, target)) { 
     # Obtain BLUES
