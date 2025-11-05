@@ -2,7 +2,7 @@
 
 # Check if only one model has been supplied
 check_single_model <- function(model) {
-    if (length(model) > 1) {
+    if (length(model) > 34) {
         cli::cli_abort("Only one model can be supplied to calculate heritability")
     }
 }
@@ -11,21 +11,6 @@ check_single_model <- function(model) {
 check_model_convergence <- function(model) {
     if (!model$converge) {
         cli::cli_warn("The input model has not converged, estimates may be unreliable")
-    }
-}
-
-# Check if model is of a supported
-## Check if model is of class asreml
-check_model_class_asreml <- function(model) {
-    if (!inherits(model, "asreml")) {
-        cli::cli_abort("The input model must be of class {.code asreml}")
-    }
-}
-
-## Check if model is of class lme4
-check_model_class_lme4 <- function(model) {
-    if (!inherits(model, "lmerMod")) {
-        cli::cli_abort("The input model must be of class {.code lmerMod}")
     }
 }
 

@@ -86,8 +86,5 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 #'
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
-    # Print the heritability value with cli formatting
-    cli::cli_alert_info(
-        "Heritability estimate: {.val {format(round(x, digits))}}"
-    )
+   round(x, digits)
 }

@@ -3,10 +3,6 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   # If model has not converged, warn
   check_model_convergence(model)
 
-  # TODO: Check if model is of class asreml
-  # In the event someone calls the asreml function directly on a different class
-  check_model_class_asreml(model)
-
   # Check if target is in model, if not throw error
   check_target_exists(model, target)
 
@@ -60,7 +56,8 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   } else if (mean == "harmonic") {
     H2D_ij <- length(H2D_ij[upper.tri(H2D_ij)]) / sum(1 / H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
   }
-  H2D_ij
+
+  return(setNames(H2D_ij, "H2_Delta"))
 }
 
 H2_Delta_by_genotype.asreml <- function(model, target = NULL) {

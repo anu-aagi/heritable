@@ -27,7 +27,8 @@ test_that("delta method works", {
   )
 
   target <- "gen"
-
+  
+  H2(model_random, target, method = "Delta")
   expect_equal(H2_Delta.asreml(model_random, target), 0.8090841)
   expect_equal(H2_Delta.asreml(model_fixed, target, mean = "harmonic"),  0.8029759) 
   expect_lt(H2_Delta.asreml(model_random, target, mean = "harmonic"), H2_Delta.asreml(model_random, target)) 

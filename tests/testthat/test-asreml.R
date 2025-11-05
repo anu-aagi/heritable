@@ -8,8 +8,8 @@ test_that("heritability for asreml works", {
     trace = FALSE
   )
 
-  expect_equal(H2(model, target = "gen"), 0.8090841)
-  expect_equal(H2(model, target = "gen", method = "Piepho"), 0.8029759)
+  expect_equal(unname(H2(model, target = "gen")), 0.8090841, tolerance = 1e-7)
+  expect_equal(unname(H2(model, target = "gen", method = "Piepho")), 0.8029759, tolerance = 1e-7)
 })
 
 test_that("counterpart model can be fitted", {
