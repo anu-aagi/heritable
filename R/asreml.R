@@ -1,3 +1,4 @@
+#' @importFrom stats setNames
 #' @export
 H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive")) {
   # TODO: This will change if we want to vectorise over multiple methods
@@ -20,7 +21,7 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
 
   structure(H2, class = c("heritable", class(H2)))
 
-  H2
+  return(stats::setNames(H2, method))
 }
 
 #' @export
@@ -44,7 +45,7 @@ H2_Oakey.asreml <- function(model, target = NULL) {
   eM <- eigen(M)
 
   H2_Oakey <- sum(eM$values) / (n_g - 1)
-  return(setNames(H2_Oakey, "H2_Oakey"))
+  return(H2_Oakey)
 }
 
 #' @export
@@ -73,7 +74,7 @@ H2_Cullis.asreml <- function(model, target = NULL) {
 
   H2_Cullis <- 1 - (vdBLUP_avg / 2 / vc_g)
 
-  return(setNames(H2_Cullis, "H2_Cullis"))
+  return(H2_Cullis)
 }
 
 #' @export
@@ -104,7 +105,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   # Calculate Piepho's H2
   H2_Piepho <- vc_g / (vc_g + (vdBLUE_avg / 2))
 
-  return(setNames(H2_Piepho, "H2_Piepho"))
+  return(H2_Piepho)
 }
 
 #' @export
@@ -166,8 +167,8 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   } else if (mean == "harmonic") {
     H2D_ij <- length(H2D_ij[upper.tri(H2D_ij)]) / sum(1 / H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
   }
-  
-  return(setNames(H2D_ij, "H2_Delta"))
+
+  H2D_ij
 }
 
 #' @export
@@ -185,5 +186,7 @@ H2_Naive.asreml <- function(model, target = NULL) {
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
   vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
 
-  vc_g / (vc_g + vc_e)
+  H2_Naive <- vc_g / (vc_g + vc_e)
+
+  return(H2_Naive)
 }
