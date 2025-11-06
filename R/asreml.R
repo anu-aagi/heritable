@@ -39,12 +39,10 @@ H2_Oakey.asreml <- function(model, target = NULL) {
 
   n_g <- model$noeff[[target]]
   vc_g <- summary(model)$varcomp[target, "component"]
-  Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
   C22_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
-  M <- diag(n_g) - (Gg_inv %*% C22_g)
-  eM <- eigen(M)
-
-  H2_Oakey <- sum(eM$values) / (n_g - 1)
+  
+  H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, C22_g)
+  
   return(H2_Oakey)
 }
 
@@ -70,9 +68,9 @@ H2_Cullis.asreml <- function(model, target = NULL) {
     sed = TRUE
   )$sed^2
 
-  vdBLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
+  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
 
-  H2_Cullis <- 1 - (vdBLUP_avg / 2 / vc_g)
+  H2_Cullis <- H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 
   return(H2_Cullis)
 }

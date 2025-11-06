@@ -9,6 +9,7 @@ test_that("heritability for asreml works", {
   )
 
   expect_equal(unname(H2(model, target = "gen")), 0.8090841, tolerance = 1e-7)
+  expect_equal(unname(H2(model, target = "gen", method = "Oakey")), 0.8090728, tolerance = 1e-7)
   expect_equal(unname(H2(model, target = "gen", method = "Piepho")), 0.8029759, tolerance = 1e-7)
 })
 
