@@ -124,7 +124,7 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   if(!check_target_random(model, target)) { 
     # Obtain BLUES
     g_lsm <- asreml::predict.asreml(model, classify = target, sed = TRUE) 
-    Vd_g <- g_lsm$sed^2 # cov
+    Vd_g <- g_lsm$sed^2 # Variance of difference 
 
     # Fit counterpart model with target as random for vc_g
     model <- fit_counterpart_model.asreml(model, target)
@@ -132,12 +132,10 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
     # Obtain BLUPS
     g_pred <- asreml::predict.asreml(model,
     classify = target,
-    only = target,
-    sed = TRUE,
-    vcov = TRUE
+    sed = TRUE
     )
 
-    Vd_g <- g_pred$sed^2 # cov
+    Vd_g <- g_pred$sed^2 # Variance of difference 
   }
 
   genotype_names <- levels(model$mf[[target]]) # list of genotype names
@@ -145,11 +143,6 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
 
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"] # varcomp of geno
-  # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
-  var1 <- vc_g
-  var2 <- vc_g
-  cov <- 0
-  v <- var1 + var2 - 2 * cov
   
   # For Delta BLUES
   # Check if g_lsm exists
