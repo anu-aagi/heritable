@@ -7,9 +7,9 @@
 H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 }
 \arguments{
-\item{vd_BLUP_avg}{Average variance of pairwise differences among BLUPs}
+\item{vd_BLUP_avg}{Numeric. Average variance of pairwise differences among BLUPs}
 
-\item{vc_g}{Genotype variance component}
+\item{vc_g}{Numeric. Genotype variance component}
 }
 \value{
 Single numeric value

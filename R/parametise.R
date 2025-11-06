@@ -7,8 +7,8 @@
 #' 
 #' \eqn{H^2 = 1 - (vd_BLUP_avg / (2 * vc_g))}
 #'
-#' @param vd_BLUP_avg Average variance of pairwise differences among BLUPs 
-#' @param vc_g Genotype variance component
+#' @param vd_BLUP_avg Numeric. Average variance of pairwise differences among BLUPs 
+#' @param vc_g Numeric. Genotype variance component 
 #' @return Single numeric value 
 #'
 #' @examples
@@ -33,9 +33,8 @@
 #' @param vc_g Numeric. Genotype variance component
 #' @param vcov_g Numeric matrix. Variance–covariance matrix of the genotype BLUPs (prediction error variances and covariances). Expected to be an n_g by n_g symmetric matrix.
 #'
-#' #' @details The equation for Oakey heritability is as follows:
+#' @details See references for full derivation and equation for for Oakey heritability 
 #' 
-#' \eqn{H^2 = 1 - (vd_BLUP_avg / (2 * vc_g))}
 #'
 #' @return Single numeric value 
 #'
@@ -55,18 +54,70 @@ H2_Oakey_parameters <- function(n_g, vc_g, vcov_g) {
    return(H2_Oakey)
 }
 
+#' Estimate Naive heritability
+#'
+#' @description Compute naive heritability for genotype means using the variance components of genotype and residuals.
+#' 
+#' @details The equation for naive heritability is as follows:
+#' 
+#' \eqn{H^2 = 1 - (vc_g / (vc_g + vc_e))}
+#'
+#' @param vc_g Numeric. Genotype variance component
+#' @param vc_e Numeric. Residuals variance component
+#' @return Single numeric value 
+#'
+#' @examples
+#' H2_Naive_parameters(vc_g = 0.25, vc_e = 0.8)
+#' 
+#' @references
+#' Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
+#' 
 #' @export
 H2_Naive_parameters <- function(vc_g, vc_e) {
   H2_Naive <- vc_g / (vc_g + vc_e)
   return(H2_Naive)
 }
 
+#' Estimate Piepho's heritability
+#'
+#' @description Compute Piepho's heritability using the variance of differences between two BLUES.
+#' 
+#' @details The equation for Piepho's heritability is as follows:
+#' 
+#' \eqn{H^2 = 1 - (vc_g / (vc_g + vd_BLUE_avg / 2))}
+#'
+#' @param vc_g Numeric. Genotype variance component
+#' @param vd_BLUE_avg Numeric. Mean variance of pairwise differences among BLUES
+#' @return Single numeric value 
+#'
+#' @examples
+#' H2_Piepho_parameters(vc_g = 0.25, vd_BLUE_avg = 0.68)
+#' 
+#' @references
+#' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+#' 
 #' @export
 H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
   H2_Piepho <- vc_g / (vc_g + (vd_BLUE_avg / 2))
   return(H2_Piepho)
 }
 
+#' Estimate heritability of differences (Delta) for BLUES
+#'
+#' @description Compute heritability of differences using the variance of differences between two BLUES.
+#' 
+#' @details See reference for full derivation and equation for heritability Delta BLUES
+#'
+#' @param vc_g Numeric. Genotype variance component
+#' @param vd_BLUE_matrix Matrix. Variance of pairwise differences among BLUES
+#' @return Matrix of pairwise heritability of differences among BLUES
+#'
+#' @examples
+#' H2_Delta_BLUE_parameters(vc_g = 0.25, cov = 0, vd_BLUE_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+#' 
+#' @references
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' 
 #' @export
 H2_Delta_BLUE_parameters <- function(vc_g, cov, vd_BLUE_matrix) {
    # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
@@ -77,6 +128,22 @@ H2_Delta_BLUE_parameters <- function(vc_g, cov, vd_BLUE_matrix) {
    return(H2D_BLUE)
 }
 
+#' Estimate heritability of differences (Delta) for BLUPS
+#'
+#' @description Compute heritability of differences using the variance of differences between two BLUPS
+#' 
+#' @details See reference for full derivation and equation for heritability Delta BLUES
+#'
+#' @param vc_g Numeric. Genotype variance component
+#' @param vd_BLUP_matrix Matrix. Variance of pairwise differences among BLUPS
+#' @return Matrix of pairwise heritability of differences among BLUPS
+#'
+#' @examples
+#' H2_Delta_BLUP_parameters(vc_g = 0.25, cov = 0, vd_BLUP_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+#' 
+#' @references
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' 
 #' @export
 H2_Delta_BLUP_parameters <- function(vc_g, cov, vd_BLUP_matrix) {
    # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense

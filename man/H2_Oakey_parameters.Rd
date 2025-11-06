@@ -11,11 +11,7 @@ H2_Oakey_parameters(n_g, vc_g, vcov_g)
 
 \item{vc_g}{Numeric. Genotype variance component}
 
-\item{vcov_g}{Numeric matrix. Variance–covariance matrix of the genotype BLUPs (prediction error variances and covariances). Expected to be an n_g by n_g symmetric matrix.
-
-#' @details The equation for Oakey heritability is as follows:
-
-\eqn{H^2 = 1 - (vd_BLUP_avg / (2 * vc_g))}}
+\item{vcov_g}{Numeric matrix. Variance–covariance matrix of the genotype BLUPs (prediction error variances and covariances). Expected to be an n_g by n_g symmetric matrix.}
 }
 \value{
 Single numeric value
@@ -23,6 +19,9 @@ Single numeric value
 \description{
 Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 as described by Oakey et al. (2006).
+}
+\details{
+See references for full derivation and equation for for Oakey heritability
 }
 \examples{
 # H2_Oakey_parameters(n_g = 50, vc_g = 1.2, vcov_g = diag(0.3, 50, 50))
