@@ -23,7 +23,7 @@ The equation for naive heritability is as follows:
 \eqn{H^2 = 1 - (vc_g / (vc_g + vc_e))}
 }
 \examples{
-H2_Naive_parameters(vc_g = 0.25, vc_g = 0.8)
+H2_Naive_parameters(vc_g = 0.25, vc_e = 0.8)
 
 }
 \references{
