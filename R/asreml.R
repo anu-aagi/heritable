@@ -39,9 +39,9 @@ H2_Oakey.asreml <- function(model, target = NULL) {
 
   n_g <- model$noeff[[target]]
   vc_g <- summary(model)$varcomp[target, "component"]
-  C22_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
+  vcov_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
   
-  H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, C22_g)
+  H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, vcov_g)
   
   return(H2_Oakey)
 }
@@ -101,7 +101,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
   vdBLUE_avg <- mean(vdBLUE_mat[upper.tri(vdBLUE_mat, diag = FALSE)])
 
   # Calculate Piepho's H2
-  H2_Piepho <- vc_g / (vc_g + (vdBLUE_avg / 2))
+  H2_Piepho <- H2_Piepho_parameters(vc_g, vdBLUE_avg)
 
   return(H2_Piepho)
 }
@@ -154,10 +154,10 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
   # For Delta BLUES
   # Check if g_lsm exists
   if(exists("g_lsm")){
-    H2D_ij <- 1 / (1 + (Vd_g / v))
+    H2D_ij <- H2_Delta_BLUE_parameters(vc_g, cov = 0, Vd_g)
   } else {
     # For Delta BLUPS
-    H2D_ij <- 1 - Vd_g / v
+    H2D_ij <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
   }
   
   if(mean == "arithmetic") {
@@ -184,7 +184,7 @@ H2_Naive.asreml <- function(model, target = NULL) {
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
   vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
 
-  H2_Naive <- vc_g / (vc_g + vc_e)
+  H2_Naive <- H2_Naive_parameters(vc_g, vc_e)
 
   return(H2_Naive)
 }

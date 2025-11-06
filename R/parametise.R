@@ -47,11 +47,42 @@
 #'
 #' @export
 H2_Oakey_parameters <- function(n_g, vc_g, vcov_g) {
+   Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
+   M <- diag(n_g) - (Gg_inv %*% vcov_g)
+   eM <- eigen(M)
+   
+   H2_Oakey <- sum(eM$values) / (n_g - 1)
+   return(H2_Oakey)
+}
 
-  Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
-  M <- diag(n_g) - (Gg_inv %*% vcov_g)
-  eM <- eigen(M)
+#' @export
+H2_Naive_parameters <- function(vc_g, vc_e) {
+  H2_Naive <- vc_g / (vc_g + vc_e)
+  return(H2_Naive)
+}
 
-  H2_Oakey <- sum(eM$values) / (n_g - 1)
-  return(H2_Oakey)
+#' @export
+H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
+  H2_Piepho <- vc_g / (vc_g + (vd_BLUE_avg / 2))
+  return(H2_Piepho)
+}
+
+#' @export
+H2_Delta_BLUE_parameters <- function(vc_g, cov, vd_BLUE_matrix) {
+   # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
+   var1 <- vc_g
+   var2 <- vc_g
+   v <- var1 + var2 - 2 * cov
+   H2D_BLUE <- 1 / (1 + vd_BLUE_matrix / v) 
+   return(H2D_BLUE)
+}
+
+#' @export
+H2_Delta_BLUP_parameters <- function(vc_g, cov, vd_BLUP_matrix) {
+   # TODO: Change below to use elements of Kinship/relationship as necessary for narrowsense
+   var1 <- vc_g
+   var2 <- vc_g
+   v <- var1 + var2 - 2 * cov
+   H2D_BLUP <- 1 - (vd_BLUP_matrix / v)
+   return(H2D_BLUP)
 }
