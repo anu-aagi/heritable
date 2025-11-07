@@ -40,13 +40,14 @@ H2_Naive.lmerMod <- function(model, target = NULL) {
 
 H2_Cullis.lmerMod <- function(model, target = NULL) {
   vc <- lme4::VarCorr(model)
-  nr <- lme4::ngrps(model)
+  ng <- lme4::ngrps(model)
   # Note the index and kronecker order needs to be followed careful downstream
   Glist <- lapply(names(vc), function(agrp) {
-    Matrix::kronecker(vc[[agrp]], diag(nr[[agrp]]))
+    Matrix::kronecker(vc[[agrp]], diag(ng[[agrp]]))
   })
   G <- do.call(Matrix::bdiag, Glist)
   # TODO: build R matrix, then C matrix
+
 
 
 }
