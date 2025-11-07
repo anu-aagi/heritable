@@ -19,3 +19,16 @@ H2.lmer <- function(model, method = c("Cullis", "Oakey", "Piepho", "Delta", "Nai
 
   return(stats::setNames(H2, method))
 }
+
+H2_Naive.lmerMod <- function(model, target = NULL) {
+  # Get genotype variance
+  vc <- model |> lme4::VarCorr() |> as.data.frame()
+  vc_g <- subset(vc, grp==target)$vcov
+
+  # Get residual variance
+  vc_e <- subset(vc, grp=="Residual")$vcov
+
+  H2_Naive <- H2_Naive_parameters(vc_g, vc_e)
+
+  return(H2_Naive)
+}
