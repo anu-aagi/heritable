@@ -4,7 +4,7 @@ test_that("Reproduce lme4 Cullis", {
   dat <- agridat::john.alpha
   
   # random genotype effect
-  g.ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
+  model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
 
   # handle model estimates --------------------------------------------------
   # to my knowledge, lme4 does not offer a function to
@@ -12,29 +12,29 @@ test_that("Reproduce lme4 Cullis", {
   # therefore, I here manually reconstruct mixed model equation for this specific example.
   # notice that this solution therefore only works for this specific model!
 
-  vc <- g.ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
+  vc <- model_ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
 
   # R = varcov-matrix for error term
-  n    <- g.ran@frame |> nrow() # numer of observations
+  n    <- model_ran@frame |> nrow() # numer of observations
   vc_e <- subset(vc, grp=="Residual")$vcov     # error 
   R    <- diag(n)*vc_e                                      # R matrix = I_n * vc_e
 
   # G = varcov-matrx for all random effects
   # subset of G regarding genotypic effects
-  n_g  <- summary(g.ran)$ngrps["gen"] # number of genotypes
+  n_g  <- summary(model_ran)$ngrps["gen"] # number of genotypes
   vc_g <- subset(vc, grp=="gen")$vcov # genotypic vc
   G_g  <- diag(n_g)*vc_g   # gen part of G matrix = I * vc.g
 
   # subset of G regarding incomplete block effects
-  n_b  <- summary(g.ran)$ngrps["rep:block"] # number of incomplete blocks
+  n_b  <- summary(model_ran)$ngrps["rep:block"] # number of incomplete blocks
   vc_b <- subset(vc, grp=="rep:block")$vcov # incomplete block vc
   G_b  <- diag(n_b)*vc_b  # incomplete block part of G matrix = I * vc.b
 
   G <- bdiag(G_g, G_b) # G is blockdiagonal with G.g and G.b in this example
 
   # Design Matrices
-  X <- g.ran |> lme4::getME("X") |> as.matrix() # Design matrix fixed effects
-  Z <- g.ran |> lme4::getME("Z") |> as.matrix() # Design matrix random effects
+  X <- model_ran |> lme4::getME("X") |> as.matrix() # Design matrix fixed effects
+  Z <- model_ran |> lme4::getME("Z") |> as.matrix() # Design matrix random effects
 
   # Mixed Model Equation (HENDERSON 1986; SEARLE et al. 2006)
   C11 <- t(X) %*% solve(R) %*% X
@@ -69,7 +69,7 @@ test_that("Reproduce lme4 Oakey", {
   dat <- agridat::john.alpha
   
   # random genotype effect
-  g.ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
+  model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
 
   # Everything up to C22_g is the same as in Cullis test
     requireNamespace("lme4", quietly = TRUE)
@@ -77,7 +77,7 @@ test_that("Reproduce lme4 Oakey", {
   dat <- agridat::john.alpha
   
   # random genotype effect
-  g.ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
+  model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
 
   # handle model estimates --------------------------------------------------
   # to my knowledge, lme4 does not offer a function to
@@ -85,29 +85,29 @@ test_that("Reproduce lme4 Oakey", {
   # therefore, I here manually reconstruct mixed model equation for this specific example.
   # notice that this solution therefore only works for this specific model!
 
-  vc <- g.ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
+  vc <- model_ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
 
   # R = varcov-matrix for error term
-  n    <- g.ran@frame |> nrow() # numer of observations
+  n    <- model_ran@frame |> nrow() # numer of observations
   vc_e <- subset(vc, grp=="Residual")$vcov     # error 
   R    <- diag(n)*vc_e                                      # R matrix = I_n * vc_e
 
   # G = varcov-matrx for all random effects
   # subset of G regarding genotypic effects
-  n_g  <- summary(g.ran)$ngrps["gen"] # number of genotypes
+  n_g  <- summary(model_ran)$ngrps["gen"] # number of genotypes
   vc_g <- subset(vc, grp=="gen")$vcov # genotypic vc
   G_g  <- diag(n_g)*vc_g   # gen part of G matrix = I * vc.g
 
   # subset of G regarding incomplete block effects
-  n_b  <- summary(g.ran)$ngrps["rep:block"] # number of incomplete blocks
+  n_b  <- summary(model_ran)$ngrps["rep:block"] # number of incomplete blocks
   vc_b <- subset(vc, grp=="rep:block")$vcov # incomplete block vc
   G_b  <- diag(n_b)*vc_b  # incomplete block part of G matrix = I * vc.b
 
   G <- bdiag(G_g, G_b) # G is blockdiagonal with G.g and G.b in this example
 
   # Design Matrices
-  X <- g.ran |> lme4::getME("X") |> as.matrix() # Design matrix fixed effects
-  Z <- g.ran |> lme4::getME("Z") |> as.matrix() # Design matrix random effects
+  X <- model_ran |> lme4::getME("X") |> as.matrix() # Design matrix fixed effects
+  Z <- model_ran |> lme4::getME("Z") |> as.matrix() # Design matrix random effects
 
   # Mixed Model Equation (HENDERSON 1986; SEARLE et al. 2006)
   C11 <- t(X) %*% solve(R) %*% X
@@ -144,14 +144,14 @@ test_that("Reproduce lme4 Piepho", {
   dat <- agridat::john.alpha
   
   # random genotype effect
-  g.ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
+  model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
 
   # fixed genotype effect
   g_fix <- lmer(data = dat,
               formula = yield ~ rep + gen + (1|rep:block))
 
   # Extract vc_g
-  vc <- g.ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
+  vc <- model_ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
   vc_g <- subset(vc, grp=="gen")$vcov # genotypic vc
 
   # Calculate mean variance of a difference between genotypes
