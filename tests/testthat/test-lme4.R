@@ -7,7 +7,7 @@ test_that("Reproduce lme4 Cullis", {
   model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
 
   # handle model estimates --------------------------------------------------
-  # to my knowledge, lme4 does not offer a function to
+  # From Schmidt: to my knowledge, lme4 does not offer a function to
   # extract variance-covariance-matrices for BLUPs (a.k.a. prediction error variance [PEV] matrix).
   # therefore, I here manually reconstruct mixed model equation for this specific example.
   # notice that this solution therefore only works for this specific model!
@@ -17,7 +17,7 @@ test_that("Reproduce lme4 Cullis", {
   # R = varcov-matrix for error term
   n    <- model_ran@frame |> nrow() # numer of observations
   vc_e <- subset(vc, grp=="Residual")$vcov     # error 
-  R    <- diag(n)*vc_e                                      # R matrix = I_n * vc_e
+  R    <- diag(n)*vc_e   # R matrix = I_n * vc_e
 
   # G = varcov-matrx for all random effects
   # subset of G regarding genotypic effects
@@ -46,7 +46,7 @@ test_that("Reproduce lme4 Cullis", {
             cbind(C21, C22)) |> as.matrix() # Combine components into one matrix C
 
   # Mixed Model Equation Solutions 
-  C_inv <- C |> solve()                             # Inverse of C
+  C_inv <- C |> solve()    # Inverse of C
   C22_g <- C_inv[levels(dat$gen), levels(dat$gen)] # subset of C.inv that refers to genotypic BLUPs
 
   # Mean variance of BLUP-difference from C22 matrix of genotypic BLUPs
@@ -80,17 +80,12 @@ test_that("Reproduce lme4 Oakey", {
   model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
 
   # handle model estimates --------------------------------------------------
-  # to my knowledge, lme4 does not offer a function to
-  # extract variance-covariance-matrices for BLUPs (a.k.a. prediction error variance [PEV] matrix).
-  # therefore, I here manually reconstruct mixed model equation for this specific example.
-  # notice that this solution therefore only works for this specific model!
-
   vc <- model_ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
 
   # R = varcov-matrix for error term
   n    <- model_ran@frame |> nrow() # numer of observations
   vc_e <- subset(vc, grp=="Residual")$vcov     # error 
-  R    <- diag(n)*vc_e                                      # R matrix = I_n * vc_e
+  R    <- diag(n)*vc_e   # R matrix = I_n * vc_e
 
   # G = varcov-matrx for all random effects
   # subset of G regarding genotypic effects
