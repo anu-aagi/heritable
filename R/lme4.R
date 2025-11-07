@@ -46,7 +46,6 @@ H2_Cullis.lmerMod <- function(model, target = NULL) {
     Matrix::kronecker(vc[[agrp]], diag(ngrps[[agrp]]))
   })
   G <- do.call(Matrix::bdiag, Glist)
-  # TODO: build R matrix, then C matrix
 
   n <- nrow(model@frame)
   R <- diag(n) * sigma(model)^2
