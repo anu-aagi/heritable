@@ -135,5 +135,34 @@ test_that("Reproduce lme4 Oakey", {
   H2Oakey.approx <- 1 - psych::tr( as.matrix(solve(G_g) %*% C22_g / n_g ) ) # or sum(diag(m), na.rm = TRUE)
   H2Oakey.approx # 0.7754197
   # Fonti able to reproduce 0.7754199 with some rounding error
-
 })
+
+
+test_that("Reproduce lme4 Piepho", {
+  requireNamespace("lme4", quietly = TRUE)
+  
+  dat <- agridat::john.alpha
+  
+  # random genotype effect
+  g.ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1|gen) + (1|rep:block))
+
+  # fixed genotype effect
+  g_fix <- lmer(data = dat,
+              formula = yield ~ rep + gen + (1|rep:block))
+
+  # Extract vc_g
+  vc <- g.ran |> lme4::VarCorr() |> as.data.frame() # extract estimated variance components (vc)
+  vc_g <- subset(vc, grp=="gen")$vcov # genotypic vc
+
+  # Calculate mean variance of a difference between genotypes
+  dBLUE <- emmeans::emmeans(g_fix, pairwise ~ gen)$contrasts |> as.data.frame()
+  dBLUE$var <-dBLUE$SE^2
+
+   vd_BLUE_avg <- mean(dBLUE$var) # 0.07295899
+  # Fonti able to reproduce no rounding error
+
+  # H2 Piepho ---------------------------------------------------------------
+  H2_Piepho <- vc_g/(vc_g + vd_BLUE_avg/2)
+  H2_Piepho # 0.7966375
+  # Fonti able to reproduce no rounding error
+}
