@@ -30,7 +30,7 @@ test_that("Reproduce lme4 Cullis", {
   vc_b <- subset(vc, grp=="rep:block")$vcov # incomplete block vc
   G_b  <- diag(n_b)*vc_b  # incomplete block part of G matrix = I * vc.b
 
-  G <- bdiag(G_g, G_b) # G is blockdiagonal with G.g and G.b in this example
+  G <- Matrix::bdiag(G_g, G_b) # G is blockdiagonal with G.g and G.b in this example
 
   # Design Matrices
   X <- model_ran |> lme4::getME("X") |> as.matrix() # Design matrix fixed effects
@@ -98,7 +98,7 @@ test_that("Reproduce lme4 Oakey", {
   vc_b <- subset(vc, grp=="rep:block")$vcov # incomplete block vc
   G_b  <- diag(n_b)*vc_b  # incomplete block part of G matrix = I * vc.b
 
-  G <- bdiag(G_g, G_b) # G is blockdiagonal with G.g and G.b in this example
+  G <- Matrix::bdiag(G_g, G_b) # G is blockdiagonal with G.g and G.b in this example
 
   # Design Matrices
   X <- model_ran |> lme4::getME("X") |> as.matrix() # Design matrix fixed effects
