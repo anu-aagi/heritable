@@ -52,7 +52,7 @@ test_that("Reproduce lme4 Cullis", {
   # Mean variance of BLUP-difference from C22 matrix of genotypic BLUPs
   one        <- matrix(1, nrow=n_g, ncol=1)      # vector of 1s
   P_mu       <- diag(n_g, n_g) - one %*% t(one)  # P_mu = matrix that centers for overall-mean
-  vdBLUP_sum <- psych::tr(P_mu %*% C22_g)        # sum of all variance of differences = trace of P_mu*C22_g
+  vdBLUP_sum <- sum(diag(P_mu %*% C22_g), na.rm = TRUE) # sum of all variance of differences = trace of P_mu*C22_g  
   vdBLUP_avg <- vdBLUP_sum * (2/(n_g*(n_g-1)))   # mean variance of BLUP-difference = divide sum by number of genotype pairs
 
 
