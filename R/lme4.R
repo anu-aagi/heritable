@@ -1,4 +1,6 @@
-H2.lmer <- function(model, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive"), target = NULL) {
+#' @importFrom stats setNames
+#' @export
+H2.lmerMod <- function(model, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive"), target = NULL) {
   method <- match.arg(method)
 
   #TODO: If model has not converged, warn
@@ -7,11 +9,11 @@ H2.lmer <- function(model, method = c("Cullis", "Oakey", "Piepho", "Delta", "Nai
   #TODO: Check if target is in model, if not throw error
 
   H2 <- switch(method,
-    Cullis = H2_Cullis.lmer(model, target),
-    Oakey = H2_Oakey.lmer(model, target),
-    Piepho = H2_Piepho.lmer(model, target),
-    Delta = H2_Delta.lmer(model, target),
-    Naive = H2_Naive.lmer(model, target),
+    Cullis = H2_Cullis.lmerMod(model, target),
+    Oakey = H2_Oakey.lmerMod(model, target),
+    Piepho = H2_Piepho.lmerMod(model, target),
+    Delta = H2_Delta.lmerMod(model, target),
+    Naive = H2_Naive.lmerMod(model, target),
     H2.default(model)
   )
 
@@ -20,7 +22,9 @@ H2.lmer <- function(model, method = c("Cullis", "Oakey", "Piepho", "Delta", "Nai
   return(stats::setNames(H2, method))
 }
 
+#' @export
 H2_Naive.lmerMod <- function(model, target = NULL) {
+  # TODO: We need to import lme4 if I am going to use VarCorr
   # Get genotype variance
   vc <- model |> lme4::VarCorr() |> as.data.frame()
   vc_g <- subset(vc, grp==target)$vcov

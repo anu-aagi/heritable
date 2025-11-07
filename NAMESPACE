@@ -2,9 +2,11 @@
 
 S3method(H2,asreml)
 S3method(H2,default)
+S3method(H2,lmerMod)
 S3method(H2_Cullis,asreml)
 S3method(H2_Delta,asreml)
 S3method(H2_Naive,asreml)
+S3method(H2_Naive,lmerMod)
 S3method(H2_Oakey,asreml)
 S3method(H2_Piepho,asreml)
 S3method(h2,default)
