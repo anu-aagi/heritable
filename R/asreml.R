@@ -2,7 +2,7 @@
 #' @export
 H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive")) {
   # TODO: This will change if we want to vectorise over multiple methods
-  method <- match.arg(method)
+  method <- match.arg(method, several.ok = TRUE)
 
   # If model has not converged, warn
   check_model_convergence(model)
@@ -10,18 +10,21 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
   # Check if target is in model, if not throw error
   check_target_exists(model, target)
 
-  H2 <- switch(method,
-    Cullis = H2_Cullis.asreml(model, target),
-    Oakey = H2_Oakey.asreml(model, target),
-    Piepho = H2_Piepho.asreml(model, target),
-    Delta = H2_Delta.asreml(model, target),
-    Naive = H2_Naive.asreml(model, target),
-    H2.default(model)
-  )
-
-  structure(H2, class = c("heritable", class(H2)))
-
-  return(stats::setNames(H2, method))
+ # Calculate H2 for each method
+  H2_values <- sapply(method, function(m) {
+    switch(m,
+      Cullis = H2_Cullis.asreml(model, target),
+      Oakey = H2_Oakey.asreml(model, target),
+      Piepho = H2_Piepho.asreml(model, target),
+      Delta = H2_Delta.asreml(model, target),
+      Naive = H2_Naive.asreml(model, target),
+      H2.default(model)
+    )
+  })
+  
+  # Set names and class
+  H2_values <- stats::setNames(H2_values, method)
+  structure(H2_values, class = c("heritable", class(H2_values)))
 }
 
 #' @export
