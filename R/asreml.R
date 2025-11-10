@@ -165,7 +165,11 @@ H2_Delta_by_genotype.asreml <- function(model, target = NULL) {
       rowMeans(na.rm = TRUE) |>
       data.frame()
 
-    setNames(H2D_i, "H2D_i")
+  H2D_i <-setNames(H2D_i, "H2D_i")
+
+  H2D_i_list <- split(H2D_i, rownames(H2D_i))  
+
+  return(H2D_i_list)
 }
 
 #' @export
