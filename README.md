@@ -41,5 +41,6 @@ fit <- asreml::asreml(yield ~ rep,
 
  H2(fit, target = "gen", method = "Oakey") 
  H2(fit, target = "gen", method = "Cullis") 
- H2(fit, target = "gen", method = "Piepho") 
+ H2(fit, target = "gen", method = "Piepho")
+ H2(fit, target = "gen", method = "Delta")
 ```

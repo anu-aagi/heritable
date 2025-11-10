@@ -37,7 +37,7 @@ H2_Naive.lmerMod <- function(model, target = NULL) {
   return(H2_Naive)
 }
 
-
+#' @export
 H2_Cullis.lmerMod <- function(model, target = NULL) {
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
