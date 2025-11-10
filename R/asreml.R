@@ -110,8 +110,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
-  mean <- match.arg(mean)
+H2_Delta_pairwise.asreml <- function(model, target = NULL) {
   # If model has not converged, warn
   check_model_convergence(model)
 
@@ -155,6 +154,25 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
     # For Delta BLUPS
     H2D_ij <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
   }
+  H2D_ij
+}
+
+#' @export
+H2_Delta_by_genotype.asreml <- function(model, target = NULL) {
+  H2D_ij <- H2_Delta_pairwise.asreml(model, target)
+
+  H2D_i <- as.matrix(H2D_ij) |>
+      rowMeans(na.rm = TRUE) |>
+      data.frame()
+
+    setNames(H2D_i, "H2D_i")
+}
+
+#' @export
+H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
+  mean <- match.arg(mean)
+  
+  H2D_ij <- H2_Delta_pairwise.asreml(model, target)
   
   if(mean == "arithmetic") {
     H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
@@ -164,6 +182,7 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
 
   H2D_ij
 }
+
 
 #' @export
 H2_Naive.asreml <- function(model, target = NULL) {
