@@ -61,3 +61,4 @@ rsconnect/
 # Ignore folder
 ignore/
 
+inst/doc

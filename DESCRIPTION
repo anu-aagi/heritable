@@ -14,7 +14,9 @@ Imports:
     Matrix
 Suggests: 
     testthat (>= 3.0.0),
-    agridat
+    agridat,
+    knitr,
+    rmarkdown
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3
@@ -24,3 +26,4 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 3.5)
 LazyData: true
+VignetteBuilder: knitr
