@@ -6,8 +6,7 @@
 #' vectors: `fixed` and `random`.
 #'
 #' @param model A fitted model object with a `formula` method that returns a
-#'   list containing `fixed` and `random` formula components. Typically this is
-#'   an `nlme::lme` object or any model providing the same structure.
+#'   list containing `fixed` and `random` formula components.
 #' @return A named list with components:
 #'   \item{fixed}{Character vector of labels for fixed-effect terms.}
 #'   \item{random}{Character vector of labels for random-effect terms.}
@@ -30,6 +29,13 @@ pull_terms.lmerMod <- function(model) {
 
     return(list(fixed = fixed_trms, random = ran_trms))
 }
+
+#' @keywords internal
+pull_terms <- function(model) {
+    UseMethod("pull_terms")
+}
+.S3method("pull_terms", "asreml", pull_terms.asreml)
+.S3method("pull_terms", "lmerMod", pull_terms.lmerMod)
 
 #' Fit the counterpart of an asreml model by swapping a specified term between fixed and random
 #'

@@ -4,7 +4,7 @@
 \alias{pull_terms.asreml}
 \title{Pull fixed and random terms from a model formula}
 \usage{
-pull_terms.asreml(model)
+\method{pull_terms}{asreml}(model)
 }
 \arguments{
 \item{model}{A fitted model object with a \code{formula} method that returns a
