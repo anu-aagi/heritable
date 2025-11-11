@@ -133,6 +133,13 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
 }
 
 
+#' @keywords internal
+fit_counterpart_model <- function(model, target = NULL) {
+    UseMethod("fit_counterpart_model")
+}
+.S3method("fit_counterpart_model", "asreml", fit_counterpart_model.asreml)
+.S3method("fit_counterpart_model", "lmerMod", fit_counterpart_model.lmerMod)
+
 #' Print method for heritable objects
 #'
 #' @param x An object of class "heritable"

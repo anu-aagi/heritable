@@ -3,10 +3,14 @@
 H2.lmerMod <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive")) {
   method <- match.arg(method)
 
-  # TODO: If model has not converged, warn
+  # If model has not converged, warn
+  check_model_convergence(model)
 
+  # If target is not in model, error
+  check_target_exists(model, target)
 
-  # TODO: Check if target is in model, if not throw error
+  # If there is more than one target, error
+  check_target_single(target)
 
   H2 <- switch(method,
     Cullis = H2_Cullis.lmerMod(model, target),
@@ -24,7 +28,15 @@ H2.lmerMod <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
 
 #' @export
 H2_Naive.lmerMod <- function(model, target = NULL) {
-  # TODO: We need to import lme4 if I am going to use VarCorr
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # If target is not in model, error
+  check_target_exists(model, target)
+
+  # If there is more than one target, error
+  check_target_single(target)
+
   # Get genotype variance
   vc <- model |>
     lme4::VarCorr() |>
@@ -41,6 +53,15 @@ H2_Naive.lmerMod <- function(model, target = NULL) {
 
 #' @export
 H2_Cullis.lmerMod <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # If target is not in model, error
+  check_target_exists(model, target)
+
+  # If there is more than one target, error
+  check_target_single(target)
+
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
   # Note the index and kronecker order needs to be followed careful downstream
@@ -80,6 +101,15 @@ H2_Cullis.lmerMod <- function(model, target = NULL) {
 
 #' @export
 H2_Oakey.lmerMod <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # If target is not in model, error
+  check_target_exists(model, target)
+
+  # If there is more than one target, error
+  check_target_single(target)
+
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
   # Note the index and kronecker order needs to be followed careful downstream
@@ -115,26 +145,59 @@ H2_Oakey.lmerMod <- function(model, target = NULL) {
 }
 
 H2_Piepho.lmerMod <- function(model, target = NULL) {
-  # TODO: Check if target is fixed or random
-  # If fixed, refit random model
+  # If model has not converged, warn
+  check_model_convergence(model)
 
+  # If target is not in model, error
+  check_target_exists(model, target)
+
+  # If there is more than one target, error
+  check_target_single(target)
+
+  # Check if target is fixed or random
   # If random, refit fixed model
+  if(check_target_random(model, target)){
+    model_ran <- model
+    model_fixed <- fit_counterpart_model(model, target)
+  } 
+  # If fixed, refit random model
+  else if(!check_target_random(model, target)){
+    model_fixed <- model
+    model_ran <- fit_counterpart_model(model, target)
+  }
 
   # Get genotype variance
-  vc <- lme4::VarCorr(model)
+  vc <- lme4::VarCorr(model_ran)
   vc_g <- vc[[target]][1]
 
-
-
-
-
   # Get mean variance of a difference between genotypes
-  emmeans_contrasts <- emmeans::emmeans(model, pairwise ~ get(target))
-  contrasts_df <- as.data.frame(emmeans_contrasts$contrasts)
-  contrasts_df$Var <- contrasts_df$SE^2
-  vdBLUE_avg <- mean(contrasts_df$Var)
+  # Get the fixed effects design matrix and coefficients
+  X <- as.matrix(lme4::getME(model, "X"))
+  beta <- lme4::fixef(model_fix)
 
-  H2_Piepho <- vc_g / (vc_g + vdBLUE_avg / 2)
+  # Get predictions for each level of target
+  target_levels <- levels(model_fix@frame[[target]])
+  n_levels <- length(target_levels)
 
+  # Calculate all pairwise differences
+  diffs <- outer(beta[grep(target, names(beta))], 
+                beta[grep(target, names(beta))], 
+                "-")
+
+  # Get variance-covariance matrix of fixed effects
+  vcov_beta <- vcov(model_fix)
+  vcov_target <- vcov_beta[grep(target, rownames(vcov_beta)), 
+                            grep(target, colnames(vcov_beta))]
+
+  # Calculate variance of differences: Var(β_i - β_j) = Var(β_i) + Var(β_j) - 2*Cov(β_i, β_j)
+  vd_matrix <- outer(diag(vcov_target), diag(vcov_target), "+") - 
+              2 * vcov_target
+
+  # Average variance of differences
+  vdBLUE_avg <- mean(vd_matrix[upper.tri(vd_matrix)])
+
+  # vc_g / (vc_g + vdBLUE_avg / 2)
+  H2_Piepho <- H2_Piepho_parameters(vc_g, vdBLUE_avg)
+  
   return(H2_Piepho)
 }

@@ -8,6 +8,21 @@ test_that("Reproduce lme4 H2", {
   expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Oakey")), 0.8091338, tolerance = 1e-7)
 })
 
+test_that("H2.lmerMod gives expected output", {
+  requireNamespace("lme4", quietly = TRUE)
+
+  dat <- agridat::john.alpha
+
+  # random genotype effect
+  model <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
+
+  output <- H2(model, method = "Naive", target = "gen")
+
+  expect_length(output, 1) # if you expect one element
+  expect_type(output, "double") # numeric type
+  expect_equal(unname(output), 0.6364804, tolerance = 1e-7)
+})
+
 
 test_that("Reproduce lme4 Piepho", {
   requireNamespace("lme4", quietly = TRUE)
@@ -23,36 +38,34 @@ test_that("Reproduce lme4 Piepho", {
     formula = yield ~ rep + gen + (1 | rep:block)
   )
 
-  # Extract vc_g
+  
+})
+
+
+
+
+test_that("Getting the pairwise BLUPS correctly without dependenices ",{
+  dat <- agridat::john.alpha
+  target = "gen"
+  model_fix <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
+  model_ran <- fit_counterpart_model(model_fix, target)
+
+# Extract vc_g
   vc <- model_ran |>
     lme4::VarCorr() |>
     as.data.frame() # extract estimated variance components (vc)
   vc_g <- subset(vc, grp == "gen")$vcov # genotypic vc
 
   # Calculate mean variance of a difference between genotypes
-  dBLUE <- emmeans::emmeans(g_fix, pairwise ~ gen)$contrasts |> as.data.frame()
-  dBLUE$var <- dBLUE$SE^2
+  dBLUE <- emmeans::emmeans(model_fix, specs = as.formula(paste("pairwise ~", target)))$contrasts |> as.data.frame()
+  dBLUE$var <- dBLUE$SE^2 # Get variance
 
   vd_BLUE_avg <- mean(dBLUE$var) # 0.07295899
   # Fonti able to reproduce no rounding error
 
   # H2 Piepho ---------------------------------------------------------------
   H2_Piepho <- vc_g / (vc_g + vd_BLUE_avg / 2)
+  H2_Piepho <- H2_Piepho_parameters(vc_g, vd_BLUE_avg)
   H2_Piepho # 0.7966375
   # Fonti able to reproduce no rounding error
-})
-
-test_that("H2.lmerMod gives expected output", {
-  requireNamespace("lme4", quietly = TRUE)
-
-  dat <- agridat::john.alpha
-
-  # random genotype effect
-  model <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
-
-  output <- H2(model, method = "Naive", target = "gen")
-
-  expect_length(output, 1) # if you expect one element
-  expect_type(output, "double") # numeric type
-  expect_equal(unname(output), 0.6364804, tolerance = 1e-7)
 })

@@ -8,8 +8,7 @@
 }
 \arguments{
 \item{model}{A fitted model object with a \code{formula} method that returns a
-list containing \code{fixed} and \code{random} formula components. Typically this is
-an \code{nlme::lme} object or any model providing the same structure.}
+list containing \code{fixed} and \code{random} formula components.}
 }
 \value{
 A named list with components:
