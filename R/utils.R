@@ -133,8 +133,6 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
 }
 
 
-
-
 #' Print method for heritable objects
 #'
 #' @param x An object of class "heritable"

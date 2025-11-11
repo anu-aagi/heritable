@@ -3,6 +3,7 @@ test_that("Helper functions working with lme4", {
   skip_if_not_installed("lme4")
 
   dat <- agridat::john.alpha
+  target <- "gen"
 
   model_ran_lmer <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
   model_fixed_lmer <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
@@ -26,6 +27,7 @@ test_that("Helper functions working with asreml", {
   skip_if_not_installed("asreml")
 
   dat <- agridat::john.alpha
+  target <- "gen"
 
   # random genotype effect
   model_ran_asreml <- asreml::asreml(

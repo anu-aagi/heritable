@@ -1,21 +1,52 @@
 # Model level checks
-
-# Check if only one model has been supplied
-check_single_model <- function(model) {
+#' @keywords internal
+check_single_model.asreml <- function(model) {
     if (length(model) > 34) {
         cli::cli_abort("Only one model can be supplied to calculate heritability")
     }
 }
 
+#' @keywords internal
+check_single_model.lmerMod <- function(model) {
+    if (length(model) > 1) {
+        cli::cli_abort("Only one model can be supplied to calculate heritability")
+    }
+}
+
+# Check if only one model has been supplied
+#' @keywords internal
+check_single_model <- function(model) {
+    UseMethod("check_single_model")
+}
+.S3method("check_single_model", "asreml", check_single_model.asreml)
+.S3method("check_single_model", "lmerMod", check_single_model.lmerMod)
+
 # Check if model converged
-check_model_convergence <- function(model) {
+#' @keywords internal
+check_model_convergence.asreml <- function(model) {
     if (!model$converge) {
         cli::cli_warn("The input model has not converged, estimates may be unreliable")
     }
 }
 
+#' @keywords internal
+check_model_convergence.lmerMod <- function(model) {
+    if (model@optinfo$conv$opt != 0) {
+        cli::cli_warn("The input model has not converged")
+    }
+}
+
+#' @keywords internal
+check_model_convergence <- function(model) {
+    UseMethod("check_model_convergence")
+}
+.S3method("check_model_convergence", "asreml", check_model_convergence.asreml)
+.S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
+
+
 # Target level checks
 # Check if only one target has been supplied
+#' @keywords internal
 check_target_single <- function(target) {
     if (length(target) > 1) {
         cli::cli_abort("Only one target can be supplied to calculate heritability")
@@ -23,6 +54,7 @@ check_target_single <- function(target) {
 }
 
 # Check if target is in model
+#' @keywords internal
 check_target_exists <- function(model, target) {
     model_terms <- pull_terms(model)
     if (!target %in% c(model_terms$fixed, model_terms$random)) {
@@ -31,6 +63,7 @@ check_target_exists <- function(model, target) {
 }
 
 # Check if target is in fixed or random
+#' @keywords internal
 check_target_random <- function(model, target) {
     model_terms <- pull_terms(model)
     if (target %in% model_terms$random) {
@@ -41,6 +74,7 @@ check_target_random <- function(model, target) {
 }
 
 # Check if target is in both fixed and random
+#' @keywords internal
 check_target_both <- function(model, target) {
     model_terms <- pull_terms(model)
     # Use regex to check for presence in both fixed and random
