@@ -6,54 +6,23 @@ test_that("Reproduce lme4 H2", {
 
   expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Cullis")), 0.8091338, tolerance = 1e-7)
   expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Oakey")), 0.8091338, tolerance = 1e-7)
-})
-
-test_that("H2.lmerMod gives expected output", {
-  requireNamespace("lme4", quietly = TRUE)
-
-  dat <- agridat::john.alpha
-
-  # random genotype effect
-  model <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
-
-  output <- H2(model, method = "Naive", target = "gen")
-
-  expect_length(output, 1) # if you expect one element
-  expect_type(output, "double") # numeric type
-  expect_equal(unname(output), 0.6364804, tolerance = 1e-7)
+  expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Naive")), 0.6364804, tolerance = 1e-7)
+  expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Piepho")), 0.7966375, tolerance = 1e-7)
 })
 
 
 test_that("Reproduce lme4 Piepho", {
-  requireNamespace("lme4", quietly = TRUE)
 
-  dat <- agridat::john.alpha
-
-  # random genotype effect
-  model_ran <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
-
-  # fixed genotype effect
-  g_fix <- lme4::lmer(
-    data = dat,
-    formula = yield ~ rep + gen + (1 | rep:block)
-  )
-
-  
-})
-
-
-
-
-test_that("Getting the pairwise BLUPS correctly without dependenices ",{
   dat <- agridat::john.alpha
   target = "gen"
   model_fix <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
   model_ran <- fit_counterpart_model(model_fix, target)
 
-# Extract vc_g
+ # Extract vc_g
   vc <- model_ran |>
     lme4::VarCorr() |>
     as.data.frame() # extract estimated variance components (vc)
+  
   vc_g <- subset(vc, grp == "gen")$vcov # genotypic vc
 
   # Calculate mean variance of a difference between genotypes

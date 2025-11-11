@@ -11,6 +11,7 @@ Description: Reporting heritability estimates is an important part of quantitati
 License: CC BY 4.0 + file LICENSE
 Imports: 
     cli,
+    emmeans,
     Matrix
 Suggests: 
     testthat (>= 3.0.0),

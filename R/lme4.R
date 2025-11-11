@@ -158,46 +158,26 @@ H2_Piepho.lmerMod <- function(model, target = NULL) {
   # If random, refit fixed model
   if(check_target_random(model, target)){
     model_ran <- model
-    model_fixed <- fit_counterpart_model(model, target)
+    model_fix <- fit_counterpart_model(model, target)
   } 
   # If fixed, refit random model
   else if(!check_target_random(model, target)){
-    model_fixed <- model
+    model_fix <- model
     model_ran <- fit_counterpart_model(model, target)
   }
-
+  # browser()
   # Get genotype variance
   vc <- lme4::VarCorr(model_ran)
   vc_g <- vc[[target]][1]
 
-  # Get mean variance of a difference between genotypes
-  # Get the fixed effects design matrix and coefficients
-  X <- as.matrix(lme4::getME(model, "X"))
-  beta <- lme4::fixef(model_fix)
+ # Get mean variance of a difference between genotypes
+  d_BLUE <- emmeans::emmeans(model_fix, specs = as.formula(paste("pairwise ~", target)))$contrasts |> as.data.frame()
+  d_BLUE$var <- d_BLUE$SE^2 # Get variance
 
-  # Get predictions for each level of target
-  target_levels <- levels(model_fix@frame[[target]])
-  n_levels <- length(target_levels)
-
-  # Calculate all pairwise differences
-  diffs <- outer(beta[grep(target, names(beta))], 
-                beta[grep(target, names(beta))], 
-                "-")
-
-  # Get variance-covariance matrix of fixed effects
-  vcov_beta <- vcov(model_fix)
-  vcov_target <- vcov_beta[grep(target, rownames(vcov_beta)), 
-                            grep(target, colnames(vcov_beta))]
-
-  # Calculate variance of differences: Var(β_i - β_j) = Var(β_i) + Var(β_j) - 2*Cov(β_i, β_j)
-  vd_matrix <- outer(diag(vcov_target), diag(vcov_target), "+") - 
-              2 * vcov_target
-
-  # Average variance of differences
-  vdBLUE_avg <- mean(vd_matrix[upper.tri(vd_matrix)])
+  vd_BLUE_avg <- mean(d_BLUE$var)
 
   # vc_g / (vc_g + vdBLUE_avg / 2)
-  H2_Piepho <- H2_Piepho_parameters(vc_g, vdBLUE_avg)
+  H2_Piepho <- H2_Piepho_parameters(vc_g, vd_BLUE_avg)
   
   return(H2_Piepho)
 }
