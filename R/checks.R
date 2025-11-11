@@ -44,7 +44,7 @@ check_target_random <- function(model, target) {
 check_target_both <- function(model, target) {
     model_terms <- pull_terms(model)
     # Use regex to check for presence in both fixed and random
-    if(any(grepl(target, model_terms$fixed, fixed = TRUE)) && any(grepl(target, model_terms$random, fixed = TRUE))){
+    if (any(grepl(target, model_terms$fixed, fixed = TRUE)) && any(grepl(target, model_terms$random, fixed = TRUE))) {
         TRUE
     } else {
         FALSE
