@@ -107,7 +107,7 @@ geno_components_from_lme4 <- function(model, target, C_inv) {
   C22_g <- C_inv[gnames, gnames]
   n_g <- ngrps[[target]]
   vc_g <- vc[[target]][1]
-  list(n_g = n_g, vc_g = vc_g, C22_g = C22_g)
+  list(n_g = n_g, vc_g = vc_g, C22_g = C22_g, gnames = gnames)
 }
 
 #' @export
@@ -262,7 +262,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL) {
     )
 
     diag(Vd_g) <- NA
-    dimnames(Vd_g) <- list(gnames, gnames)
+    dimnames(Vd_g) <- list(g$gnames, g$gnames)
 
   } else if(!check_target_random(model, target)) {
     # Abort and tell user to compute Delta with BLUES
@@ -270,7 +270,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL) {
   }
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
+  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(g$vc_g, cov = 0, Vd_g)
 
   row.names(H2_Delta_BLUP) <- rownames(Vd_g)
   colnames(H2_Delta_BLUP) <- colnames(Vd_g)
