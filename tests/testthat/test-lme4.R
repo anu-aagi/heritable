@@ -13,6 +13,30 @@ test_that("Reproduce lme4 H2", {
   expect_named(H2(model_fix_lmer, target = "gen", method = "Delta"), "Delta")
   expect_named(H2(model_ran_lmer, target = "gen", method = "Delta"), "Delta")
   expect_equal(length(H2(model_ran_lmer, target = "gen", method = c("Cullis", "Piepho", "Delta"))), 3)
+
+  model_ran_asreml <- asreml::asreml(yield ~ rep,
+                          random = ~ gen + rep:block,
+                          data = agridat::john.alpha,
+                          trace = FALSE
+  )
+
+  # checking with lme4 vs asreml
+  H2DeltaPairwise_lme4 <- H2_Delta_pairwise(model_ran_lmer, target = "gen")
+  H2DeltaPairwise_asreml <- H2_Delta_pairwise(model_ran_asreml, target = "gen")
+  library(ggplot2)
+  ggplot(data.frame(lme4 = H2DeltaPairwise_lme4[upper.tri(H2DeltaPairwise_lme4)],
+                    asreml = H2DeltaPairwise_asreml[upper.tri(H2DeltaPairwise_asreml)]),
+         aes(lme4, asreml)) +
+    geom_point() +
+    geom_smooth(method = lm) +
+    geom_abline(slope = 1, intercept = 0) +
+    ggpubr::stat_regline_equation()
+  # it's perfectly on the line, but not equivalent
+
+  # not entirely the same because it seems some different estimates for vc_g
+  expect_equal(H2DeltaPairwise_lme4[upper.tri(H2DeltaPairwise_lme4)],
+               H2DeltaPairwise_asreml[upper.tri(H2DeltaPairwise_asreml)])
+
   expect_snapshot(H2_Delta_pairwise(model_ran_lmer, target = "gen"))
   expect_named(H2_Delta_by_genotype(model_ran_lmer, target = "gen"), levels(model_ran_lmer@frame$gen))
 })
@@ -21,7 +45,7 @@ test_that("Reproduce lme4 H2", {
 test_that("Implementing H2 BLUES Delta", {
   dat <- agridat::john.alpha
   target = "gen"
-  
+
   model_fix <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
   model_ran <- fit_counterpart_model(model_fix, target)
 
@@ -35,24 +59,24 @@ test_that("Implementing H2 BLUES Delta", {
   # Take contrasts and turn into variance-covariance matrix
   lev_g <- levels(model_fix@frame[[target]])
   n_g <- length(lev_g)
-  
+
   # Create variance-covariance matrix for genotypes (H2: covariance = 0)
   # TODO: For narrow sense, we will need to replace this from the kinship matrix
   cov_g <- matrix(0, nrow = n_g, ncol = n_g)
   diag(cov_g) <- vc_g  # Set diagonal to genotype variance
   dimnames(cov_g) <- list(lev_g, lev_g)
 
-  # Start with empty variance matrix for differences 
+  # Start with empty variance matrix for differences
   Vd_g <- matrix(0, nrow = n_g, ncol = n_g)
   dimnames(Vd_g) <- list(lev_g, lev_g)
-  
+
   # Fill in the pairwise variances from dBLUE
   for (i in 1:nrow(deltas)) {
     # Extract genotype names from contrast column
     pair <- strsplit(as.character(deltas$contrast[i]), " - ")[[1]]
     g1 <- pair[1]
     g2 <- pair[2]
-    
+
     # Variance of difference: Var(g1 - g2) = Var(g1) + Var(g2) - 2*Cov(g1, g2)
     # Get covariance between g1 and g2 (0 by default, but can be specified)
     Vd_g[g1, g2] <- deltas$var[i] - 2 * cov_g[g1, g2]
@@ -70,7 +94,7 @@ test_that("Implementing H2 BLUPS Delta",{
 
   # random genotype effect
   model <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
-  
+
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
   # Note the index and kronecker order needs to be followed careful downstream
@@ -97,7 +121,7 @@ test_that("Implementing H2 BLUPS Delta",{
   C_inv <- solve(C)
   gnames <- levels(model@flist[[target]])
   C22_g <- C_inv[gnames, gnames]
-  
+
   n_g <- ngrps[[target]]
   vc_g <- vc[[target]][1]
 
