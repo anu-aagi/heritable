@@ -71,7 +71,7 @@ H2_Cullis.lmerMod <- function(model, target = NULL) {
   G <- do.call(Matrix::bdiag, Glist)
 
   n <- nrow(model@frame)
-  R <- diag(n) * sigma(model)^2
+  R <- diag(n) * stats::sigma(model)^2
 
   X <- as.matrix(lme4::getME(model, "X"))
   Z <- as.matrix(lme4::getME(model, "Z"))
@@ -119,7 +119,7 @@ H2_Oakey.lmerMod <- function(model, target = NULL) {
   G <- do.call(Matrix::bdiag, Glist)
 
   n <- nrow(model@frame)
-  R <- diag(n) * lme4::sigma(model)^2
+  R <- diag(n) * stats::sigma(model)^2
 
   X <- as.matrix(lme4::getME(model, "X"))
   Z <- as.matrix(lme4::getME(model, "Z"))
@@ -166,7 +166,7 @@ H2_Piepho.lmerMod <- function(model, target = NULL) {
     model_fix <- model
     model_ran <- fit_counterpart_model(model, target)
   }
-  # browser()
+
   # Get genotype variance
   vc <- lme4::VarCorr(model_ran)
   vc_g <- vc[[target]][1]
@@ -183,7 +183,9 @@ H2_Piepho.lmerMod <- function(model, target = NULL) {
   return(H2_Piepho)
 }
 
-H2_Delta.lmerMod <- function(model, target = NULL) {
+H2_Delta_BLUE.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
+  mean <- match.arg(mean)
+  
   # If model has not converged, warn
   check_model_convergence(model)
 
@@ -199,25 +201,80 @@ H2_Delta.lmerMod <- function(model, target = NULL) {
     cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
   } 
 
-  browser()
-
   # If fixed, compute H2 delta with BLUES
   if(!check_target_random(model, target)) { 
-    # Obtain BLUES
-    blues <- emmeans::emmeans(model, specs = target) |> as.data.frame()
+
+    model_fix <- model
+    model_ran <- fit_counterpart_model(model, target)
+
+    # Extract vc_g and vc_e
+    vc <- lme4::VarCorr(model_ran)
+    vc_g <- vc[[target]][1]
+
+    # Calculate mean variance of a difference between genotypes
+    deltas <- emmeans::emmeans(model_fix, specs = as.formula(paste("pairwise ~", target)))$contrasts |> as.data.frame()
+    deltas$var <- deltas$SE^2 # Get variance
     
+    # Take pairwise differences and turn into variance-covariance matrix
+    lev_g <- levels(model_fix@frame[[target]])
+    n_g <- length(lev_g)
+    
+    # Create variance-covariance matrix for genotypes (H2: covariance = 0)
+    # TODO: For narrow sense, we will need to replace this from the kinship matrix
+    cov_g <- matrix(0, nrow = n_g, ncol = n_g)
+    diag(cov_g) <- vc_g  # Set diagonal to genotype variance
+    dimnames(cov_g) <- list(lev_g, lev_g)
+
+    # Start with empty variance matrix for differences 
+    Vd_g <- matrix(0, nrow = n_g, ncol = n_g)
+    dimnames(Vd_g) <- list(lev_g, lev_g)
+    
+    # Fill in the pairwise variances from deltas
+    for (i in 1:nrow(deltas)) {
+      # Extract genotype names from contrast column
+      pair <- strsplit(as.character(deltas$contrast[i]), " - ")[[1]]
+      g1 <- pair[1]
+      g2 <- pair[2]
+      
+      # Variance of difference: Var(g1 - g2) = Var(g1) + Var(g2) - 2*Cov(g1, g2)
+      # Get covariance between g1 and g2 (0 by default, but can be specified)
+      Vd_g[g1, g2] <- deltas$var[i] - 2 * cov_g[g1, g2]
+      Vd_g[g2, g1] <- deltas$var[i] - 2 * cov_g[g2, g1] # symmetric
+    }
+    } else if(check_target_random(model, target)) {
+      # Abort and tell user to compute Delta with BLUPs
+      cli::cli_abort("The target {.var {target}} is fitted as a random effect. See H2_Delta_BLUP instead")
+    }
+
+  # H2 Delta ---------------------------------------------------------------
+  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, cov = 0, Vd_g)
+
+  # Compute mean H2_Delta
+    if(mean == "arithmetic") {
+    H2D <- mean(H2_Delta_BLUE[upper.tri(H2_Delta_BLUE)], na.rm = TRUE)
+  } else if (mean == "harmonic") {
+    H2D <- length(H2_Delta_BLUE[upper.tri(H2_Delta_BLUE)]) / sum(1 / H2_Delta_BLUE[upper.tri(H2_Delta_BLUE)], na.rm = TRUE)
   }
+  return(H2D)
+}
 
-  # Get genotype variance
-  vc <- lme4::VarCorr(model)
-  vc_g <- vc[[target]][1]
+#' @export
+H2_Delta.lmerMod <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
 
-  # Get residual variance
-  vc_e <- subset(as.data.frame(vc), grp == "Residual")$vcov
+  # If target is not in model, error
+  check_target_exists(model, target)
 
-  n_g <- lme4::ngrps(model)[[target]]
+  # If there is more than one target, error
+  check_target_single(target)
 
-  H2_Delta <- H2_Delta_parameters(n_g, vc_g, vc_e)
+  # Check if target is random or fixed  
+  if(!check_target_random(model, target)) { 
+    H2_Delta <- H2_Delta_BLUE.lmerMod(model, target)
+  } else if(check_target_random(model, target)) {
+    H2_Delta <- H2_Delta_BLUP.lmerMod(model, target)
+  }
 
   return(H2_Delta)
 }

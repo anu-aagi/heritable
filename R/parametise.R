@@ -109,6 +109,7 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' @details See reference for full derivation and equation for heritability Delta BLUES
 #'
 #' @param vc_g Numeric. Genotype variance component
+#' @param cov Numeric. Covariance between genotypes
 #' @param vd_BLUE_matrix Matrix. Variance of pairwise differences among BLUES
 #' @return Matrix of pairwise heritability of differences among BLUES
 #'
@@ -135,6 +136,7 @@ H2_Delta_BLUE_parameters <- function(vc_g, cov, vd_BLUE_matrix) {
 #' @details See reference for full derivation and equation for heritability Delta BLUES
 #'
 #' @param vc_g Numeric. Genotype variance component
+#' @param cov Numeric. Covariance between genotypes
 #' @param vd_BLUP_matrix Matrix. Variance of pairwise differences among BLUPS
 #' @return Matrix of pairwise heritability of differences among BLUPS
 #'

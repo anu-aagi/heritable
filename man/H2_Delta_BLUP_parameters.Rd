@@ -9,6 +9,8 @@ H2_Delta_BLUP_parameters(vc_g, cov, vd_BLUP_matrix)
 \arguments{
 \item{vc_g}{Numeric. Genotype variance component}
 
+\item{cov}{Numeric. Covariance between genotypes}
+
 \item{vd_BLUP_matrix}{Matrix. Variance of pairwise differences among BLUPS}
 }
 \value{

@@ -9,6 +9,8 @@ H2_Delta_BLUE_parameters(vc_g, cov, vd_BLUE_matrix)
 \arguments{
 \item{vc_g}{Numeric. Genotype variance component}
 
+\item{cov}{Numeric. Covariance between genotypes}
+
 \item{vd_BLUE_matrix}{Matrix. Variance of pairwise differences among BLUES}
 }
 \value{
