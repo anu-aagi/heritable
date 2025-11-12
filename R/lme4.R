@@ -99,18 +99,15 @@ PEV_from_lme4 <- function(model) {
     cbind(C11, C12),
     cbind(C21, C22)
   )
-  C_inv <- solve(C)
+  solve(C)
+}
+
+geno_components_from_lme4 <- function(model, target, C_inv) {
   gnames <- levels(model@flist[[target]])
   C22_g <- C_inv[gnames, gnames]
   n_g <- ngrps[[target]]
   vc_g <- vc[[target]][1]
-
-  one <- matrix(1, nrow = n_g, ncol = 1)
-  P_mu <- diag(n_g, n_g) - one %*% t(one)
-  vdBLUP_sum <- sum(diag(P_mu %*% C22_g))
-  vdBLUP_avg <- vdBLUP_sum * (2 / (n_g * (n_g - 1)))
-
-  H2_Cullis_parameters(vdBLUP_avg, vc_g)
+  list(n_g = n_g, vc_g = vc_g, C22_g = C22_g)
 }
 
 #' @export
@@ -255,40 +252,13 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL) {
   }
 
   if(check_target_random(model, target)){
-    vc <- lme4::VarCorr(model)
-    ngrps <- lme4::ngrps(model)
-    # Note the index and kronecker order needs to be followed careful downstream
-    Glist <- lapply(names(vc), function(agrp) {
-      Matrix::kronecker(vc[[agrp]], diag(ngrps[[agrp]]))
-    })
-    G <- do.call(Matrix::bdiag, Glist)
-
-    n <- nrow(model@frame)
-    R <- diag(n) * sigma(model)^2
-
-    X <- as.matrix(lme4::getME(model, "X"))
-    Z <- as.matrix(lme4::getME(model, "Z"))
-
-    C11 <- t(X) %*% solve(R) %*% X
-    C12 <- t(X) %*% solve(R) %*% Z
-    C21 <- t(Z) %*% solve(R) %*% X
-    C22 <- t(Z) %*% solve(R) %*% Z + solve(G)
-
-    C <- rbind(
-      cbind(C11, C12),
-      cbind(C21, C22)
-    )
-    C_inv <- solve(C)
-    gnames <- levels(model@flist[[target]])
-    C22_g <- C_inv[gnames, gnames]
-
-    n_g <- ngrps[[target]]
-    vc_g <- vc[[target]][1]
+    C_inv <- PEV_from_lme4(model)
+    g <- geno_components_from_lme4(model, target, C_inv)
 
     # Compute variance of difference from PEV
     Vd_g <- outer(
-      1:nrow(C22_g), 1:ncol(C22_g),
-      Vectorize(function(i, j) C22_g[i, i] + C22_g[j, j] - 2 * C22_g[i, j])
+      1:nrow(g$C22_g), 1:ncol(g$C22_g),
+      Vectorize(function(i, j) g$C22_g[i, i] + g$C22_g[j, j] - 2 * g$C22_g[i, j])
     )
 
     diag(Vd_g) <- NA
