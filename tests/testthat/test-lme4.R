@@ -10,6 +10,7 @@ test_that("Reproduce lme4 H2", {
   expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Naive")), 0.6364804, tolerance = 1e-7)
   expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Piepho")), 0.7966375, tolerance = 1e-7)
   expect_named(H2(model_fix_lmer, target = "gen", method = "Delta"), "Delta")
+  expect_named(H2(model_ran_lmer, target = "gen", method = "Delta"), "Delta")
 })
 
 

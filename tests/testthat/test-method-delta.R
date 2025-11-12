@@ -32,6 +32,4 @@ test_that("delta method works", {
   expect_equal(H2_Delta.asreml(model_fixed, target, mean = "harmonic"),  0.8029759) 
   expect_lt(H2_Delta.asreml(model_random, target, mean = "harmonic"), H2_Delta.asreml(model_random, target)) 
   expect_error(H2_Delta.asreml(model_both, target, mean = "harmonic"))
-
-
 })

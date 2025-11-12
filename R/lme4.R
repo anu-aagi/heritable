@@ -331,8 +331,6 @@ H2_Delta_BLUP.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "
     H2D <- length(H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)]) / sum(1 / H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)], na.rm = TRUE)
   }
   return(H2D)
-
-
 }
 
 
