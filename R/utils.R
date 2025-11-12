@@ -148,5 +148,19 @@ fit_counterpart_model <- function(model, target = NULL) {
 #'
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
-    round(x, digits)
+    # Format all values to specified digits
+    x_rounded <- round(x, digits)
+    
+    # If multiple methods, print with method names
+    if (length(x) > 1) {
+        cli::cli_h2("Heritability estimates:")
+        for (method in names(x_rounded)) {
+            cli::cli_text("{.var {method}}: {x_rounded[[method]]}")
+        }
+    } else {
+        # For single method, print simple value
+        cli::cli_text("Heritability ({.var {names(x_rounded)}}): {x_rounded}")
+    }
+    
+    invisible(x)
 }

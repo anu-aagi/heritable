@@ -32,4 +32,15 @@ test_that("delta method works", {
   expect_equal(H2_Delta.asreml(model_fixed, target, mean = "harmonic"),  0.8029759) 
   expect_lt(H2_Delta.asreml(model_random, target, mean = "harmonic"), H2_Delta.asreml(model_random, target)) 
   expect_error(H2_Delta.asreml(model_both, target, mean = "harmonic"))
+
+  res_ls <- H2_Delta_by_genotype.asreml(model_random, target = "gen")
+  expect_named(H2_Delta_by_genotype.asreml(model_random, target), levels(model_random$mf$gen))
+  expect_true(length(res_ls) == length(levels(model_random$mf[["gen"]])))
+  
+  H2_mat <- H2_Delta_pairwise.asreml(model_random, target = "gen")
+  expect_true(is.matrix(as.matrix(H2_mat)))  # sanity
+  expected <- rowMeans(as.matrix(H2_mat), na.rm = TRUE)
+
+  # compare numeric values
+  expect_equal(as.numeric(unlist(res_ls)), as.numeric(expected), tolerance = 1e-7)
 })

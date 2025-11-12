@@ -12,10 +12,13 @@ License: CC BY 4.0 + file LICENSE
 Imports: 
     cli,
     emmeans,
-    Matrix
+    Matrix,
+    reformulas
 Suggests: 
     testthat (>= 3.0.0),
     agridat,
+    knitr,
+    rmarkdown,
     lme4
 SystemRequirements: 
     asreml (4.2.0)
@@ -26,3 +29,4 @@ RoxygenNote: 7.3.2
 Depends: 
     R (>= 3.5)
 LazyData: true
+VignetteBuilder: knitr

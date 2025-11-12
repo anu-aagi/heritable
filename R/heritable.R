@@ -23,9 +23,22 @@ h2.default <- function(model, ...) {
 
 #' Calculate broad-sense heritability
 #' @inheritParams h2
-#'
+#' @param method Character vector of methods to calculate heritability. 
+#'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Naive".
+#' @param target The name of the random effect for which heritability is to be calculated.
 #' @export
-H2 <- function(model, ...) {
+H2 <- function(model, target = NULL, 
+               method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive"), 
+               ...) {
+  
+  # Allow multiple methods
+  method <- match.arg(method, several.ok = TRUE)
+  
+  # Check inputs
+  check_single_model(model)
+  check_target_single(target)
+  
+  # Call UseMethod() with all arguments
   UseMethod("H2")
 }
 

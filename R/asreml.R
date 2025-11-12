@@ -2,7 +2,7 @@
 #' @export
 H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive")) {
   # TODO: This will change if we want to vectorise over multiple methods
-  method <- match.arg(method)
+  method <- match.arg(method, several.ok = TRUE)
 
   # If model has not converged, warn
   check_model_convergence(model)
@@ -10,18 +10,21 @@ H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta
   # Check if target is in model, if not throw error
   check_target_exists(model, target)
 
-  H2 <- switch(method,
-    Cullis = H2_Cullis.asreml(model, target),
-    Oakey = H2_Oakey.asreml(model, target),
-    Piepho = H2_Piepho.asreml(model, target),
-    Delta = H2_Delta.asreml(model, target),
-    Naive = H2_Naive.asreml(model, target),
-    H2.default(model)
-  )
-
-  structure(H2, class = c("heritable", class(H2)))
-
-  return(stats::setNames(H2, method))
+ # Calculate H2 for each method
+  H2_values <- sapply(method, function(m) {
+    switch(m,
+      Cullis = H2_Cullis.asreml(model, target),
+      Oakey = H2_Oakey.asreml(model, target),
+      Piepho = H2_Piepho.asreml(model, target),
+      Delta = H2_Delta.asreml(model, target),
+      Naive = H2_Naive.asreml(model, target),
+      H2.default(model)
+    )
+  })
+  
+  # Set names and class
+  H2_values <- stats::setNames(H2_values, method)
+  structure(H2_values, class = c("heritable", class(H2_values)))
 }
 
 #' @export
@@ -107,8 +110,7 @@ H2_Piepho.asreml <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
-  mean <- match.arg(mean)
+H2_Delta_pairwise.asreml <- function(model, target = NULL) {
   # If model has not converged, warn
   check_model_convergence(model)
 
@@ -136,7 +138,6 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
     )
 
     Vd_g <- g_pred$sed^2 # Variance of difference 
-    browser()
   }
 
   genotype_names <- levels(model$mf[[target]]) # list of genotype names
@@ -153,6 +154,29 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
     # For Delta BLUPS
     H2D_ij <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
   }
+  H2D_ij
+}
+
+#' @export
+H2_Delta_by_genotype.asreml <- function(model, target = NULL) {
+  H2D_ij <- H2_Delta_pairwise.asreml(model, target)
+
+  H2D_i <- as.matrix(H2D_ij) |>
+      rowMeans(na.rm = TRUE) |>
+      data.frame()
+
+  H2D_i <-setNames(H2D_i, "H2D_i")
+
+  H2D_i_list <- split(H2D_i, rownames(H2D_i))  
+
+  return(H2D_i_list)
+}
+
+#' @export
+H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
+  mean <- match.arg(mean)
+  
+  H2D_ij <- H2_Delta_pairwise.asreml(model, target)
   
   if(mean == "arithmetic") {
     H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
@@ -162,6 +186,7 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
 
   H2D_ij
 }
+
 
 #' @export
 H2_Naive.asreml <- function(model, target = NULL) {
