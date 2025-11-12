@@ -4,7 +4,7 @@
 \alias{fit_counterpart_model.asreml}
 \title{Fit the counterpart of an asreml model by swapping a specified term between fixed and random}
 \usage{
-fit_counterpart_model.asreml(model, target = NULL)
+\method{fit_counterpart_model}{asreml}(model, target = NULL)
 }
 \arguments{
 \item{model}{An existing fitted asreml model object. The function expects

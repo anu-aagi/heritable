@@ -119,7 +119,7 @@ H2_Oakey.lmerMod <- function(model, target = NULL) {
   G <- do.call(Matrix::bdiag, Glist)
 
   n <- nrow(model@frame)
-  R <- diag(n) * sigma(model)^2
+  R <- diag(n) * lme4::sigma(model)^2
 
   X <- as.matrix(lme4::getME(model, "X"))
   Z <- as.matrix(lme4::getME(model, "Z"))
@@ -144,6 +144,7 @@ H2_Oakey.lmerMod <- function(model, target = NULL) {
   return(H2_Oakey_parameters(n_g, vc_g, C22_g))
 }
 
+#' @export
 H2_Piepho.lmerMod <- function(model, target = NULL) {
   # If model has not converged, warn
   check_model_convergence(model)
@@ -180,4 +181,43 @@ H2_Piepho.lmerMod <- function(model, target = NULL) {
   H2_Piepho <- H2_Piepho_parameters(vc_g, vd_BLUE_avg)
   
   return(H2_Piepho)
+}
+
+H2_Delta.lmerMod <- function(model, target = NULL) {
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # If target is not in model, error
+  check_target_exists(model, target)
+
+  # If there is more than one target, error
+  check_target_single(target)
+
+  # Check if target is random or fixed
+  # TODO: How to handle if both fixed and random?
+  if(check_target_both(model, target)) {
+    cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
+  } 
+
+  browser()
+
+  # If fixed, compute H2 delta with BLUES
+  if(!check_target_random(model, target)) { 
+    # Obtain BLUES
+    blues <- emmeans::emmeans(model, specs = target) |> as.data.frame()
+    
+  }
+
+  # Get genotype variance
+  vc <- lme4::VarCorr(model)
+  vc_g <- vc[[target]][1]
+
+  # Get residual variance
+  vc_e <- subset(as.data.frame(vc), grp == "Residual")$vcov
+
+  n_g <- lme4::ngrps(model)[[target]]
+
+  H2_Delta <- H2_Delta_parameters(n_g, vc_g, vc_e)
+
+  return(H2_Delta)
 }
