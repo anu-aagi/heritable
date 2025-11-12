@@ -185,9 +185,8 @@ H2_Piepho.lmerMod <- function(model, target = NULL) {
   return(H2_Piepho)
 }
 
-H2_Delta_BLUE.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
-  mean <- match.arg(mean)
-  
+#' @export
+H2_Delta_BLUE_pairwise.lmerMod <- function(model, target = NULL) {
   # If model has not converged, warn
   check_model_convergence(model)
 
@@ -251,18 +250,11 @@ H2_Delta_BLUE.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "
   # H2 Delta BLUE
   H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, cov = 0, Vd_g)
 
-  # Compute mean H2_Delta
-    if(mean == "arithmetic") {
-    H2D <- mean(H2_Delta_BLUE[upper.tri(H2_Delta_BLUE)], na.rm = TRUE)
-  } else if (mean == "harmonic") {
-    H2D <- length(H2_Delta_BLUE[upper.tri(H2_Delta_BLUE)]) / sum(1 / H2_Delta_BLUE[upper.tri(H2_Delta_BLUE)], na.rm = TRUE)
-  }
-  return(H2D)
+  return(H2_Delta_BLUE)
 }
 
-H2_Delta_BLUP.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
-  mean <- match.arg(mean)
-  
+#' @export
+H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL) {
   # If model has not converged, warn
   check_model_convergence(model)
 
@@ -316,8 +308,8 @@ H2_Delta_BLUP.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "
     )
 
     diag(Vd_g) <- NA
-    rownames(Vd_g) <- colnames(Vd_g) <- rownames(Vd_g)
-
+    dimnames(Vd_g) <- list(gnames, gnames)
+  
   } else if(!check_target_random(model, target)) {
     # Abort and tell user to compute Delta with BLUES
     cli::cli_abort("The target {.var {target}} is fitted as a fixed effect. See H2_Delta_BLUE.")
@@ -326,18 +318,15 @@ H2_Delta_BLUP.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "
   # H2 Delta BLUP
   H2_Delta_BLUP <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
 
-  # Compute mean H2_Delta
-    if(mean == "arithmetic") {
-    H2D <- mean(H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)], na.rm = TRUE)
-  } else if (mean == "harmonic") {
-    H2D <- length(H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)]) / sum(1 / H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)], na.rm = TRUE)
-  }
-  return(H2D)
+  row.names(H2_Delta_BLUP) <- rownames(Vd_g)
+  colnames(H2_Delta_BLUP) <- colnames(Vd_g)
+  
+  H2_Delta_BLUP
 }
 
 
 #' @export
-H2_Delta.lmerMod <- function(model, target = NULL) {
+H2_Delta_pairwise.lmerMod <- function(model, target = NULL) {
   # If model has not converged, warn
   check_model_convergence(model)
 
@@ -349,10 +338,40 @@ H2_Delta.lmerMod <- function(model, target = NULL) {
 
   # Check if target is random or fixed  
   if(!check_target_random(model, target)) { 
-    H2_Delta <- H2_Delta_BLUE.lmerMod(model, target)
+    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target)
   } else if(check_target_random(model, target)) {
-    H2_Delta <- H2_Delta_BLUP.lmerMod(model, target)
+    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target)
   }
 
   return(H2_Delta)
+}
+
+#' @export 
+H2_Delta_by_genotype.lmerMod <- function(model, target = NULL) {
+  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target)
+
+  H2D_i <- as.matrix(H2D_ij) |>
+      rowMeans(na.rm = TRUE) |>
+      data.frame()
+
+  H2D_i <- setNames(H2D_i, "H2D_i")
+
+  H2D_i_list <- split(H2D_i, rownames(H2D_i))  
+
+  return(H2D_i_list)
+}
+
+#' @export
+H2_Delta.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
+  mean <- match.arg(mean)
+  
+  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target)
+  
+  if(mean == "arithmetic") {
+    H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
+  } else if (mean == "harmonic") {
+    H2D_ij <- length(H2D_ij[upper.tri(H2D_ij)]) / sum(1 / H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
+  }
+
+  H2D_ij
 }

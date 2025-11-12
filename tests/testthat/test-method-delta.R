@@ -38,7 +38,7 @@ test_that("delta method works", {
   expect_true(length(res_ls) == length(levels(model_random$mf[["gen"]])))
   
   H2_mat <- H2_Delta_pairwise.asreml(model_random, target = "gen")
-  expect_true(is.matrix(as.matrix(H2_mat)))  # sanity
+  expect_true(is.matrix(as.matrix(H2_mat)))
   expected <- rowMeans(as.matrix(H2_mat), na.rm = TRUE)
 
   # compare numeric values

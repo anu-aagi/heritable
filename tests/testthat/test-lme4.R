@@ -13,6 +13,8 @@ test_that("Reproduce lme4 H2", {
   expect_named(H2(model_fix_lmer, target = "gen", method = "Delta"), "Delta")
   expect_named(H2(model_ran_lmer, target = "gen", method = "Delta"), "Delta")
   expect_equal(length(H2(model_ran_lmer, target = "gen", method = c("Cullis", "Piepho", "Delta"))), 3)
+  expect_snapshot(H2_Delta_pairwise(model_ran_lmer, target = "gen"))
+  expect_named(H2_Delta_by_genotype(model_ran_lmer, target = "gen"), levels(model_ran_lmer@frame$gen))
 })
 
 
@@ -123,3 +125,4 @@ test_that("Implementing H2 BLUPS Delta",{
   )
   expect_equal(var_diff_matrix[1,2], var_diffs_df$var_diff[1])
 })
+

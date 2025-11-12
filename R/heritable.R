@@ -82,6 +82,16 @@ H2_Delta <- function(model, ...) {
 }
 
 #' @export
+H2_Delta_by_genotype <- function(model, ...) {
+  UseMethod("H2_Delta_by_genotype")
+}
+
+#' @export
+H2_Delta_pairwise <- function(model, ...) {
+  UseMethod("H2_Delta_pairwise")
+}
+
+#' @export
 H2_Naive <- function(model, ...) {
   UseMethod("H2_Naive")
 }

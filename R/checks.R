@@ -32,7 +32,7 @@ check_model_convergence.asreml <- function(model) {
 #' @keywords internal
 check_model_convergence.lmerMod <- function(model) {
     if (model@optinfo$conv$opt != 0) {
-        cli::cli_warn("The input model has not converged")
+        warning("The input model has not converged")
     }
 }
 
