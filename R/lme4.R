@@ -243,10 +243,10 @@ H2_Delta_BLUE.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "
     }
     } else if(check_target_random(model, target)) {
       # Abort and tell user to compute Delta with BLUPs
-      cli::cli_abort("The target {.var {target}} is fitted as a random effect. See H2_Delta_BLUP instead")
+      cli::cli_abort("The target {.var {target}} is fitted as a random effect. See H2_Delta_BLUP")
     }
 
-  # H2 Delta ---------------------------------------------------------------
+  # H2 Delta BLUE
   H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, cov = 0, Vd_g)
 
   # Compute mean H2_Delta
@@ -257,6 +257,84 @@ H2_Delta_BLUE.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "
   }
   return(H2D)
 }
+
+H2_Delta_BLUP.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
+  mean <- match.arg(mean)
+  
+  # If model has not converged, warn
+  check_model_convergence(model)
+
+  # If target is not in model, error
+  check_target_exists(model, target)
+
+  # If there is more than one target, error
+  check_target_single(target)
+
+  # Check if target is random or fixed
+  # TODO: How to handle if both fixed and random?
+  if(check_target_both(model, target)) {
+    cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
+  } 
+
+  if(check_target_random(model, target)){
+    vc <- lme4::VarCorr(model)
+    ngrps <- lme4::ngrps(model)
+    # Note the index and kronecker order needs to be followed careful downstream
+    Glist <- lapply(names(vc), function(agrp) {
+      Matrix::kronecker(vc[[agrp]], diag(ngrps[[agrp]]))
+    })
+    G <- do.call(Matrix::bdiag, Glist)
+
+    n <- nrow(model@frame)
+    R <- diag(n) * sigma(model)^2
+
+    X <- as.matrix(lme4::getME(model, "X"))
+    Z <- as.matrix(lme4::getME(model, "Z"))
+
+    C11 <- t(X) %*% solve(R) %*% X
+    C12 <- t(X) %*% solve(R) %*% Z
+    C21 <- t(Z) %*% solve(R) %*% X
+    C22 <- t(Z) %*% solve(R) %*% Z + solve(G)
+
+    C <- rbind(
+      cbind(C11, C12),
+      cbind(C21, C22)
+    )
+    C_inv <- solve(C)
+    gnames <- levels(model@flist[[target]])
+    C22_g <- C_inv[gnames, gnames]
+    
+    n_g <- ngrps[[target]]
+    vc_g <- vc[[target]][1]
+
+    # Compute variance of difference from PEV
+    Vd_g <- outer(
+      1:nrow(C22_g), 1:ncol(C22_g),
+      Vectorize(function(i, j) C22_g[i, i] + C22_g[j, j] - 2 * C22_g[i, j])
+    )
+
+    diag(Vd_g) <- NA
+    rownames(Vd_g) <- colnames(Vd_g) <- rownames(Vd_g)
+
+  } else if(!check_target_random(model, target)) {
+    # Abort and tell user to compute Delta with BLUES
+    cli::cli_abort("The target {.var {target}} is fitted as a fixed effect. See H2_Delta_BLUE.")
+  }
+
+  # H2 Delta BLUP
+  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
+
+  # Compute mean H2_Delta
+    if(mean == "arithmetic") {
+    H2D <- mean(H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)], na.rm = TRUE)
+  } else if (mean == "harmonic") {
+    H2D <- length(H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)]) / sum(1 / H2_Delta_BLUP[upper.tri(H2_Delta_BLUP)], na.rm = TRUE)
+  }
+  return(H2D)
+
+
+}
+
 
 #' @export
 H2_Delta.lmerMod <- function(model, target = NULL) {

@@ -136,6 +136,7 @@ H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmon
     )
 
     Vd_g <- g_pred$sed^2 # Variance of difference 
+    browser()
   }
 
   genotype_names <- levels(model$mf[[target]]) # list of genotype names

@@ -91,6 +91,36 @@ test_that("Implementing H2 BLUPS Delta",{
   C_inv <- solve(C)
   gnames <- levels(model@flist[[target]])
   C22_g <- C_inv[gnames, gnames]
+  
   n_g <- ngrps[[target]]
   vc_g <- vc[[target]][1]
+
+# Compute variance of difference from PEV
+var_diff_matrix <- outer(
+  1:nrow(C22_g), 1:ncol(C22_g),
+  Vectorize(function(i, j) C22_g[i, i] + C22_g[j, j] - 2 * C22_g[i, j])
+)
+
+diag(var_diff_matrix) <- NA
+rownames(var_diff_matrix) <- colnames(var_diff_matrix) <- rownames(C22_g)
+
+#Compute variance of difference between two genotypes
+var_diff <- function(i, j, C22) {
+  C22[i, i] + C22[j, j] - 2 * C22[i, j]
+}
+
+var_diffs <- apply(pairs, 2, function(p) var_diff(p[1], p[2], C22_g))
+
+# Put in a tidy data frame
+var_diffs_df <- data.frame(
+  g1 = pairs[1, ],
+  g2 = pairs[2, ],
+  var_diff = var_diffs
+)
+
+expect_equal(var_diff_matrix[1,2], var_diffs_df$var_diff[1])
+
+H2_Delta_BLUP_parameters(vc_g = vc_g, cov = 0, vd_BLUP_matrix = var_diff_matrix)
+
+
 })
