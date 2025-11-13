@@ -1,25 +1,11 @@
 # Model level checks
 #' @keywords internal
-check_single_model.asreml <- function(model) {
-    if (length(model) > 34) {
-        cli::cli_abort("Only one model can be supplied to calculate heritability")
-    }
-}
-
-#' @keywords internal
-check_single_model.lmerMod <- function(model) {
+check_single_model function(model) {
     if (length(model) > 1) {
         cli::cli_abort("Only one model can be supplied to calculate heritability")
     }
 }
 
-# Check if only one model has been supplied
-#' @keywords internal
-check_single_model <- function(model) {
-    UseMethod("check_single_model")
-}
-.S3method("check_single_model", "asreml", check_single_model.asreml)
-.S3method("check_single_model", "lmerMod", check_single_model.lmerMod)
 
 # Check if model converged
 #' @keywords internal
