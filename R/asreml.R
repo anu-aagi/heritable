@@ -30,7 +30,7 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
-    model <- fit_counterpart_model.asreml(model, target)
+    return(NA)
   }
 
   n_g <- model$noeff[[target]]
@@ -49,7 +49,7 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
-    model <- fit_counterpart_model.asreml(model, target)
+    return(NA)
   }
 
   # Get genotype variance
@@ -179,7 +179,7 @@ H2_Naive.asreml <- function(model, target = NULL, options = NULL) {
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
-    model <- fit_counterpart_model.asreml(model, target)
+    return(NA)
   }
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
   vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
