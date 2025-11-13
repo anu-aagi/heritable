@@ -1,3 +1,15 @@
+
+
+initial_checks <- function(model, target, options) {
+  if(options$check %||% TRUE) {
+    # If model has not converged, warn
+    check_model_convergence(model)
+
+    # Check if target is in model, if not throw error
+    check_target_exists(model, target)
+  }
+}
+
 # Check if model converged
 #' @keywords internal
 check_model_convergence.asreml <- function(model) {
