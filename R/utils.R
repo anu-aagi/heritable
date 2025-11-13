@@ -68,7 +68,7 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 
     # when target is in random
     if (target %in% ran_trms) {
-        cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate heritability.")
+        #cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate heritability.")
         # fit model with target as fixed effect
         model_counter <- asreml::asreml(
             fixed = update(formula(model)$fixed, as.formula(paste(". ~ . +", target))),
@@ -77,7 +77,7 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
             trace = FALSE
         )
     } else if (target %in% fixed_trms) { # when target is in fixed
-        cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate heritability.")
+        #cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate heritability.")
         # fit model with target as random effect
         model_counter <- asreml::asreml(
             fixed = update(formula(model)$fixed, as.formula(paste(". ~ . -", target))),
