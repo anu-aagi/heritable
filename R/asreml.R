@@ -106,22 +106,13 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   if(check_target_both(model, target)) {
     cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
   }
+  gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE)
+  Vd_g <- gpred$sed^2  # Variance of difference
+
   # If fixed, compute H2 delta with BLUEs
   if(!check_target_random(model, target)) {
-    # Obtain BLUES
-    g_lsm <- asreml::predict.asreml(model, classify = target, sed = TRUE)
-    Vd_g <- g_lsm$sed^2 # Variance of difference
-
     # Fit counterpart model with target as random for vc_g
     model <- fit_counterpart_model.asreml(model, target)
-  } else if(check_target_random(model, target)) {  # If random, compute H2 delta with BLUPs
-    # Obtain BLUPS
-    g_pred <- asreml::predict.asreml(model,
-    classify = target,
-    sed = TRUE
-    )
-
-    Vd_g <- g_pred$sed^2 # Variance of difference
   }
 
   genotype_names <- levels(model$mf[[target]]) # list of genotype names
