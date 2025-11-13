@@ -106,13 +106,13 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
 
     # If target is in random effects
     if (target %in% ran_trms) {
-        cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate heritability.")
+        #cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate heritability.")
 
         updated_formula <-
             reformulas::nobars_(current_formula) |> # Remove random effect terms
             update(paste(". ~ . +", target)) # Add target as a fixed effect
     } else if (target %in% fixed_trms) { # If target is in fixed effects
-        cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate heritability.")
+        #cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate heritability.")
         # Create new formula with target as random effect
         updated_formula <-
             reformulas::nobars_(current_formula) |> # Remove random effect terms
@@ -148,19 +148,20 @@ fit_counterpart_model <- function(model, target = NULL) {
 #'
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
-    # Format all values to specified digits
-    x_rounded <- round(x, digits)
-    
-    # If multiple methods, print with method names
-    if (length(x) > 1) {
-        cli::cli_h2("Heritability estimates:")
-        for (method in names(x_rounded)) {
-            cli::cli_text("{.var {method}}: {x_rounded[[method]]}")
-        }
-    } else {
-        # For single method, print simple value
-        cli::cli_text("Heritability ({.var {names(x_rounded)}}): {x_rounded}")
-    }
-    
-    invisible(x)
+    print(unclass(x))
+    # # Format all values to specified digits
+    # x_rounded <- round(x, digits)
+    #
+    # # If multiple methods, print with method names
+    # if (length(x) > 1) {
+    #     cli::cli_h2("Heritability estimates:")
+    #     for (method in names(x_rounded)) {
+    #         cli::cli_text("{.var {method}}: {x_rounded[[method]]}")
+    #     }
+    # } else {
+    #     # For single method, print simple value
+    #     cli::cli_text("Heritability ({.var {names(x_rounded)}}): {x_rounded}")
+    # }
+    #
+    # invisible(x)
 }
