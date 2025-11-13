@@ -1,12 +1,3 @@
-# Model level checks
-#' @keywords internal
-check_single_model <- function(model) {
-    if (length(model) > 1) {
-        cli::cli_abort("Only one model can be supplied to calculate heritability")
-    }
-}
-
-
 # Check if model converged
 #' @keywords internal
 check_model_convergence.asreml <- function(model) {

@@ -23,21 +23,20 @@ h2.default <- function(model, ...) {
 
 #' Calculate broad-sense heritability
 #' @inheritParams h2
-#' @param method Character vector of methods to calculate heritability. 
+#' @param method Character vector of methods to calculate heritability.
 #'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Naive".
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @export
-H2 <- function(model, target = NULL, 
-               method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive"), 
+H2 <- function(model, target = NULL,
+               method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive"),
                ...) {
-  
+
   # Allow multiple methods
   method <- match.arg(method, several.ok = TRUE)
-  
+
   # Check inputs
-  check_single_model(model)
   check_target_single(target)
-  
+
   # Call UseMethod() with all arguments
   UseMethod("H2")
 }
@@ -98,9 +97,6 @@ H2_Naive <- function(model, ...) {
 
 #' @export
 H2.default <- function(model, ...) {
-  # Check if only one model has been supplied
-  check_single_model(model)
-
   # Fall back if no S3 method is found for specified class
   cli::cli_abort("{.fn H2} is not implemented for class{?es} {.code {class(model)}}")
 }
