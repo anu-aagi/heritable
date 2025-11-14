@@ -26,6 +26,11 @@ H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
   # Get genotype variance
   vc <- lme4::VarCorr(model)
   vc_g <- vc[[target]][1]
@@ -42,6 +47,11 @@ H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
 H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
 
   C_inv <- PEV_from_lme4(model)
   g <- geno_components_from_lme4(model, target, C_inv)
@@ -93,6 +103,11 @@ geno_components_from_lme4 <- function(model, target, C_inv) {
 H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
 
   C_inv <- PEV_from_lme4(model)
   g <- geno_components_from_lme4(model, target, C_inv)
