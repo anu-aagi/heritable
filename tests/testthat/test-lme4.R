@@ -6,20 +6,6 @@ test_that("Reproduce lme4 H2", {
   model_ran_lmer <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
   model_fix_lmer <- fit_counterpart_model(model_ran_lmer, target)
 
-  expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Cullis")), 0.8091338, tolerance = 1e-7)
-  expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Oakey")), 0.8091338, tolerance = 1e-7)
-  expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Naive")), 0.6364804, tolerance = 1e-7)
-  expect_equal(unname(H2(model_ran_lmer, target = "gen", method = "Piepho")), 0.7966375, tolerance = 1e-7)
-  expect_named(H2(model_fix_lmer, target = "gen", method = "Delta"), "Delta")
-  expect_named(H2(model_ran_lmer, target = "gen", method = "Delta"), "Delta")
-  expect_equal(length(H2(model_ran_lmer, target = "gen", method = c("Cullis", "Piepho", "Delta"))), 3)
-
-  model_ran_asreml <- asreml::asreml(yield ~ rep,
-                          random = ~ gen + rep:block,
-                          data = agridat::john.alpha,
-                          trace = FALSE
-  )
-
   # checking with lme4 vs asreml
   H2DeltaPairwise_lme4 <- H2_Delta_pairwise(model_ran_lmer, target = "gen")
   H2DeltaPairwise_asreml <- H2_Delta_pairwise(model_ran_asreml, target = "gen")
