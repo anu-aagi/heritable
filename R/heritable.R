@@ -30,14 +30,6 @@ h2.default <- function(model, ...) {
 H2 <- function(model, target = NULL,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive"),
                ...) {
-
-  # Allow multiple methods
-  method <- match.arg(method, several.ok = TRUE)
-
-  # Check inputs
-  check_target_single(target)
-
-  # Call UseMethod() with all arguments
   UseMethod("H2")
 }
 
