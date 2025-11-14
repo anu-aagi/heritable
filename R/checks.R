@@ -46,6 +46,9 @@ check_target_single <- function(target) {
 #' @keywords internal
 check_target_exists <- function(model, target) {
     model_terms <- pull_terms(model)
+    if(is.null(target)) {
+      cli::cli_abort("The target is {.value NULL}. Please specify the target name.")
+    }
     if (!target %in% c(model_terms$fixed, model_terms$random)) {
         cli::cli_abort("The specified target {.code {target}} is not found in the model")
     }
