@@ -77,11 +77,15 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
   # TODO: 3 way check here, if both do nothing, if random fit fixed, if fixed fit random
   if (check_target_random(model, target)) {
     model_fix <- fit_counterpart_model.asreml(model, target)
+    model_ran <- model
+  } else {
+    model_fix <- model
+    model_ran <- fit_counterpart_model.asreml(model, target)
   }
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
   # Get genotype variance
-  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
+  vc_g <- asreml::summary.asreml(model_ran)$varcomp[target, "component"]
 
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,

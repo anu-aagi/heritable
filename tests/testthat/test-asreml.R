@@ -11,6 +11,15 @@ test_that("heritability for asreml works", {
   expect_equal(unname(H2(model, target = "gen", method = "Cullis")), 0.8090841, tolerance = 1e-7)
   expect_equal(unname(H2(model, target = "gen", method = "Oakey")), 0.8090728, tolerance = 1e-7)
   expect_equal(unname(H2(model, target = "gen", method = "Piepho")), 0.8029759, tolerance = 1e-7)
+
+  model <- asreml::asreml(yield ~ rep + gen,
+                          random = ~ rep:block,
+                          data = agridat::john.alpha,
+                          trace = FALSE
+  )
+  H2(model, target = "gen")
+
+
 })
 
 test_that("counterpart model can be fitted", {
