@@ -3,22 +3,15 @@
 H2.lmerMod <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive")) {
   method <- match.arg(method, several.ok = TRUE)
 
-  # If model has not converged, warn
-  check_model_convergence(model)
-
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options = NULL)
 
   H2_values <- sapply(method, function(m) {
     switch(m,
-      Cullis = H2_Cullis.lmerMod(model, target),
-      Oakey = H2_Oakey.lmerMod(model, target),
-      Piepho = H2_Piepho.lmerMod(model, target),
-      Delta = H2_Delta.lmerMod(model, target),
-      Naive = H2_Naive.lmerMod(model, target),
+      Cullis = H2_Cullis.lmerMod(model, target, options = list(check = FALSE)),
+      Oakey = H2_Oakey.lmerMod(model, target, options = list(check = FALSE)),
+      Piepho = H2_Piepho.lmerMod(model, target, options = list(check = FALSE)),
+      Delta = H2_Delta.lmerMod(model, target, options = list(check = FALSE)),
+      Naive = H2_Naive.lmerMod(model, target, options = list(check = FALSE)),
       H2.default(model)
     )
   })
@@ -29,15 +22,9 @@ H2.lmerMod <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
 }
 
 #' @export
-H2_Naive.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
+H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   # Get genotype variance
   vc <- model |>
@@ -54,15 +41,9 @@ H2_Naive.lmerMod <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Cullis.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
+H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   C_inv <- PEV_from_lme4(model)
   g <- geno_components_from_lme4(model, target, C_inv)
@@ -111,15 +92,9 @@ geno_components_from_lme4 <- function(model, target, C_inv) {
 }
 
 #' @export
-H2_Oakey.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
+H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   C_inv <- PEV_from_lme4(model)
   g <- geno_components_from_lme4(model, target, C_inv)
@@ -129,14 +104,8 @@ H2_Oakey.lmerMod <- function(model, target = NULL) {
 
 #' @export
 H2_Piepho.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   # Check if target is fixed or random
   # If random, refit fixed model
@@ -167,15 +136,9 @@ H2_Piepho.lmerMod <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Delta_BLUE_pairwise.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
+H2_Delta_BLUE_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   # Check if target is random or fixed
   # TODO: How to handle if both fixed and random?
@@ -235,15 +198,9 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
+H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   # Check if target is random or fixed
   # TODO: How to handle if both fixed and random?
@@ -280,29 +237,23 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL) {
 
 
 #' @export
-H2_Delta_pairwise.lmerMod <- function(model, target = NULL) {
-  # If model has not converged, warn
-  check_model_convergence(model)
+H2_Delta_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
 
-  # If target is not in model, error
-  check_target_exists(model, target)
-
-  # If there is more than one target, error
-  check_target_single(target)
+  initial_checks(model, target, options)
 
   # Check if target is random or fixed
   if(!check_target_random(model, target)) {
-    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target)
+    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options)
   } else if(check_target_random(model, target)) {
-    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target)
+    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options)
   }
 
   return(H2_Delta)
 }
 
 #' @export
-H2_Delta_by_genotype.lmerMod <- function(model, target = NULL) {
-  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target)
+H2_Delta_by_genotype.lmerMod <- function(model, target = NULL, options = NULL) {
+  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target, options)
 
   H2D_i <- as.matrix(H2D_ij) |>
       rowMeans(na.rm = TRUE) |>
@@ -316,10 +267,10 @@ H2_Delta_by_genotype.lmerMod <- function(model, target = NULL) {
 }
 
 #' @export
-H2_Delta.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic")) {
+H2_Delta.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic"), options = NULL) {
   mean <- match.arg(mean)
 
-  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target)
+  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target, options)
 
   if(mean == "arithmetic") {
     H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
