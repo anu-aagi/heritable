@@ -1,6 +1,6 @@
 #' @importFrom stats setNames
 #' @export
-H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive")) {
+H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive")) {
   # TODO: This will change if we want to vectorise over multiple methods
   method <- match.arg(method, several.ok = TRUE)
 
