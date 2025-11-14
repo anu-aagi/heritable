@@ -27,13 +27,11 @@ H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
   # Get genotype variance
-  vc <- model |>
-    lme4::VarCorr() |>
-    as.data.frame()
-  vc_g <- subset(vc, grp == target)$vcov
+  vc <- lme4::VarCorr(model)
+  vc_g <- vc[[target]][1]
 
   # Get residual variance
-  vc_e <- subset(vc, grp == "Residual")$vcov
+  vc_e <- stats::sigma(model)^2
 
   H2_Naive <- H2_Naive_parameters(vc_g, vc_e)
 
@@ -103,7 +101,7 @@ H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
 }
 
 #' @export
-H2_Piepho.lmerMod <- function(model, target = NULL) {
+H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
