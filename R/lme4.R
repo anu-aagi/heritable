@@ -38,7 +38,9 @@ H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
   # Get residual variance
   vc_e <- stats::sigma(model)^2
 
-  H2_Naive <- H2_Naive_parameters(vc_g, vc_e)
+  n_r <- table(model@flist[[target]])
+
+  H2_Naive <- H2_Naive_parameters(vc_g, vc_e, n_r)
 
   return(H2_Naive)
 }
