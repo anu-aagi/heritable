@@ -17,11 +17,46 @@ h2 <- function(model, ...) {
 }
 
 #' @export
-h2.default <- function(model, ...) {
-  cli::cli_abort("{.fn h2} is not implemented for class{?es} {.code {class(model)}}")
+h2.default <- function(
+  model,
+  target = NULL,
+  method = c("Cullis", "Oakey"),
+  ...
+) {
+
+  method <- match.arg(method, several.ok = TRUE)
+
+  initial_checks(model, target, options = NULL)
+
+  # Calculate H2 for each method
+  h2_values <- sapply(method, function(m) {
+    switch(
+      m,
+      Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
+      Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
+      #Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
+      #Delta = h2_Delta(model, target, options = list(check = FALSE)),
+      #Naive = h2_Naive(model, target, options = list(check = FALSE)),
+      cli::cli_abort(
+        "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
+      )
+    )
+  })
+
+  # Set names and class
+  h2_values <- stats::setNames(h2_values, method)
+  structure(h2_values, class = c("heritable", class(h2_values)))
 }
 
+#' @export
+h2_Cullis <- function(model, ...) {
+  UseMethod("h2_Cullis")
+}
 
+#' @export
+h2_Oakey <- function(model, ...) {
+  UseMethod("h2_Oakey")
+}
 
 
 #' Calculate broad-sense heritability
@@ -52,7 +87,7 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
            Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
            Delta = H2_Delta(model, target, options = list(check = FALSE)),
            Naive = H2_Naive(model, target, options = list(check = FALSE)),
-           cli::cli_abort("{.fn H2} is not implemented for class{?es} {.code {class(model)}}")
+           cli::cli_abort("{.fn H2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}")
     )
   })
 
@@ -76,23 +111,8 @@ H2_Oakey <- function(model, ...) {
 }
 
 #' @export
-H2_BLUE <- function(model, ...) {
-  UseMethod("H2_BLUE")
-}
-
-#' @export
 H2_Piepho <- function(model, ...) {
   UseMethod("H2_Piepho")
-}
-
-#' @export
-H2_Reg <- function(model, ...) {
-  UseMethod("H2_Reg")
-}
-
-#' @export
-H2_SumDiv <- function(model, ...) {
-  UseMethod("H2_SumDiv")
 }
 
 #' @export

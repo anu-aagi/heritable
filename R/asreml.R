@@ -1,7 +1,7 @@
 
 
 #' @export
-H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
+h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
@@ -10,14 +10,43 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
     return(NA)
   }
 
-  n_g <- model$noeff[[target]]
-  vc_g <- summary(model)$varcomp[target, "component"]
+  vm <- target_vm_term_asreml(model, target)
+
+  n_g <-  model$noeff[[vm$target_vm]]
+  #one <- matrix(1, nrow = n_g, ncol = 1)
+  #P_mu <- diag(n_g) - one %*% t(one) / n_g
+  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * sum(diag(vm$GRM)) / (n_g - 1)
+
+
+  vdBLUP_mat <- asreml::predict.asreml(model,
+                                       classify = target,
+                                       only = target,
+                                       sed = TRUE
+  )$sed^2
+
+  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
+
+  H2_Cullis_parameters(vd_BLUP_avg, vc_g)
+}
+
+#' @export
+h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  vm <- target_vm_term_asreml(model, target)
+  n_g <- model$noeff[[vm$target_vm]]
+  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * sum(diag(vm$GRM)) / (n_g - 1)
   vcov_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
 
-  H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, vcov_g)
-
-  return(H2_Oakey)
+  H2_Oakey_parameters(n_g, vc_g, vcov_g)
 }
+
 
 #' @export
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
@@ -44,6 +73,26 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
   return(H2_Cullis)
 }
+
+#' @export
+H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  n_g <- model$noeff[[target]]
+  vc_g <- summary(model)$varcomp[target, "component"]
+  vcov_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
+
+  H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, vcov_g)
+
+  return(H2_Oakey)
+}
+
 
 #' @export
 H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
