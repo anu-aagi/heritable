@@ -4,12 +4,14 @@
 \alias{H2_Naive_parameters}
 \title{Estimate Naive heritability}
 \usage{
-H2_Naive_parameters(vc_g, vc_e)
+H2_Naive_parameters(vc_g, vc_e, n_r = 1)
 }
 \arguments{
 \item{vc_g}{Numeric. Genotype variance component}
 
 \item{vc_e}{Numeric. Residuals variance component}
+
+\item{n_r}{A numeric vector of size n_g, the number of genotype replicates.}
 }
 \value{
 Single numeric value

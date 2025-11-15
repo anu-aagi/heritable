@@ -1,27 +1,4 @@
-#' @importFrom stats setNames
-#' @export
-H2.asreml <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive")) {
-  # TODO: This will change if we want to vectorise over multiple methods
-  method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = NULL)
-
- # Calculate H2 for each method
-  H2_values <- sapply(method, function(m) {
-    switch(m,
-      Cullis = H2_Cullis.asreml(model, target, options = list(check = FALSE)),
-      Oakey = H2_Oakey.asreml(model, target, options = list(check = FALSE)),
-      Piepho = H2_Piepho.asreml(model, target, options = list(check = FALSE)),
-      Delta = H2_Delta.asreml(model, target, options = list(check = FALSE)),
-      Naive = H2_Naive.asreml(model, target, options = list(check = FALSE)),
-      H2.default(model)
-    )
-  })
-
-  # Set names and class
-  H2_values <- stats::setNames(H2_values, method)
-  structure(H2_values, class = c("heritable", class(H2_values)))
-}
 
 #' @export
 H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
@@ -113,7 +90,7 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE)
   Vd_g <- gpred$sed^2  # Variance of difference
 
-  genotype_names <- levels(model$mf[[target]]) # list of genotype names
+  genotype_names <- gpred$pvals[[target]] # list of genotype names
   ngeno <- length(genotype_names) # number of genotypes
   dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
 
@@ -121,39 +98,13 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   if(!check_target_random(model, target)) {
     # Fit counterpart model with target as random for vc_g
     model <- fit_counterpart_model.asreml(model, target)
+    vc_g <- model$vparameters[[target]] * model$sigma2 # varcomp of geno
+    H2_Delta_BLUE_parameters(vc_g, vc_g, cov = 0, Vd_g)
+  } else {
+    vc_g <- model$vparameters[[target]] * model$sigma2
+    H2_Delta_BLUP_parameters(vc_g, vc_g, cov = 0, Vd_g)
   }
-  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"] # varcomp of geno
-
-  H2D_ij <- H2_Delta_parameters(vc_g, cov = 0, Vd_g)
-  H2D_ij
 }
-
-#' @export
-H2_Delta_by_genotype.asreml <- function(model, target = NULL, options = NULL) {
-  H2D_ij <- H2_Delta_pairwise.asreml(model, target)
-
-  H2D_i <- as.matrix(H2D_ij) |>
-      rowMeans(na.rm = TRUE) |>
-      data.frame()
-
-  H2D_i <- setNames(H2D_i, "H2D_i")
-
-  H2D_i_list <- split(H2D_i, rownames(H2D_i))
-
-  return(H2D_i_list)
-}
-
-#' @export
-H2_Delta.asreml <- function(model, target = NULL, aggregate = c("arithmetic", "harmonic"), options = NULL) {
-  aggregate <- match.arg(aggregate)
-
-  H2D_ij <- H2_Delta_pairwise.asreml(model, target)
-
-  switch(aggregate,
-         "arithemetic" = mean(H2D_ij[upper.tri(H2D_ij)]),
-         "harmonic" = sum(upper.tri(H2D_ij)) / sum(1 / H2D_ij[upper.tri(H2D_ij)]))
-}
-
 
 #' @export
 H2_Naive.asreml <- function(model, target = NULL, options = NULL) {

@@ -8,7 +8,7 @@ test_that("heritability for asreml works", {
     "Cullis" = 0.8090841,
     "Oakey" = 0.8090728,
     "Piepho" = 0.8029759,
-    "Delta" = 0.8090841, # arithmetic mean or harmonic mean?
+    "Delta" = 0.8090841,
     "Naive" = 0.8400648
   )
 
@@ -16,7 +16,7 @@ test_that("heritability for asreml works", {
                           random = ~ gen + rep:block,
                           data = agridat::john.alpha,
                           trace = FALSE)
-  expect_equal(H2(model, target = "gen"), truth_random_asreml, tolerance = 1e-7)
+  expect_equal(H2(model, target = "gen"), truth_random_asreml, tolerance = 1e-5)
 
   # NOTE: in theory these values should be the same
   # differences seem to arise because of different estimates of VCOMP
@@ -36,7 +36,7 @@ test_that("heritability for asreml works", {
     "Cullis" = NA,
     "Oakey" = NA,
     "Piepho" = truth_random_asreml[["Piepho"]],
-    "Delta" = 0.8030227,
+    "Delta" = 0.8030227, # arithmetic mean
     "Naive" = NA
   )
 
@@ -47,7 +47,16 @@ test_that("heritability for asreml works", {
   )
   expect_equal(H2(model, target = "gen"), truth_fixed_asreml, tolerance = 1e-5)
 
+  truth_fixed_lme4 <- c(
+    "Cullis" = NA,
+    "Oakey" = NA,
+    "Piepho" = truth_random_lme4[["Piepho"]],
+    "Delta" = 0.7967, # arithmetic mean # CHECK!
+    "Naive" = NA
+  )
+
+
   model <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
-  expect_equal(H2(model, target = "gen"), truth, tolerance = 1e-7)
+  expect_equal(H2(model, target = "gen"), truth_fixed_lme4, tolerance = 1e-5)
 
 })

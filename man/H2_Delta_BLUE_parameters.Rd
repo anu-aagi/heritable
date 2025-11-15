@@ -2,19 +2,21 @@
 % Please edit documentation in R/parametise.R
 \name{H2_Delta_BLUE_parameters}
 \alias{H2_Delta_BLUE_parameters}
-\title{Estimate heritability of differences (Delta) for BLUES}
+\title{Estimate heritability of differences (Delta) for BLUEs or BLUPs}
 \usage{
-H2_Delta_BLUE_parameters(vc_g, cov, vd_BLUE_matrix)
+H2_Delta_BLUE_parameters(var1, var2 = var1, cov = 0, vd_matrix)
 }
 \arguments{
-\item{vc_g}{Numeric. Genotype variance component}
+\item{var1}{Numeric. The variance of genotype 1}
 
-\item{cov}{Numeric. Covariance between genotypes}
+\item{var2}{Numeric. The variance of genotype 2}
 
-\item{vd_BLUE_matrix}{Matrix. Variance of pairwise differences among BLUES}
+\item{cov}{Numeric. Covariance between genotypes 1 and 2.}
+
+\item{vd_matrix}{Matrix. Variance of pairwise differences among BLUES or BLUPs}
 }
 \value{
-Matrix of pairwise heritability of differences among BLUES
+Matrix of pairwise heritability of differences among BLUES or BLUPs
 }
 \description{
 Compute heritability of differences using the variance of differences between two BLUES.
@@ -23,7 +25,7 @@ Compute heritability of differences using the variance of differences between tw
 See reference for full derivation and equation for heritability Delta BLUES
 }
 \examples{
-H2_Delta_BLUE_parameters(vc_g = 0.25, cov = 0, vd_BLUE_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+H2_Delta_BLUE_parameters(var1 = 0.25, cov = 0, vd_BLUE_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
 
 }
 \references{

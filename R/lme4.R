@@ -1,25 +1,4 @@
-#' @importFrom stats setNames
-#' @export
-H2.lmerMod <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive")) {
-  method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = NULL)
-
-  H2_values <- sapply(method, function(m) {
-    switch(m,
-      Cullis = H2_Cullis.lmerMod(model, target, options = list(check = FALSE)),
-      Oakey = H2_Oakey.lmerMod(model, target, options = list(check = FALSE)),
-      Piepho = H2_Piepho.lmerMod(model, target, options = list(check = FALSE)),
-      Delta = H2_Delta.lmerMod(model, target, options = list(check = FALSE)),
-      Naive = H2_Naive.lmerMod(model, target, options = list(check = FALSE)),
-      H2.default(model)
-    )
-  })
-
-    # Set names and class
-  H2_values <- stats::setNames(H2_values, method)
-  structure(H2_values, class = c("heritable", class(H2_values)))
-}
 
 #' @export
 H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
@@ -209,7 +188,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
     }
 
   # H2 Delta BLUE
-  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, cov = 0, Vd_g)
+  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, vc_g, cov = 0, Vd_g)
 
   return(H2_Delta_BLUE)
 }
@@ -244,7 +223,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
   }
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(g$vc_g, cov = 0, Vd_g)
+  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(g$vc_g, g$vc_g, cov = 0, Vd_g)
 
   row.names(H2_Delta_BLUP) <- rownames(Vd_g)
   colnames(H2_Delta_BLUP) <- colnames(Vd_g)
@@ -268,32 +247,3 @@ H2_Delta_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
   return(H2_Delta)
 }
 
-#' @export
-H2_Delta_by_genotype.lmerMod <- function(model, target = NULL, options = NULL) {
-  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target, options)
-
-  H2D_i <- as.matrix(H2D_ij) |>
-      rowMeans(na.rm = TRUE) |>
-      data.frame()
-
-  H2D_i <- setNames(H2D_i, "H2D_i")
-
-  H2D_i_list <- split(H2D_i, rownames(H2D_i))
-
-  return(H2D_i_list)
-}
-
-#' @export
-H2_Delta.lmerMod <- function(model, target = NULL, mean = c("arithmetic", "harmonic"), options = NULL) {
-  mean <- match.arg(mean)
-
-  H2D_ij <- H2_Delta_pairwise.lmerMod(model, target, options)
-
-  if(mean == "arithmetic") {
-    H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
-  } else if (mean == "harmonic") {
-    H2D_ij <- length(H2D_ij[upper.tri(H2D_ij)]) / sum(1 / H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
-  }
-
-  H2D_ij
-}
