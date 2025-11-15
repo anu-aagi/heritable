@@ -94,6 +94,8 @@ PEV_from_lme4 <- function(model) {
 }
 
 geno_components_from_lme4 <- function(model, target, C_inv) {
+  vc <- lme4::VarCorr(model)
+  ngrps <- lme4::ngrps(model)
   gnames <- levels(model@flist[[target]])
   C22_g <- C_inv[gnames, gnames]
   n_g <- ngrps[[target]]
