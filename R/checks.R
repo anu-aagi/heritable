@@ -6,8 +6,13 @@ initial_checks <- function(model, target, options) {
     # If model has not converged, warn
     check_model_convergence(model)
 
-    # Check if target is in model, if not throw error
+    # Check if target appears in the model
     check_target_exists(model, target)
+
+    if (options$target_once %||% TRUE) {
+      # Check if target only appears exactly once in the model
+      check_target_appears_once(model, target)
+    }
   }
 }
 
@@ -57,6 +62,21 @@ check_target_exists <- function(model, target) {
   if (!target %in% c(model_terms$fixed, model_terms$random)) {
     cli::cli_abort(
       "The specified target {.code {target}} is not found in the model"
+    )
+  }
+}
+
+check_target_appears_once <- function(model, target) {
+  model_terms <- pull_terms(model)
+  # TODO: remove specials here
+  form <- as.formula(paste("~", paste(c(model_terms$fixed,
+                                        model_terms$random),
+                                      collapse = " + ")))
+  form <- update(form, paste0("~ . - ", target))
+  fcts <- rownames(attr(terms(form), "factors"))
+  if (target %in% fcts) {
+    cli::cli_abort(
+      "The specified target {.code {target}} is found in multiple terms. Please specify only once."
     )
   }
 }

@@ -62,11 +62,10 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
   # Get genotype variance
-  vc_g <- asreml::summary.asreml(model_ran)$varcomp[target, "component"]
+  vc_g <- model_ran$vparameters[[target]] * model_ran$sigma2
 
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,
-    only = target,
     sed = TRUE
   )$sed^2
 
@@ -88,7 +87,7 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   if(check_target_both(model, target)) {
     cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
   }
-  gpred <- asreml::predict.asreml(model, classify = target, only = target, sed = TRUE)
+  gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE)
   Vd_g <- gpred$sed^2  # Variance of difference
 
   genotype_names <- gpred$pvals[[target]] # list of genotype names

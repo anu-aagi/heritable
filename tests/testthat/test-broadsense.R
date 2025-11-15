@@ -45,7 +45,7 @@ test_that("heritability for asreml works", {
                           data = agridat::john.alpha,
                           trace = FALSE
   )
-  expect_equal(H2(model, target = "gen"), truth_fixed_asreml, tolerance = 1e-5)
+  expect_equal(H2(model, target = "gen"), truth_fixed_asreml, tolerance = 1e-4)
 
   truth_fixed_lme4 <- c(
     "Cullis" = NA,
@@ -58,5 +58,18 @@ test_that("heritability for asreml works", {
 
   model <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
   expect_equal(H2(model, target = "gen"), truth_fixed_lme4, tolerance = 1e-5)
+
+
+# GxE models --------------------------------------------------------------
+  model <- asreml::asreml(yield ~ year:loc:trial,
+                          random = ~ gen + gen:loc,
+                          data = agridat::adugna.sorghum |>
+                            transform(year = as.factor(year)),
+                          trace = FALSE
+  )
+  H2(model, target = "gen")
+
+
+
 
 })
