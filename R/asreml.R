@@ -13,15 +13,14 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   vm <- target_vm_term_asreml(model, target)
 
   n_g <-  model$noeff[[vm$target_vm]]
-  #one <- matrix(1, nrow = n_g, ncol = 1)
-  #P_mu <- diag(n_g) - one %*% t(one) / n_g
-  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * sum(diag(vm$GRM)) / (n_g - 1)
+  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
 
 
   vdBLUP_mat <- asreml::predict.asreml(model,
                                        classify = target,
                                        only = target,
-                                       sed = TRUE
+                                       sed = TRUE,
+                                       trace = FALSE,
   )$sed^2
 
   vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])

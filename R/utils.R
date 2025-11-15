@@ -49,6 +49,11 @@ pull_terms_without_specials.lmerMod <- function(model) {
   model_terms
 }
 
+semivariance <- function(X) {
+  n <- nrow(X)
+  1/(n - 1) * (sum(diag(X)) - 1 / n * sum(X))
+}
+
 #' @keywords internal
 pull_terms_without_specials.asreml <- function(model) {
   model_terms <- pull_terms(model)
