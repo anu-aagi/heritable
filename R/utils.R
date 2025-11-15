@@ -14,8 +14,8 @@
 #' @keywords internal
 
 pull_terms.asreml <- function(model) {
-    fixed_trms <- terms(formula(model)$fixed) |> labels()
-    ran_trms <- terms(formula(model)$random) |> labels()
+    fixed_trms <- attr(model$formulae$fixed, "term.labels")
+    ran_trms <- attr(model$formulae$random, "term.labels")
     return(list(fixed = fixed_trms, random = ran_trms))
 }
 
