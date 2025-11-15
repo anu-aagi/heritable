@@ -26,7 +26,7 @@ A data frame with 89 rows and 301 columns:
 }
 }
 
-An object of class \code{spec_tbl_df} (inherits from \code{tbl_df}, \code{tbl}, \code{data.frame}) with 89 rows and 301 columns.
+An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 89 rows and 301 columns.
 }
 \source{
 \url{https://figshare.com/articles/dataset/Lettuce_trial_phenotypic_and_marker_data_/8299493}
