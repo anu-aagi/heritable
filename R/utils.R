@@ -37,6 +37,52 @@ pull_terms <- function(model) {
 .S3method("pull_terms", "asreml", pull_terms.asreml)
 .S3method("pull_terms", "lmerMod", pull_terms.lmerMod)
 
+
+#' @keywords internal
+pull_terms_without_specials <- function(model) {
+  UseMethod("pull_terms_without_specials")
+}
+
+#' @keywords internal
+pull_terms_without_specials.lmerMod <- function(model) {
+  model_terms <- pull_terms(model)
+  model_terms
+}
+
+#' @keywords internal
+pull_terms_without_specials.asreml <- function(model) {
+  model_terms <- pull_terms(model)
+  pattern <- paste0("^(",
+                    paste0(asreml_Spcls, collapse = "|"),
+                    ")\\(([^,]+),?.*\\)")
+  clean_which <- stringr::str_detect(model_terms$fixed, pattern)
+  model_terms$fixed[clean_which] <- stringr::str_extract(model_terms$fixed[clean_which],
+                                                         pattern,
+                                                         group = 2)
+  clean_which <- stringr::str_detect(model_terms$random, pattern)
+  model_terms$random[clean_which] <- stringr::str_extract(model_terms$random[clean_which],
+                                                          pattern,
+                                                          group = 2)
+  model_terms
+}
+
+
+asreml_Spcls <- c("con", "C", "lin", "pow", "pol", "leg", "spl", "dev", "ped",
+                  "ide", "giv", "vm", "ma", "at", "dsum", "and", "grp", "mbf",
+                  "sbs", "gpf", "uni", "id", "idv", "idh", "ar1", "ar1v", "ar1h",
+                  "ar2", "ar2v", "ar2h", "ar3", "ar3v", "ar3h", "sar", "sarv",
+                  "sarh", "sar2", "sar2v", "sar2h", "ma1", "ma1v", "ma1h", "ma2",
+                  "ma2v", "ma2h", "arma", "armav", "armah", "cor", "corv", "corh",
+                  "corb", "corbv", "corbh", "corg", "corgv", "corgh", "diag", "us",
+                  "sfa", "chol", "cholc", "ante", "exp", "expv", "exph", "iexp",
+                  "iexpv", "iexph", "aexp", "aexpv", "bexpv", "aexph", "gau", "gauv",
+                  "gauh", "lvr", "lvrv", "lvrh", "igau", "igauv", "igauh", "agau",
+                  "agauv", "agauh", "ieuc", "ieucv", "ieuch", "ilv", "ilvv", "ilvh",
+                  "sph", "sphv", "sphh", "cir", "cirv", "cirh", "mtrn", "mtrnv",
+                  "mtrnh", "mthr", "facv", "fa", "rr", "str", "own")
+
+
+
 #' Fit the counterpart of an asreml model by swapping a specified term between fixed and random
 #'
 #' Fit a "counterpart" model to an existing asreml model by moving a specified

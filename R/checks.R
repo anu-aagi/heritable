@@ -58,7 +58,7 @@ check_target_single <- function(target) {
 # Check if target is in model
 #' @keywords internal
 check_target_exists <- function(model, target) {
-  model_terms <- pull_terms(model)
+  model_terms <- pull_terms_without_specials(model)
   if (!target %in% c(model_terms$fixed, model_terms$random)) {
     cli::cli_abort(
       "The specified target {.code {target}} is not found in the model"
@@ -67,8 +67,7 @@ check_target_exists <- function(model, target) {
 }
 
 check_target_appears_once <- function(model, target) {
-  model_terms <- pull_terms(model)
-  # TODO: remove specials here
+  model_terms <- pull_terms_without_specials(model)
   form <- as.formula(paste("~", paste(c(model_terms$fixed,
                                         model_terms$random),
                                       collapse = " + ")))
@@ -84,7 +83,7 @@ check_target_appears_once <- function(model, target) {
 # Check if target is in fixed or random
 #' @keywords internal
 check_target_random <- function(model, target) {
-  model_terms <- pull_terms(model)
+  model_terms <- pull_terms_without_specials(model)
   if (target %in% model_terms$random) {
     TRUE
   } else {
@@ -95,7 +94,7 @@ check_target_random <- function(model, target) {
 # Check if target is in both fixed and random
 #' @keywords internal
 check_target_both <- function(model, target) {
-  model_terms <- pull_terms(model)
+  model_terms <- pull_terms_without_specials(model)
   # Use regex to check for presence in both fixed and random
   if (
     any(grepl(target, model_terms$fixed, fixed = TRUE)) &&

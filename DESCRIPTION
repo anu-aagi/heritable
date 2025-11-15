@@ -13,7 +13,8 @@ Imports:
     cli,
     emmeans,
     Matrix,
-    reformulas
+    reformulas,
+    stringr
 Suggests: 
     testthat (>= 3.0.0),
     agridat,
