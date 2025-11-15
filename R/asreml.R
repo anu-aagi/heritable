@@ -113,26 +113,18 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE)
   Vd_g <- gpred$sed^2  # Variance of difference
 
+  genotype_names <- levels(model$mf[[target]]) # list of genotype names
+  ngeno <- length(genotype_names) # number of genotypes
+  dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+
   # If fixed, compute H2 delta with BLUEs
   if(!check_target_random(model, target)) {
     # Fit counterpart model with target as random for vc_g
     model <- fit_counterpart_model.asreml(model, target)
   }
-
-  genotype_names <- levels(model$mf[[target]]) # list of genotype names
-  ngeno <- length(genotype_names) # number of genotypes
-  dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"] # varcomp of geno
 
-  # For Delta BLUES
-  # Check if g_lsm exists
-  if(exists("g_lsm")){
-    H2D_ij <- H2_Delta_BLUE_parameters(vc_g, cov = 0, Vd_g)
-  } else {
-    # For Delta BLUPS
-    H2D_ij <- H2_Delta_BLUP_parameters(vc_g, cov = 0, Vd_g)
-  }
+  H2D_ij <- H2_Delta_parameters(vc_g, cov = 0, Vd_g)
   H2D_ij
 }
 
@@ -144,7 +136,7 @@ H2_Delta_by_genotype.asreml <- function(model, target = NULL, options = NULL) {
       rowMeans(na.rm = TRUE) |>
       data.frame()
 
-  H2D_i <-setNames(H2D_i, "H2D_i")
+  H2D_i <- setNames(H2D_i, "H2D_i")
 
   H2D_i_list <- split(H2D_i, rownames(H2D_i))
 
