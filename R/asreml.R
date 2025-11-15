@@ -66,6 +66,7 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,
+    only = target,
     sed = TRUE
   )$sed^2
 
@@ -87,7 +88,7 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   if(check_target_both(model, target)) {
     cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
   }
-  gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE)
+  gpred <- asreml::predict.asreml(model, classify = target, only = target, sed = TRUE)
   Vd_g <- gpred$sed^2  # Variance of difference
 
   genotype_names <- gpred$pvals[[target]] # list of genotype names
