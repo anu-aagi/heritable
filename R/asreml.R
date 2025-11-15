@@ -178,8 +178,10 @@ H2_Naive.asreml <- function(model, target = NULL, options = NULL) {
   }
   vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
   vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
+  # TODO: may need to remove observations where phenotype is NA
+  n_r <- table(model$mf[[target]])
 
-  H2_Naive <- H2_Naive_parameters(vc_g, vc_e)
+  H2_Naive <- H2_Naive_parameters(vc_g, vc_e, n_r)
 
   return(H2_Naive)
 }
