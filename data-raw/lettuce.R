@@ -19,5 +19,9 @@ lettuce_markers <- read_delim("data-raw/lettuce-data/markers_lettuce.txt") |>
 
 str(lettuce_markers)
 
+lettuce_GRM <- tcrossprod(as.matrix(lettuce_markers[, -1]))
+dimnames(lettuce_GRM) <- list(lettuce_markers$gen, lettuce_markers$gen)
+
 usethis::use_data(lettuce_phenotypes, overwrite = TRUE)
 usethis::use_data(lettuce_markers, overwrite = TRUE)
+usethis::use_data(lettuce_GRM, overwrite = TRUE)
