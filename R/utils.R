@@ -89,40 +89,16 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target = NULL) {
     # get the terms from model object
-    fixed_trms <- pull_terms.lmerMod(model)$fixed
-    ran_trms <- pull_terms.lmerMod(model)$random
-
-    current_formula <- formula(model)
-    random_sym <- reformulas::findbars(current_formula)
-
-    # Non-target random effects
-    other_re <- random_sym[[which(sapply(random_sym, function(x) !any(grepl(target, deparse(x)))))]]
+    trms <- pull_terms.lmerMod(model)
 
     # If target is in random effects
-    if (target %in% ran_trms) {
-        #cli::cli_inform("{.var {target}} was fitted as a random effect. We will fit {.var {target}} as a fixed effect to calculate heritability.")
-
-        updated_formula <-
-            reformulas::nobars_(current_formula) |> # Remove random effect terms
-            update(paste(". ~ . +", target)) # Add target as a fixed effect
-    } else if (target %in% fixed_trms) { # If target is in fixed effects
-        #cli::cli_inform("{.var {target}} was fitted as a fixed effect. We will fit {.var {target}} as a random effect to calculate heritability.")
-        # Create new formula with target as random effect
-        updated_formula <-
-            reformulas::nobars_(current_formula) |> # Remove random effect terms
-            update(as.formula(paste(". ~ . -", target))) |> # Remove target from fixed effects
-            update(as.formula(paste(". ~ . + (1 |", target, ")"))) # Add target as random effect
+    if (target %in% trms$random) {
+      refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
+    } else if (target %in% trms$fixed) { # If target is in fixed effects
+      refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
     } else {
         cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
     }
-
-    if (!is.null(other_re)) { # If there are other random effects, add them back in
-        updated_formula <-
-            update(updated_formula, as.formula(paste(". ~ . + (", deparse(other_re), ")")))
-    }
-
-    # Refit the model
-    refit_model <- update(model, formula = updated_formula)
     return(refit_model)
 }
 
