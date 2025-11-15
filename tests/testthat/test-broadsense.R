@@ -56,19 +56,23 @@ test_that("heritability for asreml works", {
   )
 
 
-  model <- lme4::lmer(data = dat, formula = yield ~ rep + gen + (1 | rep:block))
+  model <- lme4::lmer(yield ~ rep + gen + (1 | rep:block),
+                      data = agridat::john.alpha)
   expect_equal(H2(model, target = "gen"), truth_fixed_lme4, tolerance = 1e-5)
 
 
 # GxE models --------------------------------------------------------------
   model <- asreml::asreml(yield ~ year:loc:trial,
                           random = ~ gen + gen:loc,
-                          data = agridat::adugna.sorghum |>
-                            transform(year = as.factor(year)),
+                          data = agridat::adugna.sorghum,
                           trace = FALSE
   )
-  H2(model, target = "gen")
+  expect_error(H2(model, target = "gen"))
 
+  model <- lme4::lmer(yield ~ year:loc:trial + (1|gen) + (1|gen:loc),
+                      data = agridat::adugna.sorghum)
+
+  expect_error(H2(model, target = "gen"))
 
 
 
