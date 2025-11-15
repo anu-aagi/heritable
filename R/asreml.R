@@ -144,18 +144,14 @@ H2_Delta_by_genotype.asreml <- function(model, target = NULL, options = NULL) {
 }
 
 #' @export
-H2_Delta.asreml <- function(model, target = NULL, mean = c("arithmetic", "harmonic"), options = NULL) {
-  mean <- match.arg(mean)
+H2_Delta.asreml <- function(model, target = NULL, aggregate = c("arithmetic", "harmonic"), options = NULL) {
+  aggregate <- match.arg(aggregate)
 
   H2D_ij <- H2_Delta_pairwise.asreml(model, target)
 
-  if(mean == "arithmetic") {
-    H2D_ij <- mean(H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
-  } else if (mean == "harmonic") {
-    H2D_ij <- length(H2D_ij[upper.tri(H2D_ij)]) / sum(1 / H2D_ij[upper.tri(H2D_ij)], na.rm = TRUE)
-  }
-
-  H2D_ij
+  switch(aggregate,
+         "arithemetic" = mean(H2D_ij[upper.tri(H2D_ij)]),
+         "harmonic" = sum(upper.tri(H2D_ij)) / sum(1 / H2D_ij[upper.tri(H2D_ij)]))
 }
 
 
