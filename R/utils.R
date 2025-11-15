@@ -25,7 +25,7 @@ pull_terms.lmerMod <- function(model) {
     term_labels <- attr(terms(model_formula), "term.labels")
 
     ran_trms <- names(lme4::ranef(model))
-    fixed_trms <- grep(paste(ran_trms, collapse = "|"), term_labels, invert = TRUE, value = TRUE)
+    fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
 
     return(list(fixed = fixed_trms, random = ran_trms))
 }
