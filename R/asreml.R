@@ -163,8 +163,8 @@ H2_Standard.asreml <- function(model, target = NULL, options = NULL) {
   if (!check_target_random(model, target)) {
     return(NA)
   }
-  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
-  vc_e <- asreml::summary.asreml(model)$varcomp["units!R", "component"]
+  vc_g <- model$vparameters[[target]] * model$sigma2
+  vc_e <- model$sigma2
   # TODO: may need to remove observations where phenotype is NA
   n_r <- table(model$mf[[target]])
 
