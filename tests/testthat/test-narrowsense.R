@@ -5,7 +5,7 @@ test_that("narrowsense heritability works", {
                           data = lettuce_phenotypes |>
                             subset(loc == "L2"))
 
-  # should be 0.829
-  h2_Cullis(model, target = "gen")
+  # should be 0.586
+  h2_Oakey(model, target = "gen")
 
 })
