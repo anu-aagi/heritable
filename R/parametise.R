@@ -54,11 +54,11 @@ H2_Oakey_parameters <- function(n_g, vc_g, vcov_g) {
    return(H2_Oakey)
 }
 
-#' Estimate Naive heritability
+#' Estimate Standard heritability
 #'
-#' @description Compute naive heritability for genotype means using the variance components of genotype and residuals.
+#' @description Compute Standard heritability for genotype means using the variance components of genotype and residuals.
 #'
-#' @details The equation for naive heritability is as follows:
+#' @details The equation for Standard heritability is as follows:
 #'
 #' \eqn{H^2 = 1 - (vc_g / (vc_g + vc_e))}
 #'
@@ -68,15 +68,15 @@ H2_Oakey_parameters <- function(n_g, vc_g, vcov_g) {
 #' @return Single numeric value
 #'
 #' @examples
-#' H2_Naive_parameters(vc_g = 0.25, vc_e = 0.8)
+#' H2_Standard_parameters(vc_g = 0.25, vc_e = 0.8)
 #'
 #' @references
 #' Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #'
 #' @export
-H2_Naive_parameters <- function(vc_g, vc_e, n_r = 1) {
-  H2_Naive <- vc_g / (vc_g +  mean(vc_e / n_r))
-  return(H2_Naive)
+H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
+  H2_Standard <- vc_g / (vc_g +  mean(vc_e / n_r))
+  return(H2_Standard)
 }
 
 #' Estimate Piepho's heritability
