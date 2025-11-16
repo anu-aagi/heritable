@@ -1,12 +1,11 @@
 ---
-output: github_document
+format: gfm
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
-  eval = FALSE,
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
@@ -37,17 +36,33 @@ pak::pak("anu-aagi/heritable")
 This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
+#| output: false
+#| message: false
 library(heritable)  
 
-fit <- asreml::asreml(yield ~ rep,
+fit_asreml <- asreml::asreml(yield ~ rep,
     random = ~ gen + rep:block,
     data = agridat::john.alpha,
     trace = FALSE
   )
 
- H2(fit, target = "gen", method = "Oakey") 
- H2(fit, target = "gen", method = "Cullis") 
- H2(fit, target = "gen", method = "Piepho")
- H2(fit, target = "gen", method = "Delta")
+fit_lme4 <- lme4::lmer(yield ~ rep + (1|gen) + (1|rep:block),
+                       data = agridat::john.alpha)
 ```
 
+
+```{r}
+H2(fit_asreml, target = "gen")
+H2(fit_lme4, target = "gen")
+```
+
+Working as data using tidyverse style of data wranling.
+
+
+```{r}
+#| message: false
+library(tidyverse)
+tibble(model = list(fit_lme4, fit_asreml)) |> 
+  mutate(H2 = map(model, ~H2(.x, target = "gen"))) |> 
+  unnest_wider(H2)
+```
