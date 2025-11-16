@@ -60,6 +60,17 @@ test_that("heritability for asreml works", {
                       data = agridat::john.alpha)
   expect_equal(H2(model, target = "gen"), truth_fixed_lme4, tolerance = 1e-5)
 
+# Different R
+
+  model <- asreml::asreml(yield ~ 1,
+                        random=~ gen + col + row,
+                        residual=~ar1(col):ar1(row),
+                        data = agridat::gilmour.serpentine |>
+                          transform(col = as.factor(col),
+                                    row = as.factor(row)))
+  H2(model, "gen")
+
+
 
 # GxE models --------------------------------------------------------------
   model <- asreml::asreml(yield ~ year:loc:trial,
