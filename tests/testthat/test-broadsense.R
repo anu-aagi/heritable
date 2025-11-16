@@ -9,7 +9,7 @@ test_that("heritability for asreml works", {
     "Oakey" = 0.8090728,
     "Piepho" = 0.8029759,
     "Delta" = 0.8090841,
-    "Naive" = 0.8400648
+    "Standard" = 0.8400648
   )
 
   model <- asreml::asreml(yield ~ rep,
@@ -25,7 +25,7 @@ test_that("heritability for asreml works", {
     "Oakey" = 0.8091339,
     "Piepho" = 0.7966376,
     "Delta" = truth_asreml[["Delta"]],
-    "Naive" = truth_asreml[["Naive"]]
+    "Standard" = truth_asreml[["Naive"]]
   )
 
   model <- lme4::lmer(data = dat, formula = yield ~ rep + (1 | gen) + (1 | rep:block))
@@ -37,7 +37,7 @@ test_that("heritability for asreml works", {
     "Oakey" = NA,
     "Piepho" = truth_random_asreml[["Piepho"]],
     "Delta" = 0.8030227, # arithmetic mean
-    "Naive" = NA
+    "Standard" = NA
   )
 
   model <- asreml::asreml(yield ~ rep + gen,
@@ -52,7 +52,7 @@ test_that("heritability for asreml works", {
     "Oakey" = NA,
     "Piepho" = truth_random_lme4[["Piepho"]],
     "Delta" = 0.7967, # arithmetic mean # CHECK!
-    "Naive" = NA
+    "Standard" = NA
   )
 
 
