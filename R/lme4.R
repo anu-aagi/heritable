@@ -1,7 +1,7 @@
 
 
 #' @export
-H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
+H2_Standard.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
@@ -19,9 +19,9 @@ H2_Naive.lmerMod <- function(model, target = NULL, options = NULL) {
 
   n_r <- table(model@flist[[target]])
 
-  H2_Naive <- H2_Naive_parameters(vc_g, vc_e, n_r)
+  H2_Standard <- H2_Standard_parameters(vc_g, vc_e, n_r)
 
-  return(H2_Naive)
+  return(H2_Standard)
 }
 
 #' @export

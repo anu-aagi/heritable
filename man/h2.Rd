@@ -7,7 +7,7 @@
 H2(
   model,
   target = NULL,
-  method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive"),
+  method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
   ...
 )
 }
@@ -17,7 +17,7 @@ H2(
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{method}{Character vector of methods to calculate heritability.
-Options are "Cullis", "Oakey", "Delta", "Piepho", and "Naive".}
+Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".}
 
 \item{...}{Additional arguments passed to specific methods. See Details}
 }

@@ -36,7 +36,7 @@ h2.default <- function(
       Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
       #Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
       #Delta = h2_Delta(model, target, options = list(check = FALSE)),
-      #Naive = h2_Naive(model, target, options = list(check = FALSE)),
+      #Standard = h2_Standard(model, target, options = list(check = FALSE)),
       cli::cli_abort(
         "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
       )
@@ -62,18 +62,18 @@ h2_Oakey <- function(model, ...) {
 #' Calculate broad-sense heritability
 #' @inheritParams h2
 #' @param method Character vector of methods to calculate heritability.
-#'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Naive".
+#'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @export
 H2 <- function(model, target = NULL,
-               method = c("Cullis", "Oakey", "Delta", "Piepho", "Naive"),
+               method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
                ...) {
   UseMethod("H2")
 }
 
 #' @importFrom stats setNames
 #' @export
-H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Naive")) {
+H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard")) {
   # TODO: This will change if we want to vectorise over multiple methods
   method <- match.arg(method, several.ok = TRUE)
 
@@ -86,7 +86,7 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
            Oakey = H2_Oakey(model, target, options = list(check = FALSE)),
            Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
            Delta = H2_Delta(model, target, options = list(check = FALSE)),
-           Naive = H2_Naive(model, target, options = list(check = FALSE)),
+           Standard = H2_Standard(model, target, options = list(check = FALSE)),
            cli::cli_abort("{.fn H2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}")
     )
   })
@@ -159,7 +159,7 @@ H2_Delta_pairwise <- function(model, ...) {
 }
 
 #' @export
-H2_Naive <- function(model, ...) {
-  UseMethod("H2_Naive")
+H2_Standard <- function(model, ...) {
+  UseMethod("H2_Standard")
 }
 

@@ -155,7 +155,7 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
 }
 
 #' @export
-H2_Naive.asreml <- function(model, target = NULL, options = NULL) {
+H2_Standard.asreml <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
@@ -168,7 +168,7 @@ H2_Naive.asreml <- function(model, target = NULL, options = NULL) {
   # TODO: may need to remove observations where phenotype is NA
   n_r <- table(model$mf[[target]])
 
-  H2_Naive <- H2_Naive_parameters(vc_g, vc_e, n_r)
+  H2_Standard <- H2_Standard_parameters(vc_g, vc_e, n_r)
 
-  return(H2_Naive)
+  return(H2_Standard)
 }
