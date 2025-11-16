@@ -178,6 +178,8 @@ fit_counterpart_model <- function(model, target = NULL) {
 #'
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
+    attr(x, "model") <- NULL
+    attr(x, "target") <- NULL
     print(unclass(x))
     # # Format all values to specified digits
     # x_rounded <- round(x, digits)
