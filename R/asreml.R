@@ -41,9 +41,17 @@ h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   vm <- target_vm_term_asreml(model, target)
   n_g <- model$noeff[[vm$target_vm]]
   vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * sum(diag(vm$GRM)) / (n_g - 1)
-  vcov_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
+  vcov_g <- asreml::predict.asreml(model,
+                                   classify = target,
+                                   only = target,
+                                   vcov = TRUE,
+                                   trace = FALSE)$vcov
 
   H2_Oakey_parameters(n_g, vc_g, vcov_g)
+}
+
+get_vc_g_asreml <- function(model, target) {
+  model$vparameters[[target]] * model$sigma2
 }
 
 
@@ -58,12 +66,13 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   }
 
   # Get genotype variance
-  vc_g <- asreml::summary.asreml(model)$varcomp[target, "component"]
+  vc_g <- get_vc_g_asreml(model, target)
 
   vdBLUP_mat <- asreml::predict.asreml(model,
     classify = target,
     only = target,
-    sed = TRUE
+    sed = TRUE,
+    trace = FALSE
   )$sed^2
 
   vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
@@ -84,8 +93,12 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   }
 
   n_g <- model$noeff[[target]]
-  vc_g <- summary(model)$varcomp[target, "component"]
-  vcov_g <- asreml::predict.asreml(model, classify = target, only = target, vcov = TRUE)$vcov
+  vc_g <- get_vc_g_asreml(model, target)
+  vcov_g <- asreml::predict.asreml(model,
+                                   classify = target,
+                                   only = target,
+                                   vcov = TRUE,
+                                   trace = FALSE)$vcov
 
   H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, vcov_g)
 
@@ -110,11 +123,12 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
   # Get genotype variance
-  vc_g <- model_ran$vparameters[[target]] * model_ran$sigma2
+  vc_g <- get_vc_g_asreml(model, target)
 
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,
-    sed = TRUE
+    sed = TRUE,
+    trace = FALSE
   )$sed^2
 
   vdBLUE_avg <- mean(vdBLUE_mat[upper.tri(vdBLUE_mat, diag = FALSE)])
@@ -135,7 +149,7 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   if(check_target_both(model, target)) {
     cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
   }
-  gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE)
+  gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE, trace = FALSE)
   Vd_g <- gpred$sed^2  # Variance of difference
 
   genotype_names <- gpred$pvals[[target]] # list of genotype names
@@ -146,10 +160,10 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
   if(!check_target_random(model, target)) {
     # Fit counterpart model with target as random for vc_g
     model <- fit_counterpart_model.asreml(model, target)
-    vc_g <- model$vparameters[[target]] * model$sigma2 # varcomp of geno
+    vc_g <- get_vc_g_asreml(model, target)
     H2_Delta_BLUE_parameters(vc_g, vc_g, cov = 0, Vd_g)
   } else {
-    vc_g <- model$vparameters[[target]] * model$sigma2
+    vc_g <- get_vc_g_asreml(model, target)
     H2_Delta_BLUP_parameters(vc_g, vc_g, cov = 0, Vd_g)
   }
 }
@@ -163,7 +177,7 @@ H2_Standard.asreml <- function(model, target = NULL, options = NULL) {
   if (!check_target_random(model, target)) {
     return(NA)
   }
-  vc_g <- model$vparameters[[target]] * model$sigma2
+  vc_g <- get_vc_g_asreml(model, target)
   vc_e <- model$sigma2
   # TODO: may need to remove observations where phenotype is NA
   n_r <- table(model$mf[[target]])
