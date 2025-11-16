@@ -51,18 +51,18 @@ target_vm_term_asreml <- function(model, target) {
     if(exists(name_GRM, envir = env)) {
       GRM_source <- get(name_GRM, envir = env)
       if(is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
-        GRM <- asreml::sp2Matrix(GRM_source)
+        GRMinv <- solve(asreml::sp2Matrix(GRM_source))
       } else {
-        GRM <- GRM_source
+        GRMinv <- solve(GRM_source)
       }
       if(inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
-        GRM <- solve(GRM)
+        GRMinv <- GRM
       }
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
     }
     return(list(target_vm = vpars[w],
-                GRM = GRM))
+                GRMinv = GRMinv))
   } else {
     cli::cli_abort("The {.value target} should be wrapped with vm() in the model with a known relationship matrix.")
   }

@@ -29,9 +29,8 @@
 #' @description Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 #' as described by Oakey et al. (2006).
 #'
-#' @param n_g Integer. Number of genotypes
-#' @param vc_g Numeric. Genotype variance component
-#' @param vcov_g Numeric matrix. Variance–covariance matrix of the genotype BLUPs (prediction error variances and covariances). Expected to be an n_g by n_g symmetric matrix.
+#' @param Gg_inv The estimated genotypic variance-ovariance matrix.
+#' @param C_gg Prediction error variance matrix associated with the genotype effects.
 #'
 #' @details See references for full derivation and equation for for Oakey heritability
 #'
@@ -45,9 +44,9 @@
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #'
 #' @export
-H2_Oakey_parameters <- function(n_g, vc_g, vcov_g) {
-   Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
-   M <- diag(n_g) - (Gg_inv %*% vcov_g)
+H2_Oakey_parameters <- function(Gg_inv, C_gg) {
+   n_g <- nrow(Gg_inv)
+   M <- diag(n_g) - (Gg_inv %*% C_gg)
    eM <- eigen(M)
 
    H2_Oakey <- sum(eM$values) / (n_g - 1)

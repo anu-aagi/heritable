@@ -4,14 +4,12 @@
 \alias{H2_Oakey_parameters}
 \title{Estimate Oakey's heritability}
 \usage{
-H2_Oakey_parameters(n_g, vc_g, vcov_g)
+H2_Oakey_parameters(Gg_inv, C_gg)
 }
 \arguments{
-\item{n_g}{Integer. Number of genotypes}
+\item{Gg_inv}{The estimated genotypic variance-ovariance matrix.}
 
-\item{vc_g}{Numeric. Genotype variance component}
-
-\item{vcov_g}{Numeric matrix. Variance–covariance matrix of the genotype BLUPs (prediction error variances and covariances). Expected to be an n_g by n_g symmetric matrix.}
+\item{C_gg}{Prediction error variance matrix associated with the genotype effects.}
 }
 \value{
 Single numeric value

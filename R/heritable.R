@@ -20,7 +20,7 @@ h2 <- function(model, ...) {
 h2.default <- function(
   model,
   target = NULL,
-  method = c("Cullis", "Oakey"),
+  method = c("Oakey"),
   ...
 ) {
 
@@ -28,11 +28,10 @@ h2.default <- function(
 
   initial_checks(model, target, options = NULL)
 
-  # Calculate H2 for each method
   h2_values <- sapply(method, function(m) {
     switch(
       m,
-      Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
+      #Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
       Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
       #Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
       #Delta = h2_Delta(model, target, options = list(check = FALSE)),
@@ -48,10 +47,6 @@ h2.default <- function(
   structure(h2_values, class = c("heritable", class(h2_values)))
 }
 
-#' @export
-h2_Cullis <- function(model, ...) {
-  UseMethod("h2_Cullis")
-}
 
 #' @export
 h2_Oakey <- function(model, ...) {

@@ -1,32 +1,31 @@
 
 
-#' @export
-h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
-
-  initial_checks(model, target, options)
-
-  # Check if target is random or fixed
-  if (!check_target_random(model, target)) {
-    return(NA)
-  }
-
-  vm <- target_vm_term_asreml(model, target)
-
-  n_g <-  model$noeff[[vm$target_vm]]
-  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
-
-
-  vdBLUP_mat <- asreml::predict.asreml(model,
-                                       classify = target,
-                                       only = target,
-                                       sed = TRUE,
-                                       trace = FALSE,
-  )$sed^2
-
-  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
-
-  H2_Cullis_parameters(vd_BLUP_avg, vc_g)
-}
+# h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
+#
+#   initial_checks(model, target, options)
+#
+#   # Check if target is random or fixed
+#   if (!check_target_random(model, target)) {
+#     return(NA)
+#   }
+#
+#   vm <- target_vm_term_asreml(model, target)
+#
+#   n_g <-  model$noeff[[vm$target_vm]]
+#   vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
+#
+#
+#   vdBLUP_mat <- asreml::predict.asreml(model,
+#                                        classify = target,
+#                                        only = target,
+#                                        sed = TRUE,
+#                                        trace = FALSE,
+#   )$sed^2
+#
+#   vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
+#
+#   H2_Cullis_parameters(vd_BLUP_avg, vc_g)
+# }
 
 #' @export
 h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
@@ -40,14 +39,15 @@ h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
 
   vm <- target_vm_term_asreml(model, target)
   n_g <- model$noeff[[vm$target_vm]]
-  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * sum(diag(vm$GRM)) / (n_g - 1)
+  Gg_inv <- model$vparameters[[vm$target_vm]] * model$sigma2 * vm$GRMinv
   vcov_g <- asreml::predict.asreml(model,
                                    classify = target,
                                    only = target,
                                    vcov = TRUE,
                                    trace = FALSE)$vcov
 
-  H2_Oakey_parameters(n_g, vc_g, vcov_g)
+
+  H2_Oakey_parameters(Gg_inv, vcov_g)
 }
 
 get_vc_g_asreml <- function(model, target) {
@@ -100,7 +100,9 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
                                    vcov = TRUE,
                                    trace = FALSE)$vcov
 
-  H2_Oakey <- H2_Oakey_parameters(n_g, vc_g, vcov_g)
+  Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
+
+  H2_Oakey <- H2_Oakey_parameters(Gg_inv, vcov_g)
 
   return(H2_Oakey)
 }
@@ -123,7 +125,7 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
   # Get genotype variance
-  vc_g <- get_vc_g_asreml(model, target)
+  vc_g <- get_vc_g_asreml(model_ran, target)
 
   vdBLUE_mat <- asreml::predict.asreml(model_fix,
     classify = target,

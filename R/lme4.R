@@ -94,8 +94,9 @@ H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
 
   C_inv <- PEV_from_lme4(model)
   g <- geno_components_from_lme4(model, target, C_inv)
+  Gg_inv <- diag(1 / g$vc_g, nrow = g$n_g, ncol = g$n_g)
 
-  return(H2_Oakey_parameters(g$n_g, g$vc_g, g$C22_g))
+  return(H2_Oakey_parameters(Gg_inv, g$C22_g))
 }
 
 #' @export
