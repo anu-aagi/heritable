@@ -44,7 +44,8 @@ h2.default <- function(
 
   # Set names and class
   h2_values <- stats::setNames(h2_values, method)
-  structure(h2_values, class = c("heritable", class(h2_values)))
+  structure(h2_values, class = c("heritable", class(h2_values)),
+            model = model, target = target)
 }
 
 
@@ -117,7 +118,8 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
 
   # Set names and class
   H2_values <- stats::setNames(H2_values, method)
-  structure(H2_values, class = c("heritable", class(H2_values)))
+  structure(H2_values, class = c("heritable", class(H2_values)),
+            model = model, target = target)
 }
 
 #' Calculate broad-sense heritability using Cullis method
