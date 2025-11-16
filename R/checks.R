@@ -9,9 +9,18 @@ initial_checks <- function(model, target, options) {
     # Check if target appears in the model
     check_target_exists(model, target)
 
+    if(check_target_both(model, target)) {
+      cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
+    }
+
     if (options$target_once %||% TRUE) {
       # Check if target only appears exactly once in the model
       check_target_appears_once(model, target)
+    }
+
+    # Check if target is random or fixed
+    if (!check_target_random(model, target)) {
+      cli::cli_abort("Heritability can only be calculated if {.value target} is a random effect.")
     }
   }
 }

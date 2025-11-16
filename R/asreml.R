@@ -50,6 +50,32 @@ h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   H2_Oakey_parameters(Gg_inv, vcov_g)
 }
 
+
+#' @export
+h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  vm <- target_vm_term_asreml(model, target)
+  n_g <- model$noeff[[vm$target_vm]]
+  Gg <- model$vparameters[[vm$target_vm]] * model$sigma2 * solve(vm$GRMinv)
+
+  if(type == "BLUP") {
+    gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE, trace = FALSE)
+    Vd_g <- gpred$sed^2  # Variance of difference
+    genotype_names <- gpred$pvals[[target]] # list of genotype names
+    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+    h2_Delta_BLUP_parameters(Gg, Vd_g)
+  } else if (type == "BLUE") {
+    model_fix <- fit_counterpart_model.asreml(model, target)
+    gpred <- asreml::predict.asreml(model_fix, classify = target, sed = TRUE, trace = FALSE)
+    Vd_g <- gpred$sed^2  # Variance of difference
+    genotype_names <- gpred$pvals[[target]] # list of genotype names
+    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+    h2_Delta_BLUE_parameters(Gg, Vd_g)
+  }
+}
+
 get_vc_g_asreml <- function(model, target) {
   model$vparameters[[target]] * model$sigma2
 }
@@ -59,11 +85,6 @@ get_vc_g_asreml <- function(model, target) {
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
-
-  # Check if target is random or fixed
-  if (!check_target_random(model, target)) {
-    return(NA)
-  }
 
   # Get genotype variance
   vc_g <- get_vc_g_asreml(model, target)
@@ -108,20 +129,15 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
 }
 
 
+
+
 #' @export
 H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
-  # Check if target is random or fixed
-  # TODO: 3 way check here, if both do nothing, if random fit fixed, if fixed fit random
-  if (check_target_random(model, target)) {
-    model_fix <- fit_counterpart_model.asreml(model, target)
-    model_ran <- model
-  } else {
-    model_fix <- model
-    model_ran <- fit_counterpart_model.asreml(model, target)
-  }
+  model_fix <- fit_counterpart_model.asreml(model, target)
+  model_ran <- model
 
   # Calculate the mean variance of a difference of two genotypic BLUEs
   # Get genotype variance
@@ -142,31 +158,23 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 }
 
 #' @export
-H2_Delta_pairwise.asreml <- function(model, target = NULL, options = NULL) {
+H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
 
   initial_checks(model, target, options)
-
-  # Check if target is random or fixed
-  # TODO: How to handle if both fixed and random?
-  if(check_target_both(model, target)) {
-    cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
-  }
-  gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE, trace = FALSE)
-  Vd_g <- gpred$sed^2  # Variance of difference
-
-  genotype_names <- gpred$pvals[[target]] # list of genotype names
-  ngeno <- length(genotype_names) # number of genotypes
-  dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-
-  # If fixed, compute H2 delta with BLUEs
-  if(!check_target_random(model, target)) {
-    # Fit counterpart model with target as random for vc_g
-    model <- fit_counterpart_model.asreml(model, target)
-    vc_g <- get_vc_g_asreml(model, target)
-    H2_Delta_BLUE_parameters(vc_g, vc_g, cov = 0, Vd_g)
-  } else {
-    vc_g <- get_vc_g_asreml(model, target)
-    H2_Delta_BLUP_parameters(vc_g, vc_g, cov = 0, Vd_g)
+  vc_g <- get_vc_g_asreml(model, target)
+  if(type == "BLUP") {
+    gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE, trace = FALSE)
+    Vd_g <- gpred$sed^2  # Variance of difference
+    genotype_names <- gpred$pvals[[target]] # list of genotype names
+    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+    H2_Delta_BLUP_parameters(vc_g, Vd_g)
+  } else if (type == "BLUE") {
+    model_fix <- fit_counterpart_model.asreml(model, target)
+    gpred <- asreml::predict.asreml(model_fix, classify = target, sed = TRUE, trace = FALSE)
+    Vd_g <- gpred$sed^2  # Variance of difference
+    genotype_names <- gpred$pvals[[target]] # list of genotype names
+    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+    H2_Delta_BLUE_parameters(vc_g, Vd_g)
   }
 }
 

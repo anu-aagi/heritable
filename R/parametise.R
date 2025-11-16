@@ -121,15 +121,35 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #'
 #' @export
-H2_Delta_BLUE_parameters <- function(var1, var2 = var1, cov = 0, vd_matrix) {
-   v <- var1 + var2 - 2 * cov
-   1 / (1 + vd_matrix / v)
+H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
+   denom <- 2 * vc_g
+   1 / (1 + vd_matrix / denom)
 }
 
 
 #' @export
-H2_Delta_BLUP_parameters <- function(var1, var2 = var1, cov = 0, vd_matrix) {
-  v <- var1 + var2 - 2 * cov
-  1 - (vd_matrix / v)
+H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
+  denom <- 2 * vc_g
+  1 - vd_matrix / denom
 }
+
+
+#' @export
+h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
+  vd <- diag(G_g)
+  n_g <- nrow(G_g)
+  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
+  1 / (1 + vd_matrix / denom)
+}
+
+
+#' @export
+h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
+  vd <- diag(G_g)
+  n_g <- nrow(G_g)
+  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
+  1 - vd_matrix / denom
+}
+
+
 

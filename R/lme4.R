@@ -104,17 +104,8 @@ H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
-  # Check if target is fixed or random
-  # If random, refit fixed model
-  if(check_target_random(model, target)){
-    model_ran <- model
-    model_fix <- fit_counterpart_model(model, target)
-  }
-  # If fixed, refit random model
-  else if(!check_target_random(model, target)){
-    model_fix <- model
-    model_ran <- fit_counterpart_model(model, target)
-  }
+  model_ran <- model
+  model_fix <- fit_counterpart_model(model, target)
 
   # Get genotype variance
   vc <- lme4::VarCorr(model_ran)
@@ -133,63 +124,57 @@ H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
 }
 
 #' @export
-H2_Delta_BLUE_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
-
+H2_Delta_BLUE_pairwise.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL
+) {
   initial_checks(model, target, options)
 
-  # Check if target is random or fixed
-  # TODO: How to handle if both fixed and random?
-  if(check_target_both(model, target)) {
-    cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
+  model_fix <- fit_counterpart_model(model, target)
+  model_ran <- model
+
+  # Extract vc_g and vc_e
+  vc <- lme4::VarCorr(model_ran)
+  vc_g <- vc[[target]][1]
+
+  # Calculate mean variance of a difference between genotypes
+  deltas <- emmeans::emmeans(
+    model_fix,
+    specs = as.formula(paste("pairwise ~", target))
+  )$contrasts |>
+    as.data.frame()
+  deltas$var <- deltas$SE^2 # Get variance
+
+  # Take pairwise differences and turn into variance-covariance matrix
+  lev_g <- levels(model_fix@frame[[target]])
+  n_g <- length(lev_g)
+
+  # Create variance-covariance matrix for genotypes (H2: covariance = 0)
+  # TODO: For narrow sense, we will need to replace this from the kinship matrix
+  cov_g <- matrix(0, nrow = n_g, ncol = n_g)
+  diag(cov_g) <- vc_g # Set diagonal to genotype variance
+  dimnames(cov_g) <- list(lev_g, lev_g)
+
+  # Start with empty variance matrix for differences
+  Vd_g <- matrix(0, nrow = n_g, ncol = n_g)
+  dimnames(Vd_g) <- list(lev_g, lev_g)
+
+  # Fill in the pairwise variances from deltas
+  for (i in 1:nrow(deltas)) {
+    # Extract genotype names from contrast column
+    pair <- strsplit(as.character(deltas$contrast[i]), " - ")[[1]]
+    g1 <- pair[1]
+    g2 <- pair[2]
+
+    # Variance of difference: Var(g1 - g2) = Var(g1) + Var(g2) - 2*Cov(g1, g2)
+    # Get covariance between g1 and g2 (0 by default, but can be specified)
+    Vd_g[g1, g2] <- deltas$var[i] - 2 * cov_g[g1, g2]
+    Vd_g[g2, g1] <- deltas$var[i] - 2 * cov_g[g2, g1] # symmetric
   }
 
-  # If fixed, compute H2 delta with BLUES
-  if(!check_target_random(model, target)) {
-
-    model_fix <- model
-    model_ran <- fit_counterpart_model(model, target)
-
-    # Extract vc_g and vc_e
-    vc <- lme4::VarCorr(model_ran)
-    vc_g <- vc[[target]][1]
-
-    # Calculate mean variance of a difference between genotypes
-    deltas <- emmeans::emmeans(model_fix, specs = as.formula(paste("pairwise ~", target)))$contrasts |> as.data.frame()
-    deltas$var <- deltas$SE^2 # Get variance
-
-    # Take pairwise differences and turn into variance-covariance matrix
-    lev_g <- levels(model_fix@frame[[target]])
-    n_g <- length(lev_g)
-
-    # Create variance-covariance matrix for genotypes (H2: covariance = 0)
-    # TODO: For narrow sense, we will need to replace this from the kinship matrix
-    cov_g <- matrix(0, nrow = n_g, ncol = n_g)
-    diag(cov_g) <- vc_g  # Set diagonal to genotype variance
-    dimnames(cov_g) <- list(lev_g, lev_g)
-
-    # Start with empty variance matrix for differences
-    Vd_g <- matrix(0, nrow = n_g, ncol = n_g)
-    dimnames(Vd_g) <- list(lev_g, lev_g)
-
-    # Fill in the pairwise variances from deltas
-    for (i in 1:nrow(deltas)) {
-      # Extract genotype names from contrast column
-      pair <- strsplit(as.character(deltas$contrast[i]), " - ")[[1]]
-      g1 <- pair[1]
-      g2 <- pair[2]
-
-      # Variance of difference: Var(g1 - g2) = Var(g1) + Var(g2) - 2*Cov(g1, g2)
-      # Get covariance between g1 and g2 (0 by default, but can be specified)
-      Vd_g[g1, g2] <- deltas$var[i] - 2 * cov_g[g1, g2]
-      Vd_g[g2, g1] <- deltas$var[i] - 2 * cov_g[g2, g1] # symmetric
-    }
-    } else if(check_target_random(model, target)) {
-      # Abort and tell user to compute Delta with BLUPs
-      cli::cli_abort("The target {.var {target}} is fitted as a random effect. See H2_Delta_BLUP")
-    }
-
   # H2 Delta BLUE
-  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, vc_g, cov = 0, Vd_g)
+  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(vc_g, Vd_g)
 
   return(H2_Delta_BLUE)
 }
@@ -199,32 +184,21 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
 
   initial_checks(model, target, options)
 
-  # Check if target is random or fixed
-  # TODO: How to handle if both fixed and random?
-  if(check_target_both(model, target)) {
-    cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
-  }
+  C_inv <- PEV_from_lme4(model)
+  g <- geno_components_from_lme4(model, target, C_inv)
 
-  if(check_target_random(model, target)){
-    C_inv <- PEV_from_lme4(model)
-    g <- geno_components_from_lme4(model, target, C_inv)
+  # Compute variance of difference from PEV
+  Vd_g <- outer(
+    1:nrow(g$C22_g), 1:ncol(g$C22_g),
+    Vectorize(function(i, j) g$C22_g[i, i] + g$C22_g[j, j] - 2 * g$C22_g[i, j])
+  )
 
-    # Compute variance of difference from PEV
-    Vd_g <- outer(
-      1:nrow(g$C22_g), 1:ncol(g$C22_g),
-      Vectorize(function(i, j) g$C22_g[i, i] + g$C22_g[j, j] - 2 * g$C22_g[i, j])
-    )
+  diag(Vd_g) <- NA
+  dimnames(Vd_g) <- list(g$gnames, g$gnames)
 
-    diag(Vd_g) <- NA
-    dimnames(Vd_g) <- list(g$gnames, g$gnames)
-
-  } else if(!check_target_random(model, target)) {
-    # Abort and tell user to compute Delta with BLUES
-    cli::cli_abort("The target {.var {target}} is fitted as a fixed effect. See H2_Delta_BLUE.")
-  }
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(g$vc_g, g$vc_g, cov = 0, Vd_g)
+  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(g$vc_g, Vd_g)
 
   row.names(H2_Delta_BLUP) <- rownames(Vd_g)
   colnames(H2_Delta_BLUP) <- colnames(Vd_g)
@@ -234,14 +208,14 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
 
 
 #' @export
-H2_Delta_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
+H2_Delta_pairwise.lmerMod <- function(model, target = NULL, type = NULL, options = NULL) {
 
   initial_checks(model, target, options)
 
   # Check if target is random or fixed
-  if(!check_target_random(model, target)) {
+  if(type == "BLUE") {
     H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options)
-  } else if(check_target_random(model, target)) {
+  } else if(type == "BLUP") {
     H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options)
   }
 

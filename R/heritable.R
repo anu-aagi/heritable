@@ -20,7 +20,7 @@ h2 <- function(model, ...) {
 h2.default <- function(
   model,
   target = NULL,
-  method = c("Oakey"),
+  method = c("Oakey", "Delta"),
   ...
 ) {
 
@@ -53,6 +53,35 @@ h2_Oakey <- function(model, ...) {
   UseMethod("h2_Oakey")
 }
 
+#' @export
+h2_Delta <- function(model, target = NULL, type = c("BLUE", "BLUP"), ...) {
+  UseMethod("h2_Delta")
+}
+
+#' @export
+h2_Delta.default <- function(model,
+                             target = NULL,
+                             type = c("BLUP", "BLUE"),
+                             aggregate = c("arithmetic", "harmonic"), options = NULL) {
+  aggregate <- match.arg(aggregate)
+  type <- match.arg(type)
+
+  H2D_ij <- h2_Delta_pairwise(model, target, type = type)
+  delta_values <- H2D_ij[upper.tri(H2D_ij)]
+
+  switch(aggregate,
+         "arithmetic" = mean(delta_values),
+         "harmonic" = length(delta_values) / sum(1 / delta_values))
+}
+
+
+#' @export
+h2_Delta_pairwise <- function(model, type = c("BLUE", "BLUP"), ...) {
+  UseMethod("h2_Delta_pairwise")
+}
+
+
+
 
 #' Calculate broad-sense heritability
 #' @inheritParams h2
@@ -82,7 +111,7 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
            Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
            Delta = H2_Delta(model, target, options = list(check = FALSE)),
            Standard = H2_Standard(model, target, options = list(check = FALSE)),
-           cli::cli_abort("{.fn H2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}")
+           cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
     )
   })
 
@@ -96,30 +125,40 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
 #' @inheritParams h2
 #'
 #' @export
-H2_Cullis <- function(model, ...) {
+H2_Cullis <- function(model, target = NULL, ...) {
   UseMethod("H2_Cullis")
 }
 
 #' @export
-H2_Oakey <- function(model, ...) {
+H2_Oakey <- function(model, target = NULL, ...) {
   UseMethod("H2_Oakey")
 }
 
 #' @export
-H2_Piepho <- function(model, ...) {
+H2_Piepho <- function(model, target = NULL, ...) {
   UseMethod("H2_Piepho")
 }
 
 #' @export
-H2_Delta <- function(model, ...) {
+H2_Delta <- function(
+  model,
+  target = NULL,
+  type = c("BLUP", "BLUE"),
+  aggregate = c("arithmetic", "harmonic"),
+  ...
+) {
   UseMethod("H2_Delta")
 }
 
 #' @export
-H2_Delta.default <- function(model, target = NULL, aggregate = c("arithmetic", "harmonic"), options = NULL) {
+H2_Delta.default <- function(model,
+                             target = NULL,
+                             type = c("BLUP", "BLUE"),
+                             aggregate = c("arithmetic", "harmonic"), options = NULL) {
   aggregate <- match.arg(aggregate)
+  type <- match.arg(type)
 
-  H2D_ij <- H2_Delta_pairwise(model, target)
+  H2D_ij <- H2_Delta_pairwise(model, target, type = type)
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,

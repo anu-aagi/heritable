@@ -115,14 +115,23 @@ asreml_Spcls <- c("con", "C", "lin", "pow", "pol", "leg", "spl", "dev", "ped",
 fit_counterpart_model.asreml <- function(model, target = NULL) {
     # get the terms from model object
     fixed_trms <- pull_terms.asreml(model)$fixed
+    ran_trms_without_specials <- pull_terms_without_specials.asreml(model)$random
     ran_trms <- pull_terms.asreml(model)$random
 
     # when target is in random
-    if (target %in% ran_trms) {
+    if (target %in% ran_trms_without_specials) {
+      if(target %in% ran_trms) {
         model_counter <- asreml::update.asreml(model,
                                                fixed = as.formula(paste(". ~ . +", target)),
                                                random =  as.formula(paste("~ . -", target)),
                                                trace = FALSE)
+      } else {
+        target_spcl <- ran_trms[which(ran_trms_without_specials == target)]
+        model_counter <- asreml::update.asreml(model,
+                                               fixed = as.formula(paste(". ~ . +", target)),
+                                               random =  as.formula(paste("~ . -", target_spcl)),
+                                               trace = FALSE)
+      }
     } else if (target %in% fixed_trms) { # when target is in fixed
         model_counter <- asreml::update.asreml(model,
                                                fixed = as.formula(paste(". ~ . -", target)),

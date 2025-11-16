@@ -4,16 +4,16 @@
 \alias{H2_Delta_BLUE_parameters}
 \title{Estimate heritability of differences (Delta) for BLUEs or BLUPs}
 \usage{
-H2_Delta_BLUE_parameters(var1, var2 = var1, cov = 0, vd_matrix)
+H2_Delta_BLUE_parameters(vc_g, vd_matrix)
 }
 \arguments{
+\item{vd_matrix}{Matrix. Variance of pairwise differences among BLUES or BLUPs}
+
 \item{var1}{Numeric. The variance of genotype 1}
 
 \item{var2}{Numeric. The variance of genotype 2}
 
 \item{cov}{Numeric. Covariance between genotypes 1 and 2.}
-
-\item{vd_matrix}{Matrix. Variance of pairwise differences among BLUES or BLUPs}
 }
 \value{
 Matrix of pairwise heritability of differences among BLUES or BLUPs
