@@ -49,7 +49,8 @@ H2_Oakey_parameters <- function(Gg_inv, C_gg) {
    M <- diag(n_g) - (Gg_inv %*% C_gg)
    eM <- eigen(M)
 
-   H2_Oakey <- sum(eM$values) / (n_g - 1)
+   thres <- 1e-5
+   H2_Oakey <- mean(eM$values[eM$values > thres])
    return(H2_Oakey)
 }
 
