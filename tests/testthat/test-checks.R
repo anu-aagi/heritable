@@ -33,6 +33,6 @@ test_that("Inner checks are triggered", {
   expect_true(check_target_random(model_random, target))
 
   # Method level
-  expect_message(H2(model_fixed, target, "Oakey"))
-  expect_message(H2(model_fixed, target, "Cullis"))
+  expect_error(H2(model_fixed, target, "Oakey"))
+  expect_error(H2(model_fixed, target, "Cullis"))
 })

@@ -23,21 +23,21 @@ test_that("delta method works", {
     fixed = yield ~ gen,
     random = ~ gen:block,
     data = agridat::john.alpha,
-    trace = FALSE 
+    trace = FALSE
   )
 
   target <- "gen"
-  
-  expect_equal(H2_Delta.asreml(model_random, target), 0.8090841)
-  expect_equal(H2_Delta.asreml(model_fixed, target, mean = "harmonic"),  0.8029759) 
-  expect_lt(H2_Delta.asreml(model_random, target, mean = "harmonic"), H2_Delta.asreml(model_random, target)) 
-  expect_error(H2_Delta.asreml(model_both, target, mean = "harmonic"))
 
-  res_ls <- H2_Delta_by_genotype.asreml(model_random, target = "gen")
-  expect_named(H2_Delta_by_genotype.asreml(model_random, target), levels(model_random$mf$gen))
+  expect_equal(H2_Delta(model_random, target), 0.8090841)
+  expect_error(H2_Delta(model_fixed, target, aggregate = "harmonic"))
+  expect_lt(H2_Delta(model_random, target, type = "BLUP", aggregate = "harmonic"), H2_Delta(model_random, target, type = "BLUP"))
+  expect_error(h2_Delta(model_both, target, aggregate = "harmonic"))
+
+  res_ls <- H2_Delta_by_genotype(model_random, target = "gen", type = "BLUP")
+  expect_named(H2_Delta_by_genotype(model_random, target, type = "BLUP"), levels(model_random$mf$gen))
   expect_true(length(res_ls) == length(levels(model_random$mf[["gen"]])))
-  
-  H2_mat <- H2_Delta_pairwise.asreml(model_random, target = "gen")
+
+  H2_mat <- H2_Delta_pairwise(model_random, target = "gen", type = "BLUP")
   expect_true(is.matrix(as.matrix(H2_mat)))
   expected <- rowMeans(as.matrix(H2_mat), na.rm = TRUE)
 

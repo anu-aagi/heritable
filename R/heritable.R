@@ -18,24 +18,21 @@ h2 <- function(model, ...) {
 
 #' @export
 h2.default <- function(
-  model,
-  target = NULL,
-  method = c("Oakey", "Delta"),
-  ...
-) {
-
+    model,
+    target = NULL,
+    method = c("Oakey", "Delta"),
+    ...) {
   method <- match.arg(method, several.ok = TRUE)
 
   initial_checks(model, target, options = NULL)
 
   h2_values <- sapply(method, function(m) {
-    switch(
-      m,
-      #Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
+    switch(m,
+      # Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
       Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
-      #Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
-      #Delta = h2_Delta(model, target, options = list(check = FALSE)),
-      #Standard = h2_Standard(model, target, options = list(check = FALSE)),
+      # Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
+      # Delta = h2_Delta(model, target, options = list(check = FALSE)),
+      # Standard = h2_Standard(model, target, options = list(check = FALSE)),
       cli::cli_abort(
         "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
       )
@@ -44,8 +41,10 @@ h2.default <- function(
 
   # Set names and class
   h2_values <- stats::setNames(h2_values, method)
-  structure(h2_values, class = c("heritable", class(h2_values)),
-            model = model, target = target)
+  structure(h2_values,
+    class = c("heritable", class(h2_values)),
+    model = model, target = target
+  )
 }
 
 
@@ -71,8 +70,9 @@ h2_Delta.default <- function(model,
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,
-         "arithmetic" = mean(delta_values),
-         "harmonic" = length(delta_values) / sum(1 / delta_values))
+    "arithmetic" = mean(delta_values),
+    "harmonic" = length(delta_values) / sum(1 / delta_values)
+  )
 }
 
 
@@ -107,19 +107,21 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
     switch(m,
-           Cullis = H2_Cullis(model, target, options = list(check = FALSE)),
-           Oakey = H2_Oakey(model, target, options = list(check = FALSE)),
-           Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
-           Delta = H2_Delta(model, target, options = list(check = FALSE)),
-           Standard = H2_Standard(model, target, options = list(check = FALSE)),
-           cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
+      Cullis = H2_Cullis(model, target, options = list(check = FALSE)),
+      Oakey = H2_Oakey(model, target, options = list(check = FALSE)),
+      Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
+      Delta = H2_Delta(model, target, options = list(check = FALSE)),
+      Standard = H2_Standard(model, target, options = list(check = FALSE)),
+      cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
     )
   })
 
   # Set names and class
   H2_values <- stats::setNames(H2_values, method)
-  structure(H2_values, class = c("heritable", class(H2_values)),
-            model = model, target = target)
+  structure(H2_values,
+    class = c("heritable", class(H2_values)),
+    model = model, target = target
+  )
 }
 
 #' Calculate broad-sense heritability using Cullis method
@@ -143,12 +145,11 @@ H2_Piepho <- function(model, target = NULL, ...) {
 
 #' @export
 H2_Delta <- function(
-  model,
-  target = NULL,
-  type = c("BLUP", "BLUE"),
-  aggregate = c("arithmetic", "harmonic"),
-  ...
-) {
+    model,
+    target = NULL,
+    type = c("BLUP", "BLUE"),
+    aggregate = c("arithmetic", "harmonic"),
+    ...) {
   UseMethod("H2_Delta")
 }
 
@@ -164,8 +165,9 @@ H2_Delta.default <- function(model,
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,
-         "arithmetic" = mean(delta_values),
-         "harmonic" = length(delta_values) / sum(1 / delta_values))
+    "arithmetic" = mean(delta_values),
+    "harmonic" = length(delta_values) / sum(1 / delta_values)
+  )
 }
 
 #' @export
@@ -174,8 +176,8 @@ H2_Delta_by_genotype <- function(model, ...) {
 }
 
 #' @export
-H2_Delta_by_genotype.default <- function(model, target = NULL, options = NULL) {
-  H2D_ij <- H2_Delta_pairwise(model, target)
+H2_Delta_by_genotype.default <- function(model, target = NULL, type = NULL, options = NULL) {
+  H2D_ij <- H2_Delta_pairwise(model, target, type, options)
 
   H2D_i <- as.matrix(H2D_ij) |>
     rowMeans(na.rm = TRUE) |>
@@ -198,4 +200,3 @@ H2_Delta_pairwise <- function(model, ...) {
 H2_Standard <- function(model, ...) {
   UseMethod("H2_Standard")
 }
-
