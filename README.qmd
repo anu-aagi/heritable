@@ -56,7 +56,7 @@ H2(fit_asreml, target = "gen")
 H2(fit_lme4, target = "gen")
 ```
 
-Working as data using tidyverse style of data wranling.
+Working as data using tidyverse style of data wrangling.
 
 
 ```{r}

@@ -46,23 +46,58 @@ fit_lme4 <- lme4::lmer(yield ~ rep + (1|gen) + (1|rep:block),
 
 ``` r
 H2(fit_asreml, target = "gen")
-#>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8090841 0.8090728 0.8029760 0.8090841 0.8400648
+#> `gen` was fitted as a random effect. We will fit `gen` as a fixed effect to
+#> calculate heritability.
+#> 
+#> 
+#> ── Heritability estimates: ──
+#> 
+#> 
+#> 
+#> `Cullis`: 0.8090841
+#> 
+#> `Oakey`: 0.8090728
+#> 
+#> `Delta`: 0.8090841
+#> 
+#> `Piepho`: 0.8029759
+#> 
+#> `Naive`: 0.6364751
 H2(fit_lme4, target = "gen")
-#>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8091339 0.8091339 0.7966376 0.8091339 0.8400679
+#> `gen` was fitted as a random effect. We will fit `gen` as a fixed effect to
+#> calculate heritability.
+#> 
+#> 
+#> ── Heritability estimates: ──
+#> 
+#> 
+#> 
+#> `Cullis`: 0.8091338
+#> 
+#> `Oakey`: 0.8091338
+#> 
+#> `Piepho`: 0.7966375
+#> 
+#> `Delta`: 0.8091338
+#> 
+#> `Naive`: 0.6364804
 ```
 
-Working as data using tidyverse style of data wranling.
+Working as data using tidyverse style of data wrangling.
 
 ``` r
 library(tidyverse)
+#> Warning: package 'ggplot2' was built under R version 4.4.1
+#> Warning: package 'tibble' was built under R version 4.4.1
+#> Warning: package 'tidyr' was built under R version 4.4.1
+#> Warning: package 'purrr' was built under R version 4.4.1
+#> Warning: package 'lubridate' was built under R version 4.4.1
 tibble(model = list(fit_lme4, fit_asreml)) |> 
   mutate(H2 = map(model, ~H2(.x, target = "gen"))) |> 
   unnest_wider(H2)
 #> # A tibble: 2 × 6
-#>   model     Cullis     Oakey      Piepho     Delta      Standard  
+#>   model     Cullis     Oakey      Piepho     Delta      Naive     
 #>   <list>    <heritabl> <heritabl> <heritabl> <heritabl> <heritabl>
-#> 1 <lmerMod> 0.8091339  0.8091339  0.7966376  0.8091339  0.8400679 
-#> 2 <asreml>  0.8090841  0.8090728  0.8029760  0.8090841  0.8400648
+#> 1 <lmerMod> 0.8091338  0.8091338  0.7966375  0.8091338  0.6364804 
+#> 2 <asreml>  0.8090841  0.8090728  0.8029759  0.8090841  0.6364751
 ```
