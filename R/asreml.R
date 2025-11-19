@@ -29,11 +29,6 @@
 h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
-  # Check if target is random or fixed
-  if (!check_target_random(model, target)) {
-    return(NA)
-  }
-
   vm <- target_vm_term_asreml(model, target)
   n_g <- model$noeff[[vm$target_vm]]
   Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
