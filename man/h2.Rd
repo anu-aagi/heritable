@@ -24,3 +24,16 @@ Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".}
 \description{
 Calculate broad-sense heritability
 }
+\details{
+The following heritability methods are currently implemented:
+\itemize{
+\item Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+\item Oakey: \link{#TODO Insert equation here}
+}
+}
+\references{
+\itemize{
+\item Cullis et al. (2006) #TODO
+#' - Oakey et al. (2006) #TODO
+}
+}

@@ -1,5 +1,3 @@
-
-
 #' @importFrom vctrs vec_ptype2
 #' @export
 vec_ptype2.heritable.heritable <- function(x, y, ...) double()

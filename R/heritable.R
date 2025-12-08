@@ -4,13 +4,6 @@
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param method The method to use for calculating heritability. Options are "Cullis", "Oakey", "BLUE", "BLUP", "Piepho", "Reg", and "SumDiv". Default is "Cullis".
 #' @param ... Additional arguments passed to specific methods. See Details
-#' @details The following heritability methods are currently implemented:
-#'
-#' - Cullis: [#TODO Insert equation here]
-#' - Oakey: [#TODO Insert equation here]
-#' @references
-#' - Cullis et al. (2006) #TODO
-#' - Oakey et al. (2006) #TODO
 #' @export
 h2 <- function(model, ...) {
   UseMethod("h2")
@@ -83,12 +76,18 @@ h2_Delta_pairwise <- function(model, type = c("BLUE", "BLUP"), ...) {
 
 
 
-
 #' Calculate broad-sense heritability
 #' @inheritParams h2
 #' @param method Character vector of methods to calculate heritability.
 #'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
 #' @param target The name of the random effect for which heritability is to be calculated.
+#' @details The following heritability methods are currently implemented:
+#'
+#' - Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#' - Oakey: [#TODO Insert equation here]
+#' @references
+#' - Cullis et al. (2006) #TODO
+#' #' - Oakey et al. (2006) #TODO
 #' @export
 H2 <- function(model, target = NULL,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),

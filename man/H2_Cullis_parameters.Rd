@@ -19,9 +19,15 @@ Compute the Cullis heritability for genotype means using the average
 variance of pairwise differences of best linear unbiased predictors (BLUPs).
 }
 \details{
-The equation for Cullis heritability is as follows:
+The equation for Cullis heritability is as follow
 
-\eqn{H^2 = 1 - (vd_BLUP_avg / (2 * vc_g))}
+\deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+
+where:
+\itemize{
+\item \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
+\item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
 }
 \examples{
 H2_Cullis_parameters(vd_BLUP_avg = 0.25, vc_g = 0.8)

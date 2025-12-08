@@ -14,7 +14,8 @@ Imports:
     emmeans,
     Matrix,
     reformulas,
-    stringr
+    stringr,
+    vctrs
 Suggests: 
     testthat (>= 3.0.0),
     agridat,

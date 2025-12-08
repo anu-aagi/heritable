@@ -3,9 +3,13 @@
 #' @description Compute the Cullis heritability for genotype means using the average
 #' variance of pairwise differences of best linear unbiased predictors (BLUPs).
 #'
-#' @details The equation for Cullis heritability is as follows:
+#' @details The equation for Cullis heritability is as follow
 #'
-#' \eqn{H^2 = 1 - (vd_BLUP_avg / (2 * vc_g))}
+#' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#'
+#' where:
+#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
 #'
 #' @param vd_BLUP_avg Numeric. Average variance of pairwise differences among BLUPs
 #' @param vc_g Numeric. Genotype variance component
@@ -29,16 +33,22 @@
 #' @description Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 #' as described by Oakey et al. (2006).
 #'
-#' @param Gg_inv The estimated genotypic variance-ovariance matrix.
+#' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
 #' @param C_gg Prediction error variance matrix associated with the genotype effects.
 #'
-#' @details See references for full derivation and equation for for Oakey heritability
+#' @details See pages 813 and 818 of reference for full derivation and explanation for Oakey's heritability
 #'
+#' \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' where:
+#' - \eqn{n_g} is the number of genotypes
+#' - \eqn{n_z} is the number of zero eigenvalues
+#' - \eqn{\lambda_i} is the ith eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
 #'
 #' @return Single numeric value
 #'
 #' @examples
-#' # H2_Oakey_parameters(n_g = 50, vc_g = 1.2, vcov_g = diag(0.3, 50, 50))
+#' H2_Oakey_parameters(Gg_inv, C_gg)
 #'
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z

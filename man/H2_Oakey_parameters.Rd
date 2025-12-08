@@ -7,7 +7,7 @@
 H2_Oakey_parameters(Gg_inv, C_gg)
 }
 \arguments{
-\item{Gg_inv}{The estimated genotypic variance-ovariance matrix.}
+\item{Gg_inv}{The inverse of the genotypic variance-covariance matrix.}
 
 \item{C_gg}{Prediction error variance matrix associated with the genotype effects.}
 }
@@ -19,10 +19,19 @@ Compute heritability for genotype means using the variance–covariance matrix o
 as described by Oakey et al. (2006).
 }
 \details{
-See references for full derivation and equation for for Oakey heritability
+See pages 813 and 818 of reference for full derivation and explanation for Oakey's heritability
+
+\deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+where:
+\itemize{
+\item \eqn{n_g} is the number of genotypes
+\item \eqn{n_z} is the number of zero eigenvalues
+\item \eqn{\lambda_i} is the eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
+\item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
 }
 \examples{
-# H2_Oakey_parameters(n_g = 50, vc_g = 1.2, vcov_g = diag(0.3, 50, 50))
+H2_Oakey_parameters(Gg_inv, C_gg)
 
 }
 \references{
