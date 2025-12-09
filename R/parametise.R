@@ -139,7 +139,7 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
 #'
 #' @examples
-#' H2_Delta_BLUE_parameters(var1 = 0.25, cov = 0, vd_BLUE_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+#' H2_Delta_BLUE_parameters(vc_g = 0.25, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
 #'
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376

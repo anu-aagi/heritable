@@ -4,14 +4,7 @@
 \alias{H2_Cullis}
 \title{Calculate broad-sense heritability using Cullis method}
 \usage{
-H2_Cullis(model, target = NULL, ...)
-}
-\arguments{
-\item{model}{A fitted model object. Currently only supports models with class \code{asreml}}
-
-\item{target}{The name of the random effect for which heritability is to be calculated.}
-
-\item{...}{Additional arguments passed to specific methods. See Details}
+H2_Cullis(model, target = NULL, options)
 }
 \description{
 Calculate broad-sense heritability using Cullis method

@@ -13,7 +13,6 @@ Imports:
     cli,
     emmeans,
     Matrix,
-    reformulas,
     stringr,
     vctrs
 Suggests: 

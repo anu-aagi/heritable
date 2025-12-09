@@ -25,7 +25,7 @@ Compute heritability of differences using the variance of differences between tw
 See reference for full derivation and equation for heritability Delta BLUES
 }
 \examples{
-H2_Delta_BLUE_parameters(var1 = 0.25, cov = 0, vd_BLUE_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+H2_Delta_BLUE_parameters(vc_g = 0.25, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
 
 }
 \references{

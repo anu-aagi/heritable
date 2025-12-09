@@ -42,12 +42,12 @@ h2.default <- function(
 
 
 #' @export
-h2_Oakey <- function(model, ...) {
+h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
 }
 
 #' @export
-h2_Delta <- function(model, target = NULL, type = c("BLUE", "BLUP"), ...) {
+h2_Delta <- function(model, target = NULL, type = c("BLUE", "BLUP"), aggregate, options) {
   UseMethod("h2_Delta")
 }
 
@@ -55,7 +55,8 @@ h2_Delta <- function(model, target = NULL, type = c("BLUE", "BLUP"), ...) {
 h2_Delta.default <- function(model,
                              target = NULL,
                              type = c("BLUP", "BLUE"),
-                             aggregate = c("arithmetic", "harmonic"), options = NULL) {
+                             aggregate = c("arithmetic", "harmonic"),
+                             options = NULL) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
@@ -70,35 +71,33 @@ h2_Delta.default <- function(model,
 
 
 #' @export
-h2_Delta_pairwise <- function(model, type = c("BLUE", "BLUP"), ...) {
+h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")
 }
 
 
 
 #' Calculate broad-sense heritability
-#' @inheritParams h2
 #' @param method Character vector of methods to calculate heritability.
 #'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @details The following heritability methods are currently implemented:
 #'
 #' - Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-#' - Oakey: [#TODO Insert equation here]
+#' - Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
 #' @references
-#' - Cullis et al. (2006) #TODO
-#' #' - Oakey et al. (2006) #TODO
+#' - Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+#' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #' @export
 H2 <- function(model, target = NULL,
-               method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-               ...) {
+               method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard")
+               ) {
   UseMethod("H2")
 }
 
 #' @importFrom stats setNames
 #' @export
 H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard")) {
-  # TODO: This will change if we want to vectorise over multiple methods
   method <- match.arg(method, several.ok = TRUE)
 
   initial_checks(model, target, options = NULL)
@@ -125,20 +124,19 @@ H2.default <- function(model, target = NULL, method = c("Cullis", "Oakey", "Piep
 
 #' Calculate broad-sense heritability using Cullis method
 #'
-#' @inheritParams h2
 #'
 #' @export
-H2_Cullis <- function(model, target = NULL, ...) {
+H2_Cullis <- function(model, target = NULL, options) {
   UseMethod("H2_Cullis")
 }
 
 #' @export
-H2_Oakey <- function(model, target = NULL, ...) {
+H2_Oakey <- function(model, target = NULL, options) {
   UseMethod("H2_Oakey")
 }
 
 #' @export
-H2_Piepho <- function(model, target = NULL, ...) {
+H2_Piepho <- function(model, target = NULL, options) {
   UseMethod("H2_Piepho")
 }
 
@@ -148,7 +146,7 @@ H2_Delta <- function(
     target = NULL,
     type = c("BLUP", "BLUE"),
     aggregate = c("arithmetic", "harmonic"),
-    ...) {
+    options) {
   UseMethod("H2_Delta")
 }
 
@@ -156,7 +154,8 @@ H2_Delta <- function(
 H2_Delta.default <- function(model,
                              target = NULL,
                              type = c("BLUP", "BLUE"),
-                             aggregate = c("arithmetic", "harmonic"), options = NULL) {
+                             aggregate = c("arithmetic", "harmonic"),
+                             options = NULL) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
@@ -170,7 +169,7 @@ H2_Delta.default <- function(model,
 }
 
 #' @export
-H2_Delta_by_genotype <- function(model, ...) {
+H2_Delta_by_genotype <- function(model, target, type, options) {
   UseMethod("H2_Delta_by_genotype")
 }
 
@@ -191,11 +190,11 @@ H2_Delta_by_genotype.default <- function(model, target = NULL, type = NULL, opti
 
 
 #' @export
-H2_Delta_pairwise <- function(model, ...) {
+H2_Delta_pairwise <- function(model, target, type, options) {
   UseMethod("H2_Delta_pairwise")
 }
 
 #' @export
-H2_Standard <- function(model, ...) {
+H2_Standard <- function(model, target, options) {
   UseMethod("H2_Standard")
 }

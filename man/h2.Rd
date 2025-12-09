@@ -7,19 +7,14 @@
 H2(
   model,
   target = NULL,
-  method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-  ...
+  method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard")
 )
 }
 \arguments{
-\item{model}{A fitted model object. Currently only supports models with class \code{asreml}}
-
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{method}{Character vector of methods to calculate heritability.
 Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".}
-
-\item{...}{Additional arguments passed to specific methods. See Details}
 }
 \description{
 Calculate broad-sense heritability
@@ -28,12 +23,12 @@ Calculate broad-sense heritability
 The following heritability methods are currently implemented:
 \itemize{
 \item Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-\item Oakey: \link{#TODO Insert equation here}
+\item Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
 }
 }
 \references{
 \itemize{
-\item Cullis et al. (2006) #TODO
-#' - Oakey et al. (2006) #TODO
+\item Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 }
 }
