@@ -46,8 +46,16 @@
 #' - \eqn{\sigma^2} is the variance attributed to differences between genotype
 #'
 #' @return Single numeric value
-#'
 #' @examples
+#' Gg_inv = diag(1/0.15, 3, 3)
+#' C_gg <- matrix(
+#'   c(
+#'     0.08, 0.01, 0.00,
+#'     0.01, 0.07, 0.01,
+#'     0.00, 0.01, 0.09
+#'   ),
+#'   nrow = 3, byrow = TRUE
+#' )
 #' H2_Oakey_parameters(Gg_inv, C_gg)
 #'
 #' @references
@@ -70,7 +78,12 @@ H2_Oakey_parameters <- function(Gg_inv, C_gg) {
 #'
 #' @details The equation for Standard heritability is as follows:
 #'
-#' \eqn{H^2 = 1 - (vc_g / (vc_g + vc_e))}
+#' \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+#' where:
+#' - \eqn{n_g} is the number of genotypes
+#' - \eqn{n_{gi}} is the number of replicate for a given genotype i
+#' - \eqn{\sigma_g} is the variance attributed to genotype differences
+#' - \eqn{\sigma_p} is the variance attributed to phenotypic differences
 #'
 #' @param vc_g Numeric. Genotype variance component
 #' @param vc_e Numeric. Residuals variance component

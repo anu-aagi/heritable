@@ -26,11 +26,20 @@ where:
 \itemize{
 \item \eqn{n_g} is the number of genotypes
 \item \eqn{n_z} is the number of zero eigenvalues
-\item \eqn{\lambda_i} is the eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
+\item \eqn{\lambda_i} is the ith eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
 \item \eqn{\sigma^2} is the variance attributed to differences between genotype
 }
 }
 \examples{
+Gg_inv = diag(1/0.15, 3, 3)
+C_gg <- matrix(
+  c(
+    0.08, 0.01, 0.00,
+    0.01, 0.07, 0.01,
+    0.00, 0.01, 0.09
+  ),
+  nrow = 3, byrow = TRUE
+)
 H2_Oakey_parameters(Gg_inv, C_gg)
 
 }

@@ -22,7 +22,14 @@ Compute Standard heritability for genotype means using the variance components o
 \details{
 The equation for Standard heritability is as follows:
 
-\eqn{H^2 = 1 - (vc_g / (vc_g + vc_e))}
+\deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+where:
+\itemize{
+\item \eqn{n_g} is the number of genotypes
+\item \eqn{n_{gi}} is the number of replicate for a given genotype i
+\item \eqn{\sigma_g} is the variance attributed to genotype differences
+\item \eqn{\sigma_p} is the variance attributed to phenotypic differences
+}
 }
 \examples{
 H2_Standard_parameters(vc_g = 0.25, vc_e = 0.8)
