@@ -7,6 +7,8 @@
 H2_Cullis(model, target = NULL, options)
 }
 \arguments{
+\item{model}{Model object of class lmerMod or asreml}
+
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}

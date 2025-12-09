@@ -12,6 +12,8 @@ H2(
 )
 }
 \arguments{
+\item{model}{Model object of class lmerMod or asreml}
+
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{method}{Character vector of methods to calculate heritability.

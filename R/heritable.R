@@ -1,14 +1,15 @@
 #' Calculate narrow-sense heritability
-#'
+#' @name h2
 #' @param model A fitted model object. Currently only supports models with class `asreml`
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param method The method to use for calculating heritability. Options are "Cullis", "Oakey", "BLUE", "BLUP", "Piepho", "Reg", and "SumDiv". Default is "Cullis".
-#' @param ... Additional arguments passed to specific methods. See Details
+#' @param options NULL by default, for internal checking of model object before calculations
 #' @export
-h2 <- function(model, ...) {
+h2 <- function(model, target, method, options) {
   UseMethod("h2")
 }
 
+#' @inheritParams h2
 #' @export
 h2.default <- function(
     model,
@@ -40,17 +41,28 @@ h2.default <- function(
   )
 }
 
-
+#' @inheritParams h2
 #' @export
 h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
 }
 
+#' Calculate narrow-sense heritability of difference
+#' @name h2_Delta
+#' @param model A fitted model object. Currently only supports models with class `asreml`
+#' @param target The name of the random effect for which heritability is to be calculated.
+#' @param type Whether to use BLUEs or BLUPs for calculating heritability.
+#' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
+#' @param options NULL by default, for internal checking of model object before calculations
 #' @export
-h2_Delta <- function(model, target = NULL, type = c("BLUE", "BLUP"), aggregate, options) {
+h2_Delta <- function(model,
+                     target = NULL,
+                     type = c("BLUE", "BLUP"),
+                     aggregate = c("arithmetic", "harmonic"), options) {
   UseMethod("h2_Delta")
 }
 
+#' @inheritParams h2_Delta
 #' @export
 h2_Delta.default <- function(model,
                              target = NULL,
@@ -69,7 +81,7 @@ h2_Delta.default <- function(model,
   )
 }
 
-
+#' @inheritParams h2_Delta
 #' @export
 h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")
@@ -78,11 +90,12 @@ h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) 
 
 
 #' Calculate broad-sense heritability
+#' @param model Model object of class lmerMod or asreml
 #' @param method Character vector of methods to calculate heritability.
 #'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param options NULL by default, for internal checking of model object before calculations
-#'
+#' @name H2
 #' @details The following heritability methods are currently implemented:
 #'
 #' - Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
@@ -109,7 +122,8 @@ H2 <- function(model,
 #' @export
 H2.default <- function(model,
                        target = NULL,
-                       method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard")
+                       method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
+                       options
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
@@ -161,6 +175,7 @@ H2_Piepho <- function(model, target = NULL, options) {
 #' @rdname H2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
+#' @param options NULL by default, for internal checking of model object before calculations
 #' @export
 H2_Delta <- function(
     model,
@@ -201,7 +216,10 @@ H2_Delta_by_genotype <- function(model, target, type, options) {
 }
 
 #' @export
-H2_Delta_by_genotype.default <- function(model, target = NULL, type = NULL, options = NULL) {
+H2_Delta_by_genotype.default <- function(model,
+                                         target = NULL,
+                                         type = NULL,
+                                         options = NULL) {
   H2D_ij <- H2_Delta_pairwise(model, target, type, options)
 
   H2D_i <- as.matrix(H2D_ij) |>
@@ -217,12 +235,14 @@ H2_Delta_by_genotype.default <- function(model, target = NULL, type = NULL, opti
 
 
 #' Calculate broad-sense heritability of pariwise differences for all genotypes
+#' @inheritParams H2_Delta
 #' @export
 H2_Delta_pairwise <- function(model, target, type, options) {
   UseMethod("H2_Delta_pairwise")
 }
 
-#' Calculate stanard broad-sense heritability
+#' Calculate standard broad-sense heritability
+#' @inheritParams H2
 #' @export
 H2_Standard <- function(model, target, options) {
   UseMethod("H2_Standard")

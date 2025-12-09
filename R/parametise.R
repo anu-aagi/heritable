@@ -126,15 +126,13 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
   return(H2_Piepho)
 }
 
-#' Estimate heritability of differences (Delta) for BLUEs or BLUPs
-#'
-#' @description Compute heritability of differences using the variance of differences between two BLUES.
+#' Estimate broad-sense heritability of differences for BLUEs or BLUPs
+#' @name H2_Delta_BLUE_parameters
+#' @description Compute heritability of differences using the variance of differences between two BLUEs/BLUPs.
 #'
 #' @details See reference for full derivation and equation for heritability Delta BLUES
 #'
-#' @param var1 Numeric. The variance of genotype 1
-#' @param var2 Numeric. The variance of genotype 2
-#' @param cov Numeric. Covariance between genotypes 1 and 2.
+#' @param vc_g Numeric. Genotype variance component
 #' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
 #'
@@ -150,14 +148,29 @@ H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
    1 / (1 + vd_matrix / denom)
 }
 
-
+#' @inheritParams H2_Delta_BLUE_parameters
 #' @export
 H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
   denom <- 2 * vc_g
   1 - vd_matrix / denom
 }
 
-
+#' Estimate narrow-sense heritability of differences for BLUEs or BLUPs
+#' @rdname h2_Delta_BLUE_parameters
+#' @description Compute narrow-sense heritability of differences using the variance of differences between two BLUEs/BLUPs.
+#'
+#' @details See reference for full derivation and equation for heritability Delta BLUES
+#'
+#' @param G_g Numeric. Genotypic variance-covariance matrix.
+#' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
+#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
+#'
+#' @examples
+#' h2_Delta_BLUE_parameters(G_g = diag(0.15, 2, 2), vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+#'
+#' @references
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#'
 #' @export
 h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   vd <- diag(G_g)
@@ -166,7 +179,7 @@ h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   1 / (1 + vd_matrix / denom)
 }
 
-
+#' @inheritParams h2_Delta_BLUE_parameters
 #' @export
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
   vd <- diag(G_g)
