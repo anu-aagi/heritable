@@ -108,7 +108,7 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #'
 #' @details The equation for Piepho's heritability is as follows:
 #'
-#' \eqn{H^2 = 1 - (vc_g / (vc_g + vd_BLUE_avg / 2))}
+#' \deqn{H^2_{Piepho} = \frac{\sigma^2_g_}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 #'
 #' @param vc_g Numeric. Genotype variance component
 #' @param vd_BLUE_avg Numeric. Mean variance of pairwise differences among BLUES

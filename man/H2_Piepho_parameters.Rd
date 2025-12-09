@@ -20,7 +20,7 @@ Compute Piepho's heritability using the variance of differences between two BLUE
 \details{
 The equation for Piepho's heritability is as follows:
 
-\eqn{H^2 = 1 - (vc_g / (vc_g + vd_BLUE_avg / 2))}
+\deqn{H^2_{Piepho} = \frac{\sigma^2_g_}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 }
 \examples{
 H2_Piepho_parameters(vc_g = 0.25, vd_BLUE_avg = 0.68)
