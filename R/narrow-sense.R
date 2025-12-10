@@ -10,8 +10,8 @@
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @aliases H2
 #' @usage
-#' h2(model, target, method, options)
-#' H2(model, target, method, options)
+#' h2(model, target, method = c("Oakey", "Delta"), options)
+#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
 #' @return A named numeric vector, length matching number of methods supplied
 #' @details
 #'
@@ -107,12 +107,23 @@ h2_Oakey <- function(model, target, options) {
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
-#' @param type Whether to use BLUEs or BLUPs for calculating heritability.
-#' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
-#' @param options NULL by default, for internal checking of model object before calculations
 #' @usage
-#' h2_Delta(model, target, type, aggregate)
-#' H2_Delta(model, target, type, aggregate)
+#' h2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
+#' H2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
+#' @details
+#' The heritability of differences between genotypes is given by:
+#'
+#' \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#'
+#' where:
+#'
+#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPs (BLUEs if `method = "BLUE"`)
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
+#'
+#' See reference page 995 - 997 for full derivation of this heritability measure and related variants
+#' @references
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @export
 h2_Delta <- function(model,
                      target = NULL,
@@ -140,7 +151,17 @@ h2_Delta.default <- function(model,
   )
 }
 
+#' Calculate heritability of differences for a given genotype
+#' @inheritParams h2_Delta
+#' @aliases H2_Delta_by_genotype
+#' @export
+h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
+  UseMethod("h2_Delta_by_genotype")
+}
 
+#' Calculate pairwise heritability of differences between genotypes
+#' @inheritParams h2_Delta
+#' @aliases H2_Delta_pairwise
 #' @export
 h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")

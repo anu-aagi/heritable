@@ -5,15 +5,15 @@
 \alias{H2_Delta}
 \title{Calculate average heritability of differences between genotypes}
 \usage{
-h2_Delta(model, target, type, aggregate)
-H2_Delta(model, target, type, aggregate)
+h2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
+H2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{type}{Whether to use BLUEs or BLUPs for calculating heritability.}
+\item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
 
 \item{aggregate}{character, when taking means in the calculation, should harmonic or arithmetic mean be used?}
 
@@ -21,4 +21,23 @@ H2_Delta(model, target, type, aggregate)
 }
 \description{
 Calculate average heritability of differences between genotypes
+}
+\details{
+The heritability of differences between genotypes is given by:
+
+\deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+
+where:
+\itemize{
+\item \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPs (BLUEs if \code{method = "BLUE"})
+\item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
+
+See reference page 995 - 997 for full derivation of this heritability measure and related variants
+}
+\references{
+Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+}
+\seealso{
+\code{\link[=h2_Delta_by_genotype]{h2_Delta_by_genotype()}}, \code{\link[=h2_Delta_by_genotype]{H2_Delta_by_genotype()}}, \code{\link[=h2_Delta_pairwise]{h2_Delta_pairwise()}}, \code{\link[=h2_Delta_pairwise]{H2_Delta_pairwise()}}
 }
