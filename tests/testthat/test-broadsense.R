@@ -65,3 +65,24 @@ test_that("H2 works for lme4",{
 
   expect_error(H2(lmer_model_g_by_e, target = "gen"))
 })
+
+test_that("H2 can handle multiple methods", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+
+  asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
+
+  # Test multiple methods
+  res_multi <- H2(asreml_model_random, target = "gen", method = c("Cullis", "Oakey"))
+  expect_named(res_multi, c("Cullis", "Oakey"))
+  expect_equal(res_multi[["Cullis"]], 0.8090841, tolerance = 1e-3)
+  expect_equal(res_multi[["Oakey"]], 0.8090728, tolerance = 1e-3)
+
+  # Test all methods
+  res_all <- H2(asreml_model_random, target = "gen",
+                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"))
+  expect_named(res_all, c("Cullis", "Oakey", "Delta", "Piepho", "Standard"))
+  expect_length(res_all, 5)
+  expect_type(res_all, "double")
+})
+

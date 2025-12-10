@@ -1,20 +1,16 @@
-test_that("narrowsense heritability works", {
+test_that("h2 heritability works", {
 
-  model <- asreml::asreml(y ~ rep,
-                          random=~ vm(gen, lettuce_GRM),
-                          data = lettuce_phenotypes |>
-                            subset(loc == "L2"))
+  asreml_model_grm <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
 
-  # should be 0.586 / getting 0.5788
-  h2_Oakey(model, target = "gen")
+  # Should be 0.871 -- getting right
+  expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUP"), 0.871, tolerance = 1e-3)
 
-  # should be 0.871 -- getting right
-  h2_Delta(model, target = "gen", type = "BLUP")
+  # TODO: Why are values not matching? How do I know 0.818 is correct?
   # should be 0.818 -- getting 0.8459519
-  h2_Delta(model, target = "gen", type = "BLUE")
+  h2_Delta(asreml_model_grm, target = "gen", type = "BLUE")
+  # should be 0.586 / getting 0.5788
+  h2_Oakey(asreml_model_grm, target = "gen")
 
-  h2_Delta_pairwise(model, target = "gen", type = "BLUP")
-  h2_Delta_pairwise(model, target = "gen", type = "BLUE")
-
-  h2_Delta_by_genotype(model, target = "gen", type = "BLUP")
+  expect_s4_class(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP"), "dspMatrix")
+  expect_type(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), "list")
 })
