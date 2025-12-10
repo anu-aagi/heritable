@@ -28,14 +28,13 @@
     return(H2_Cullis)
  }
 
-#' Estimate Oakey's heritability
+#' Estimate Oakey's heritability using variance components
 #'
-#' @description Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
-#' as described by Oakey et al. (2006).
+#' @description Rather than providing a model object, supply the necessary components to compute
+#' this heritability measure.
 #'
 #' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
 #' @param C_gg Prediction error variance matrix associated with the genotype effects.
-#'
 #' @return Single numeric value
 #' @examples
 #' Gg_inv = diag(1/0.15, 3, 3)

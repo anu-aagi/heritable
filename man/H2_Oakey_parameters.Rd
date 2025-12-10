@@ -18,6 +18,18 @@ Single numeric value
 Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 as described by Oakey et al. (2006).
 }
+\details{
+\deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+where:
+\itemize{
+\item \eqn{n_g} is the number of genotypes
+\item \eqn{n_z} is the number of zero eigenvalues
+\item \eqn{\lambda_i} is the ith eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
+\item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
+
+See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
+}
 \examples{
 Gg_inv = diag(1/0.15, 3, 3)
 C_gg <- matrix(
@@ -29,4 +41,7 @@ C_gg <- matrix(
   nrow = 3, byrow = TRUE
 )
 H2_Oakey_parameters(Gg_inv, C_gg)
+}
+\references{
+Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 }

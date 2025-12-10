@@ -2,7 +2,8 @@
 % Please edit documentation in R/narrow-sense.R
 \name{h2_Delta}
 \alias{h2_Delta}
-\title{Calculate narrow-sense heritability of difference}
+\alias{H2_Delta}
+\title{Calculate average heritability of differences between genotypes}
 \usage{
 h2_Delta(model, target, type, aggregate)
 H2_Delta(model, target, type, aggregate)
@@ -19,5 +20,5 @@ H2_Delta(model, target, type, aggregate)
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \description{
-Calculate narrow-sense heritability of difference
+Calculate average heritability of differences between genotypes
 }

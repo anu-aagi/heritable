@@ -2,6 +2,7 @@
 % Please edit documentation in R/narrow-sense.R
 \name{h2}
 \alias{h2}
+\alias{H2}
 \title{Calculate broad-sense or narrow sense heritability}
 \usage{
 h2(model, target, method, options)

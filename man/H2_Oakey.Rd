@@ -2,6 +2,7 @@
 % Please edit documentation in R/narrow-sense.R
 \name{h2_Oakey}
 \alias{h2_Oakey}
+\alias{H2_Oakey}
 \title{Calculate Oakey's heritability}
 \usage{
 h2_Oakey(model, target, method, options)
@@ -15,7 +16,8 @@ H2_Oakey(model, target, method, options)
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \description{
-Calculate Oakey's heritability
+Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
+as described by Oakey et al. (2006).
 }
 \details{
 \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
