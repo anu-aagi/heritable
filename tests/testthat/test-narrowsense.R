@@ -13,4 +13,8 @@ test_that("narrowsense heritability works", {
   # should be 0.818 -- getting 0.8459519
   h2_Delta(model, target = "gen", type = "BLUE")
 
+  h2_Delta_pairwise(model, target = "gen", type = "BLUP")
+  h2_Delta_pairwise(model, target = "gen", type = "BLUE")
+
+  h2_Delta_by_genotype(model, target = "gen", type = "BLUP")
 })

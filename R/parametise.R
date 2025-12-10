@@ -28,23 +28,13 @@
     return(H2_Cullis)
  }
 
-#' Estimate Oakey's heritability
+#' Estimate Oakey's heritability using variance components
 #'
-#' @description Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
-#' as described by Oakey et al. (2006).
+#' @description Rather than providing a model object, supply the necessary components to compute
+#' this heritability measure.
 #'
 #' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
 #' @param C_gg Prediction error variance matrix associated with the genotype effects.
-#'
-#' @details See pages 813 and 818 of reference for full derivation and explanation for Oakey's heritability
-#'
-#' \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' where:
-#' - \eqn{n_g} is the number of genotypes
-#' - \eqn{n_z} is the number of zero eigenvalues
-#' - \eqn{\lambda_i} is the ith eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
-#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
-#'
 #' @return Single numeric value
 #' @examples
 #' Gg_inv = diag(1/0.15, 3, 3)
@@ -57,10 +47,6 @@
 #'   nrow = 3, byrow = TRUE
 #' )
 #' H2_Oakey_parameters(Gg_inv, C_gg)
-#'
-#' @references
-#' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
-#'
 #' @export
 H2_Oakey_parameters <- function(Gg_inv, C_gg) {
    n_g <- nrow(Gg_inv)
@@ -148,7 +134,6 @@ H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
    1 / (1 + vd_matrix / denom)
 }
 
-#' @inheritParams H2_Delta_BLUE_parameters
 #' @export
 H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
   denom <- 2 * vc_g
@@ -156,7 +141,6 @@ H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
 }
 
 #' Estimate narrow-sense heritability of differences for BLUEs or BLUPs
-#' @rdname h2_Delta_BLUE_parameters
 #' @description Compute narrow-sense heritability of differences using the variance of differences between two BLUEs/BLUPs.
 #'
 #' @details See reference for full derivation and equation for heritability Delta BLUES
@@ -179,7 +163,6 @@ h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   1 / (1 + vd_matrix / denom)
 }
 
-#' @inheritParams h2_Delta_BLUE_parameters
 #' @export
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
   vd <- diag(G_g)

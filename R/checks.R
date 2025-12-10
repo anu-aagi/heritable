@@ -1,3 +1,21 @@
+#' Null coalescing operator
+#'
+#' Returns the left-hand side if it is not NULL, otherwise returns the right-hand side.
+#'
+#' @param x Left-hand side value
+#' @param y Right-hand side value (default if x is NULL)
+#'
+#' @return x if x is not NULL, otherwise y
+#' @noRd
+#' @keywords internal
+#' @examples
+#' NULL %||% "default"  # returns "default"
+#' "value" %||% "default"  # returns "value"
+`%||%` <- function(x, y) {
+  if (is.null(x)) y else x
+}
+
+#
 initial_checks <- function(model, target, options) {
   if (options$check %||% TRUE) {
     # If there is more than one target, error
