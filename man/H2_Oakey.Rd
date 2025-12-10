@@ -5,8 +5,8 @@
 \alias{H2_Oakey}
 \title{Calculate Oakey's heritability}
 \usage{
-h2_Oakey(model, target, method, options)
-H2_Oakey(model, target, method, options)
+h2_Oakey(model, target, options)
+H2_Oakey(model, target, options)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}

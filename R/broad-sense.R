@@ -52,7 +52,7 @@ H2_Cullis <- function(model, target = NULL, options) {
 
 
 #' @export
-H2_Oakey <- function(model, target = NULL, options) {
+H2_Oakey <- function(model, target, options) {
   UseMethod("H2_Oakey")
 }
 
@@ -66,7 +66,7 @@ H2_Piepho <- function(model, target = NULL, options) {
 #' @export
 H2_Delta <- function(
     model,
-    target = NULL,
+    target,
     type = c("BLUP", "BLUE"),
     aggregate = c("arithmetic", "harmonic"),
     options) {

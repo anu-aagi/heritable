@@ -5,8 +5,8 @@
 \alias{H2_Delta}
 \title{Calculate average heritability of differences between genotypes}
 \usage{
-h2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
-H2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
+h2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
+H2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}

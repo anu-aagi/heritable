@@ -39,7 +39,7 @@
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
 #' @export
 
-h2 <- function(model, target, method, options) {
+h2 <- function(model, target, method = c("Oakey", "Delta"), options) {
   UseMethod("h2")
 }
 
@@ -91,8 +91,8 @@ h2.default <- function(
 #'
 #' See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
 #' @usage
-#' h2_Oakey(model, target, method, options)
-#' H2_Oakey(model, target, method, options)
+#' h2_Oakey(model, target, options)
+#' H2_Oakey(model, target, options)
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #'
@@ -108,8 +108,8 @@ h2_Oakey <- function(model, target, options) {
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @usage
-#' h2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
-#' H2_Delta(model, target, type = c("BLUE", "BLUP"), aggregate = c("arithmetic", "harmonic"))
+#' h2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
+#' H2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
 #' @details
 #' The heritability of differences between genotypes is given by:
 #'
@@ -126,9 +126,10 @@ h2_Oakey <- function(model, target, options) {
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @export
 h2_Delta <- function(model,
-                     target = NULL,
-                     type = c("BLUE", "BLUP"),
-                     aggregate = c("arithmetic", "harmonic"), options) {
+                     target,
+                     type = c("BLUP", "BLUE"),
+                     aggregate = c("arithmetic", "harmonic"),
+                     options) {
   UseMethod("h2_Delta")
 }
 
