@@ -50,6 +50,20 @@
 #
 # saveRDS(asreml_model_grm, file = test_path("fixtures/asreml_model_grm.rds"))
 #
+# # Different residual structure
+# asreml_model_R <- asreml::asreml(yield ~ 1,
+#                         random = ~ gen + col + row,
+#                         residual = ~ ar1(col):ar1(row),
+#                         data = agridat::gilmour.serpentine |>
+#                           transform(
+#                             col = as.factor(col),
+#                             row = as.factor(row)
+#                           ),
+#                         trace = FALSE
+# )
+#
+# saveRDS(asreml_model_R, file = test_path("fixtures/asreml_model_R.rds"))
+#
 # # lme4
 #
 # # Genotype as random effect
