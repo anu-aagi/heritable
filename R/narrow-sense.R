@@ -59,7 +59,7 @@ h2.default <- function(
            # Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
            Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
            # Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
-           # Delta = h2_Delta(model, target, options = list(check = FALSE)),
+           Delta = h2_Delta(model, target, options = list(check = FALSE)),
            # Standard = h2_Standard(model, target, options = list(check = FALSE)),
            cli::cli_abort(
              "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
@@ -157,6 +157,27 @@ h2_Delta.default <- function(model,
 #' @export
 h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_by_genotype")
+}
+
+#' @noRd
+#' @export
+h2_Delta_by_genotype.default <- function(model,
+                                         target = NULL,
+                                         type = c("BLUP", "BLUE"),
+                                         options = NULL) {
+  type <- match.arg(type)
+
+  H2D_ij <- h2_Delta_pairwise(model, target, type = type, options)
+
+  H2D_i <- as.matrix(H2D_ij) |>
+    rowMeans(na.rm = TRUE) |>
+    data.frame()
+
+  H2D_i <- setNames(H2D_i, "H2D_i")
+
+  H2D_i_list <- split(H2D_i, rownames(H2D_i))
+
+  return(H2D_i_list)
 }
 
 #' Calculate pairwise heritability of differences between genotypes
