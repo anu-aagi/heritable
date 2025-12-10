@@ -12,7 +12,7 @@
 #' @usage
 #' h2(model, target, method = c("Oakey", "Delta"), options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
-#' @return A named numeric vector, length matching number of methods supplied
+#' @returns A named numeric vector, length matching number of methods supplied
 #' @details
 #'
 #' The following methods are currently implemented for narrow-sense heritability `h2(method = "XX")`:
@@ -93,6 +93,7 @@ h2.default <- function(
 #' @usage
 #' h2_Oakey(model, target, options)
 #' H2_Oakey(model, target, options)
+#' @returns Numeric
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #'
@@ -110,6 +111,7 @@ h2_Oakey <- function(model, target, options) {
 #' @usage
 #' h2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
 #' H2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
+#' @returns Numeric
 #' @details
 #' The heritability of differences between genotypes is given by:
 #'
@@ -150,11 +152,17 @@ h2_Delta.default <- function(model,
          "arithmetic" = mean(delta_values),
          "harmonic" = length(delta_values) / sum(1 / delta_values)
   )
+
+
 }
 
 #' Calculate heritability of differences for a given genotype
 #' @inheritParams h2_Delta
 #' @aliases H2_Delta_by_genotype
+#' @references
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' @seealso [`h2_Delta()`], [`H2_Delta=e()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
+#' @returns Named list, with each element containing a named numeric vector
 #' @export
 h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_by_genotype")
@@ -184,6 +192,10 @@ h2_Delta_by_genotype.default <- function(model,
 #' Calculate pairwise heritability of differences between genotypes
 #' @inheritParams h2_Delta
 #' @aliases H2_Delta_pairwise
+#' @returns A `dspMatrix"`
+#' @references
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta()`], [`H2_Delta()`]
 #' @export
 h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")
