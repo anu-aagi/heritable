@@ -16,6 +16,15 @@ h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
+\value{
+Named list, with each element containing a named numeric vector
+}
 \description{
 Calculate heritability of differences for a given genotype
+}
+\references{
+Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+}
+\seealso{
+\code{\link[=h2_Delta]{h2_Delta()}}, \code{\link[=H2_Delta=e]{H2_Delta=e()}}, \code{\link[=h2_Delta_pairwise]{h2_Delta_pairwise()}}, \code{\link[=h2_Delta_pairwise]{H2_Delta_pairwise()}}
 }

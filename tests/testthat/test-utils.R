@@ -7,7 +7,6 @@ test_that("Helper functions working with asreml", {
 
   # Can we pull out the correct terms?
   # Can we fit the counter model?
-
   expect_named(pull_terms(asreml_model_random), c("fixed", "random"))
   expect_true("gen" %in% pull_terms(asreml_model_random)$random)
   expect_true("gen" %in% pull_terms(asreml_model_fixed)$fixed)

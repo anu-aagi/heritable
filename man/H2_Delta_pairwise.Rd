@@ -16,6 +16,15 @@ h2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
+\value{
+A \verb{dspMatrix"}
+}
 \description{
 Calculate pairwise heritability of differences between genotypes
+}
+\references{
+Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+}
+\seealso{
+\code{\link[=h2_Delta_by_genotype]{h2_Delta_by_genotype()}}, \code{\link[=h2_Delta_by_genotype]{H2_Delta_by_genotype()}}, \code{\link[=h2_Delta]{h2_Delta()}}, \code{\link[=h2_Delta]{H2_Delta()}}
 }
