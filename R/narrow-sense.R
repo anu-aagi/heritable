@@ -1,15 +1,49 @@
-#' Calculate narrow-sense heritability
-#' @name h2
-#' @param model A fitted model object. Currently only supports models with class `asreml`
+#' Calculate broad-sense or narrow sense heritability
+#' @description
+#' A case-specific wrapper for calculating broad / narrow sense heritability.
+#'
+#' - The lowercase prefix `h2_` refers to the wrapper or subfunctions e.g. [`h2_Oakey()`] for calculating narrow sense heritability
+#' - The upper case prefix `H2_` refers to the wrapper or subfunctions e.g. [`H2_Delta()`] for calculating broad sense heritability
+#' @param model Model object of class lmerMod or asreml
+#' @param method Character vector of methods to calculate heritability.
+#'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
 #' @param target The name of the random effect for which heritability is to be calculated.
-#' @param method The method to use for calculating heritability. Options are "Cullis", "Oakey", "BLUE", "BLUP", "Piepho", "Reg", and "SumDiv". Default is "Cullis".
 #' @param options NULL by default, for internal checking of model object before calculations
+#' @usage
+#' h2(model, target, method, options)
+#' H2(model, target, method, options)
+#' @details
+#'
+#' The following methods are currently implemented for narrow-sense heritability `h2()`:
+#'
+#' - Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' - Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#'
+#'
+#' The following methods are currently implemented for broad-sense heritability `H2()`:
+#'
+#' - Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#' - Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' - Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#' - Piepho: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#' - Standard: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+#'
+#' For further details of a specific method - take a look at helpfile for each subfunctions `?H2_Cullis`
+#'
+#' @references
+#' - Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+#' - Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
+#' - Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+#' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
+#' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
 #' @export
+
 h2 <- function(model, target, method, options) {
   UseMethod("h2")
 }
 
-#' @inheritParams h2
+#' @noRd
 #' @export
 h2.default <- function(
     model,
@@ -41,14 +75,12 @@ h2.default <- function(
   )
 }
 
-#' @inheritParams h2
 #' @export
 h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
 }
 
 #' Calculate narrow-sense heritability of difference
-#' @name h2_Delta
 #' @param model A fitted model object. Currently only supports models with class `asreml`
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param type Whether to use BLUEs or BLUPs for calculating heritability.
@@ -62,7 +94,7 @@ h2_Delta <- function(model,
   UseMethod("h2_Delta")
 }
 
-#' @inheritParams h2_Delta
+#' @noRd
 #' @export
 h2_Delta.default <- function(model,
                              target = NULL,
@@ -81,7 +113,6 @@ h2_Delta.default <- function(model,
   )
 }
 
-#' @inheritParams h2_Delta
 #' @export
 h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")

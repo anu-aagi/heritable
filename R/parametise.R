@@ -148,7 +148,6 @@ H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
    1 / (1 + vd_matrix / denom)
 }
 
-#' @inheritParams H2_Delta_BLUE_parameters
 #' @export
 H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
   denom <- 2 * vc_g
@@ -156,7 +155,6 @@ H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
 }
 
 #' Estimate narrow-sense heritability of differences for BLUEs or BLUPs
-#' @rdname h2_Delta_BLUE_parameters
 #' @description Compute narrow-sense heritability of differences using the variance of differences between two BLUEs/BLUPs.
 #'
 #' @details See reference for full derivation and equation for heritability Delta BLUES
@@ -179,7 +177,6 @@ h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   1 / (1 + vd_matrix / denom)
 }
 
-#' @inheritParams h2_Delta_BLUE_parameters
 #' @export
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
   vd <- diag(G_g)

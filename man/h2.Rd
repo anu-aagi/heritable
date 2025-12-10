@@ -2,19 +2,55 @@
 % Please edit documentation in R/narrow-sense.R
 \name{h2}
 \alias{h2}
-\title{Calculate narrow-sense heritability}
+\title{Calculate broad-sense or narrow sense heritability}
 \usage{
 h2(model, target, method, options)
+H2(model, target, method, options)
 }
 \arguments{
-\item{model}{A fitted model object. Currently only supports models with class \code{asreml}}
+\item{model}{Model object of class lmerMod or asreml}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{method}{The method to use for calculating heritability. Options are "Cullis", "Oakey", "BLUE", "BLUP", "Piepho", "Reg", and "SumDiv". Default is "Cullis".}
+\item{method}{Character vector of methods to calculate heritability.
+Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \description{
-Calculate narrow-sense heritability
+A case-specific wrapper for calculating broad / narrow sense heritability.
+\itemize{
+\item The lowercase prefix \code{h2_} refers to the wrapper or subfunctions e.g. \code{\link[=h2_Oakey]{h2_Oakey()}} for calculating narrow sense heritability
+\item The upper case prefix \code{H2_} refers to the wrapper or subfunctions e.g. \code{\link[=H2_Delta]{H2_Delta()}} for calculating broad sense heritability
+}
+}
+\details{
+The following methods are currently implemented for narrow-sense heritability \code{h2()}:
+\itemize{
+\item Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+\item Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+}
+
+The following methods are currently implemented for broad-sense heritability \code{H2()}:
+\itemize{
+\item Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+\item Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+\item Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+\item Piepho: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+\item Standard: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+}
+
+For further details of a specific method - take a look at helpfile for each subfunctions \code{?H2_Cullis}
+}
+\references{
+\itemize{
+\item Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+\item Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
+\item Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+\item Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+\item Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
+}
+}
+\seealso{
+\code{\link[=H2_Cullis]{H2_Cullis()}}, \code{\link[=H2_Oakey]{H2_Oakey()}}, \code{\link[=H2_Delta]{H2_Delta()}}, \code{\link[=H2_Piepho]{H2_Piepho()}}, \code{\link[=H2_Standard]{H2_Standard()}}, \code{\link[=h2_Oakey]{h2_Oakey()}}, \code{\link[=h2_Delta]{h2_Delta()}}
 }

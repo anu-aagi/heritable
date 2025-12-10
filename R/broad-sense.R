@@ -1,24 +1,3 @@
-#' Calculate broad-sense heritability
-#' @param model Model object of class lmerMod or asreml
-#' @param method Character vector of methods to calculate heritability.
-#'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
-#' @param target The name of the random effect for which heritability is to be calculated.
-#' @param options NULL by default, for internal checking of model object before calculations
-#' @name H2
-#' @details The following heritability methods are currently implemented:
-#'
-#' - Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-#' - Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' - Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
-#' - Piepho: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
-#' - Standard: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
-#'
-#' @references
-#' - Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
-#' - Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
-#' - Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
-#' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
-#' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @export
 H2 <- function(model,
                target = NULL,
@@ -28,6 +7,7 @@ H2 <- function(model,
 }
 
 #' @importFrom stats setNames
+#' @noRd
 #' @export
 H2.default <- function(model,
                        target = NULL,
@@ -58,30 +38,31 @@ H2.default <- function(model,
   )
 }
 
+#' Calculate standard broad-sense heritability
+#' @export
+H2_Standard <- function(model, target, options) {
+  UseMethod("H2_Standard")
+}
+
 #' Calculate broad-sense heritability using Cullis' method
-#' @inheritParams H2
 #' @export
 H2_Cullis <- function(model, target = NULL, options) {
   UseMethod("H2_Cullis")
 }
 
 #' Calculate broad-sense heritability using Oakey's method
-#' @inheritParams H2
 #' @export
 H2_Oakey <- function(model, target = NULL, options) {
   UseMethod("H2_Oakey")
 }
 
 #' Calculate broad-sense heritability using Piepho's method
-#' @inheritParams H2
 #' @export
 H2_Piepho <- function(model, target = NULL, options) {
   UseMethod("H2_Piepho")
 }
 
 #' Calculate broad-sense heritability of differences between genotypes
-#' @inheritParams H2
-#' @rdname H2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
@@ -95,7 +76,7 @@ H2_Delta <- function(
   UseMethod("H2_Delta")
 }
 
-#' @inherit H2_Delta
+#' @noRd
 #' @export
 H2_Delta.default <- function(model,
                              target = NULL,
@@ -115,7 +96,6 @@ H2_Delta.default <- function(model,
 }
 
 #' Calculate average broad-sense heritability of differences for a given genotype
-#' @inheritParams H2_Delta
 #' @details
 #' Additional details...
 #'
@@ -144,15 +124,9 @@ H2_Delta_by_genotype.default <- function(model,
 
 
 #' Calculate broad-sense heritability of pariwise differences for all genotypes
-#' @inheritParams H2_Delta
 #' @export
 H2_Delta_pairwise <- function(model, target, type, options) {
   UseMethod("H2_Delta_pairwise")
 }
 
-#' Calculate standard broad-sense heritability
-#' @inheritParams H2
-#' @export
-H2_Standard <- function(model, target, options) {
-  UseMethod("H2_Standard")
-}
+
