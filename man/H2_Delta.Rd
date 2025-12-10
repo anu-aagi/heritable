@@ -4,16 +4,11 @@
 \alias{h2_Delta}
 \title{Calculate narrow-sense heritability of difference}
 \usage{
-h2_Delta(
-  model,
-  target = NULL,
-  type = c("BLUE", "BLUP"),
-  aggregate = c("arithmetic", "harmonic"),
-  options
-)
+h2_Delta(model, target, type, aggregate)
+H2_Delta(model, target, type, aggregate)
 }
 \arguments{
-\item{model}{A fitted model object. Currently only supports models with class \code{asreml}}
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 

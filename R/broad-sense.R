@@ -50,7 +50,7 @@ H2_Cullis <- function(model, target = NULL, options) {
   UseMethod("H2_Cullis")
 }
 
-#' Calculate broad-sense heritability using Oakey's method
+
 #' @export
 H2_Oakey <- function(model, target = NULL, options) {
   UseMethod("H2_Oakey")
@@ -62,10 +62,7 @@ H2_Piepho <- function(model, target = NULL, options) {
   UseMethod("H2_Piepho")
 }
 
-#' Calculate broad-sense heritability of differences between genotypes
-#' @param type character, whether heritability is calculated using BLUEs or BLUPs
-#' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
-#' @param options NULL by default, for internal checking of model object before calculations
+
 #' @export
 H2_Delta <- function(
     model,

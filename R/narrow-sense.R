@@ -4,29 +4,28 @@
 #'
 #' - The lowercase prefix `h2_` refers to the wrapper or subfunctions e.g. [`h2_Oakey()`] for calculating narrow sense heritability
 #' - The upper case prefix `H2_` refers to the wrapper or subfunctions e.g. [`H2_Delta()`] for calculating broad sense heritability
-#' @param model Model object of class lmerMod or asreml
-#' @param method Character vector of methods to calculate heritability.
-#'        Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".
+#' @param model Model object of class `lmerMod/merMod` or `asreml`
+#' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @usage
 #' h2(model, target, method, options)
 #' H2(model, target, method, options)
+#' @return A named numeric vector, length matching number of methods supplied
 #' @details
 #'
-#' The following methods are currently implemented for narrow-sense heritability `h2()`:
+#' The following methods are currently implemented for narrow-sense heritability `h2(method = "XX")`:
 #'
-#' - Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' - Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#' - `"Oakey"`: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' - `"Delta"`: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 #'
+#' The following methods are currently implemented for broad-sense heritability `H2(method = "XX")`:
 #'
-#' The following methods are currently implemented for broad-sense heritability `H2()`:
-#'
-#' - Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-#' - Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' - Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
-#' - Piepho: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
-#' - Standard: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+#' - `"Cullis"`: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#' - `"Oakey"`: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' - `"Delta"`: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#' - `"Piepho"`: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#' - `"Standard"`: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
 #'
 #' For further details of a specific method - take a look at helpfile for each subfunctions `?H2_Cullis`
 #'
@@ -75,17 +74,36 @@ h2.default <- function(
   )
 }
 
+#' Calculate Oakey's heritability
+#' @inheritParams h2
+#' @details
+#' \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' where:
+#' - \eqn{n_g} is the number of genotypes
+#' - \eqn{n_z} is the number of zero eigenvalues
+#' - \eqn{\lambda_i} is the ith eigenvalue of the matrix \eqn{I_{m} - G^{-1}C^{gg}}
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
+#'
+#' See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
+#' @usage
+#' h2_Oakey(model, target, method, options)
+#' H2_Oakey(model, target, method, options)
+#' @references
+#' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
+#'
 #' @export
 h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
 }
 
 #' Calculate narrow-sense heritability of difference
-#' @param model A fitted model object. Currently only supports models with class `asreml`
-#' @param target The name of the random effect for which heritability is to be calculated.
+#' @inheritParams h2
 #' @param type Whether to use BLUEs or BLUPs for calculating heritability.
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
+#' @usage
+#' h2_Delta(model, target, type, aggregate)
+#' H2_Delta(model, target, type, aggregate)
 #' @export
 h2_Delta <- function(model,
                      target = NULL,

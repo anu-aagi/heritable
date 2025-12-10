@@ -8,14 +8,16 @@ h2(model, target, method, options)
 H2(model, target, method, options)
 }
 \arguments{
-\item{model}{Model object of class lmerMod or asreml}
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{method}{Character vector of methods to calculate heritability.
-Options are "Cullis", "Oakey", "Delta", "Piepho", and "Standard".}
+\item{method}{Character vector of name of method to calculate heritability. See details.}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+}
+\value{
+A named numeric vector, length matching number of methods supplied
 }
 \description{
 A case-specific wrapper for calculating broad / narrow sense heritability.
@@ -25,19 +27,19 @@ A case-specific wrapper for calculating broad / narrow sense heritability.
 }
 }
 \details{
-The following methods are currently implemented for narrow-sense heritability \code{h2()}:
+The following methods are currently implemented for narrow-sense heritability \code{h2(method = "XX")}:
 \itemize{
-\item Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-\item Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+\item \code{"Oakey"}: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+\item \code{"Delta"}: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 }
 
-The following methods are currently implemented for broad-sense heritability \code{H2()}:
+The following methods are currently implemented for broad-sense heritability \code{H2(method = "XX")}:
 \itemize{
-\item Cullis: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-\item Oakey: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-\item Delta: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
-\item Piepho: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
-\item Standard: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+\item \code{"Cullis"}: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+\item \code{"Oakey"}: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+\item \code{"Delta"}: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+\item \code{"Piepho"}: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+\item \code{"Standard"}: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
 }
 
 For further details of a specific method - take a look at helpfile for each subfunctions \code{?H2_Cullis}
