@@ -7,3 +7,5 @@
 ^README.html$
 ^README_files$
 ^ignore$
+^codecov\.yml$
+^\.github$
