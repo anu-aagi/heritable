@@ -8,7 +8,7 @@ Authors@R:
 Description: Reporting heritability estimates is an important part of quantitative genetics in breeding experiments.
  This package provides functions to calculate various heritability summary statistics, including narrow-sense heritability, broad-sense heritability, and other related metrics
  from asreml and soon to be lme4 model objects.
-License: CC BY 4.0 + file LICENSE
+License: GPL (>= 3)
 Imports: 
     cli,
     emmeans,
