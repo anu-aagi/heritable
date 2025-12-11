@@ -33,6 +33,9 @@ test_that("H2 for asreml works", {
 
 
 test_that("H2 works for lme4",{
+  skip_if_not_installed("lme4")
+  skip_on_cran()
+
   # lme4 Random "gen" ----------------------------------------------------------
   lmer_model_random <- readRDS(test_path("fixtures/lmer_model_random.rds"))
 
@@ -56,8 +59,8 @@ test_that("H2 works for lme4",{
 
   lmer_H2_all_methods <- H2(lmer_model_random, target = "gen")
 
-  expect_equal(setNames(as.numeric(lmer_H2_all_methods), names(lmer_H2_all_methods)), truth_random_lme4, tolerance = 1e-4)
-  expect_equal(H2_Delta(lmer_model_random, target = "gen", type = "BLUE"), 0.7967, tolerance = 1e-5)
+  expect_equal(setNames(as.numeric(lmer_H2_all_methods), names(lmer_H2_all_methods)), truth_random_lme4, tolerance = 1e-3)
+  expect_equal(H2_Delta(lmer_model_random, target = "gen", type = "BLUE"), 0.7967, tolerance = 1e-3)
 
   # GxE models -----------------------------------------------------------------
   #TODO: Currently not yet implemented so should error

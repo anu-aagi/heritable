@@ -20,7 +20,8 @@ Suggests:
     agridat,
     knitr,
     rmarkdown,
-    lme4
+    lme4,
+    pbkrtest
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3
