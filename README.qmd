@@ -22,18 +22,18 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`heritable` is to be the one-stop shop for heritability calculations in R. Our goal is implement exisitings methods for heritability which aids the reproducibility and reporting of it's calculations. `heritable` works with model outputs from `asreml` and `lme4` and support the calculations of broad and narrow sense heritability of a variety of method for single environment breeding trials. 
+`heritable` is to be the one-stop shop for heritability calculations in R. Our goal is to implement existing methods for heritability to aid reproducibility and reporting of it's calculations.`heritable` works with model outputs from `asreml` and `lme4` and support the calculations of broad and narrow sense heritability of a variety of method for single environment breeding trials. 
 
 ## Installation
 
-You can install the development version of heritable from [GitHub](https://github.com/) with: 
+
+Note that this package is under active development. You can install the development version of heritable from [GitHub](https://github.com/) with: 
 
 ``` r
 # install.packages("pak")
 pak::pak("anu-aagi/heritable")
 ```
 
-Note that this package is under active development!
 
 ## A simple demo
 
