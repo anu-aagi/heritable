@@ -68,34 +68,6 @@ check_model_convergence <- function(model) {
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
 
 
-target_vm_term_asreml <- function(model, target) {
-  vpars <- names(model$vparameters)
-  env <- attr(model$formulae$random, ".Environment")
-  w <- grepl(paste0("^vm\\(", target), vpars)
-  if(sum(w) == 1) {
-    target_vm <- vpars[w]
-    name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
-    if(exists(name_GRM, envir = env)) {
-      GRM_source <- get(name_GRM, envir = env)
-      if(is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
-        GRMinv <- solve(asreml::sp2Matrix(GRM_source))
-      } else {
-        GRMinv <- solve(GRM_source)
-      }
-      if(inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
-        GRMinv <- GRM
-      }
-    } else {
-      cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
-    }
-    return(list(target_vm = vpars[w],
-                GRMinv = GRMinv))
-  } else {
-    cli::cli_abort("The {.value target} should be wrapped with vm() in the model with a known relationship matrix.")
-  }
-}
-
-
 # Target level checks
 # Check if only one target has been supplied
 #' @keywords internal

@@ -20,6 +20,7 @@ Suggests:
     agridat,
     knitr,
     rmarkdown,
+    asreml,
     lme4,
     pbkrtest
 SystemRequirements: 
