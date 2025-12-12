@@ -22,7 +22,6 @@ Suggests:
     rmarkdown,
     lme4,
     pbkrtest
-Enhances: asreml
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3
@@ -30,6 +29,6 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Depends: 
-    R (>= 3.5)
+    R (>= 4.1.0)
 LazyData: true
 VignetteBuilder: knitr
