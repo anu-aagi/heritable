@@ -1,50 +1,6 @@
-
-
-#' @export
-H2_Standard.lmerMod <- function(model, target = NULL, options = NULL) {
-
-  initial_checks(model, target, options)
-
-  # Check if target is random or fixed
-  if (!check_target_random(model, target)) {
-    return(NA)
-  }
-
-  # Get genotype variance
-  vc <- lme4::VarCorr(model)
-  vc_g <- vc[[target]][1]
-
-  # Get residual variance
-  vc_e <- stats::sigma(model)^2
-
-  n_r <- table(model@flist[[target]])
-
-  H2_Standard <- H2_Standard_parameters(vc_g, vc_e, n_r)
-
-  return(H2_Standard)
-}
-
-#' @export
-H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
-
-  initial_checks(model, target, options)
-
-  # Check if target is random or fixed
-  if (!check_target_random(model, target)) {
-    return(NA)
-  }
-
-  C_inv <- PEV_from_lme4(model)
-  g <- geno_components_from_lme4(model, target, C_inv)
-
-  one <- matrix(1, nrow = g$n_g, ncol = 1)
-  P_mu <- diag(g$n_g, g$n_g) - one %*% t(one)
-  vdBLUP_sum <- sum(diag(P_mu %*% g$C22_g))
-  vdBLUP_avg <- vdBLUP_sum * (2 / (g$n_g * (g$n_g - 1)))
-
-  H2_Cullis_parameters(vdBLUP_avg, g$vc_g)
-}
-
+#' Helpers for lme4 models
+#' @noRd
+#' @keywords internal
 PEV_from_lme4 <- function(model) {
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
@@ -72,6 +28,8 @@ PEV_from_lme4 <- function(model) {
   solve(C)
 }
 
+#' @noRd
+#' @keywords internal
 geno_components_from_lme4 <- function(model, target, C_inv) {
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
@@ -82,6 +40,55 @@ geno_components_from_lme4 <- function(model, target, C_inv) {
   list(n_g = n_g, vc_g = vc_g, C22_g = C22_g, gnames = gnames)
 }
 
+
+#' @noRd
+#' @export
+H2_Standard.lmerMod <- function(model, target = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Get genotype variance
+  vc <- lme4::VarCorr(model)
+  vc_g <- vc[[target]][1]
+
+  # Get residual variance
+  vc_e <- stats::sigma(model)^2
+
+  n_r <- table(model@flist[[target]])
+
+  H2_Standard <- H2_Standard_parameters(vc_g, vc_e, n_r)
+
+  return(H2_Standard)
+}
+
+#' @noRd
+#' @export
+H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  C_inv <- PEV_from_lme4(model)
+  g <- geno_components_from_lme4(model, target, C_inv)
+
+  one <- matrix(1, nrow = g$n_g, ncol = 1)
+  P_mu <- diag(g$n_g, g$n_g) - one %*% t(one)
+  vdBLUP_sum <- sum(diag(P_mu %*% g$C22_g))
+  vdBLUP_avg <- vdBLUP_sum * (2 / (g$n_g * (g$n_g - 1)))
+
+  H2_Cullis_parameters(vdBLUP_avg, g$vc_g)
+}
+
+#' @noRd
 #' @export
 H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
 
@@ -99,6 +106,7 @@ H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
   return(H2_Oakey_parameters(Gg_inv, g$C22_g))
 }
 
+#' @noRd
 #' @export
 H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
 
@@ -123,7 +131,23 @@ H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
   return(H2_Piepho)
 }
 
+#' @noRd
 #' @export
+H2_Delta_pairwise.lmerMod <- function(model, target = NULL, type = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if(type == "BLUE") {
+    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options)
+  } else if(type == "BLUP") {
+    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options)
+  }
+
+  return(H2_Delta)
+}
+
+#' @keywords internal
 H2_Delta_BLUE_pairwise.lmerMod <- function(
   model,
   target = NULL,
@@ -179,7 +203,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(
   return(H2_Delta_BLUE)
 }
 
-#' @export
+#' @keywords internal
 H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
@@ -207,18 +231,5 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
 }
 
 
-#' @export
-H2_Delta_pairwise.lmerMod <- function(model, target = NULL, type = NULL, options = NULL) {
 
-  initial_checks(model, target, options)
-
-  # Check if target is random or fixed
-  if(type == "BLUE") {
-    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options)
-  } else if(type == "BLUP") {
-    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options)
-  }
-
-  return(H2_Delta)
-}
 

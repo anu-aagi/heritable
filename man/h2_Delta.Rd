@@ -5,8 +5,18 @@
 \alias{H2_Delta}
 \title{Calculate average heritability of differences between genotypes}
 \usage{
-h2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
-H2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
+h2_Delta(model,
+         target,
+         type = c("BLUP", "BLUE"),
+         aggregate = c("arithmetic", "harmonic"),
+         options)
+
+H2_Delta(model,
+         target,
+         type = c("BLUP", "BLUE"),
+         aggregate = c("arithmetic", "harmonic"),
+         options
+         )
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
@@ -23,7 +33,10 @@ H2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "h
 Numeric
 }
 \description{
-Calculate average heritability of differences between genotypes
+Instead of computing heritability on a "entry-mean" basis, this method
+calculates heritability using "entry-differences". Entry here is
+referring to the genotype, line or variety of interest. See
+reference for origin and interpretation of \code{h2/H2_Delta} and it's variants
 }
 \details{
 The heritability of differences between genotypes is given by:
@@ -32,7 +45,7 @@ The heritability of differences between genotypes is given by:
 
 where:
 \itemize{
-\item \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPs (BLUEs if \code{method = "BLUE"})
+\item \eqn{PEV^{BLUP}_{\overline\Delta ..}} is the mean of the prediction error variance matrix for the pairwise differences among BLUPs (BLUEs if \code{method = "BLUE"}) across all genotypes
 \item \eqn{\sigma^2} is the variance attributed to differences between genotype
 }
 

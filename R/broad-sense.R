@@ -62,7 +62,7 @@ H2_Piepho <- function(model, target = NULL, options) {
   UseMethod("H2_Piepho")
 }
 
-
+#' @noRd
 #' @export
 H2_Delta <- function(
     model,
@@ -92,15 +92,13 @@ H2_Delta.default <- function(model,
   )
 }
 
-#' Calculate average broad-sense heritability of differences for a given genotype
-#' @details
-#' Additional details...
-#'
+#' @noRd
 #' @export
-H2_Delta_by_genotype <- function(model, target, type, options) {
+H2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("H2_Delta_by_genotype")
 }
 
+#' @noRd
 #' @export
 H2_Delta_by_genotype.default <- function(model,
                                          target = NULL,
@@ -119,10 +117,9 @@ H2_Delta_by_genotype.default <- function(model,
   return(H2D_i_list)
 }
 
-
-#' Calculate broad-sense heritability of pariwise differences for all genotypes
+#' @noRd
 #' @export
-H2_Delta_pairwise <- function(model, target, type, options) {
+H2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("H2_Delta_pairwise")
 }
 

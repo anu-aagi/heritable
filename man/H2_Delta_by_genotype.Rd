@@ -6,6 +6,7 @@
 \title{Calculate heritability of differences for a given genotype}
 \usage{
 h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
+H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
@@ -17,14 +18,32 @@ h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \value{
+Numeric
+
 Named list, with each element containing a named numeric vector
 }
 \description{
-Calculate heritability of differences for a given genotype
+Instead of computing heritability on a "entry-mean" basis, this method
+calculates heritability using "entry-differences". Entry here is
+referring to the genotype, line or variety of interest. See
+reference for origin and interpretation of \code{h2/H2_Delta_by_genotype} and it's variants
+}
+\details{
+The heritability of differences for a given genotype is given by:
+
+\deqn{H^2_{\Delta i.} = 1 - \frac{PEV^{BLUP}_{\overline\Delta i.}}{2\sigma^2_g}}
+
+where:
+\itemize{
+\item \eqn{PEV^{BLUP}_{\overline\Delta i.}} is the arithmetic mean of the prediction error variance matrix for pairwise differences among BLUPs (or BLUEs if \code{method = "BLUE"}) for a given genotype
+\item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
+
+See reference page 995 - 997 for full derivation of this heritability measure and related variants
 }
 \references{
 Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 }
 \seealso{
-\code{\link[=h2_Delta]{h2_Delta()}}, \code{\link[=H2_Delta=e]{H2_Delta=e()}}, \code{\link[=h2_Delta_pairwise]{h2_Delta_pairwise()}}, \code{\link[=h2_Delta_pairwise]{H2_Delta_pairwise()}}
+\code{\link[=h2_Delta]{h2_Delta()}}, \code{\link[=h2_Delta]{H2_Delta()}}, \code{\link[=h2_Delta_pairwise]{h2_Delta_pairwise()}}, \code{\link[=h2_Delta_pairwise]{H2_Delta_pairwise()}}
 }

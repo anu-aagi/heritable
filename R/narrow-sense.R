@@ -103,14 +103,29 @@ h2_Oakey <- function(model, target, options) {
 }
 
 #' Calculate average heritability of differences between genotypes
+#' @description
+#' Instead of computing heritability on a "entry-mean" basis, this method
+#' calculates heritability using "entry-differences". Entry here is
+#' referring to the genotype, line or variety of interest. See
+#' reference for origin and interpretation of `h2/H2_Delta` and it's variants
 #' @inheritParams h2
 #' @aliases H2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @usage
-#' h2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
-#' H2_Delta(model, target, type = c("BLUP", "BLUE"), aggregate = c("arithmetic", "harmonic"), options)
+#' h2_Delta(model,
+#'          target,
+#'          type = c("BLUP", "BLUE"),
+#'          aggregate = c("arithmetic", "harmonic"),
+#'          options)
+#'
+#' H2_Delta(model,
+#'          target,
+#'          type = c("BLUP", "BLUE"),
+#'          aggregate = c("arithmetic", "harmonic"),
+#'          options
+#'          )
 #' @returns Numeric
 #' @details
 #' The heritability of differences between genotypes is given by:
@@ -118,8 +133,7 @@ h2_Oakey <- function(model, target, options) {
 #' \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 #'
 #' where:
-#'
-#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPs (BLUEs if `method = "BLUE"`)
+#' - \eqn{PEV^{BLUP}_{\overline\Delta ..}} is the mean of the prediction error variance matrix for the pairwise differences among BLUPs (BLUEs if `method = "BLUE"`) across all genotypes
 #' - \eqn{\sigma^2} is the variance attributed to differences between genotype
 #'
 #' See reference page 995 - 997 for full derivation of this heritability measure and related variants
@@ -157,11 +171,31 @@ h2_Delta.default <- function(model,
 }
 
 #' Calculate heritability of differences for a given genotype
+#' @description
+#' Instead of computing heritability on a "entry-mean" basis, this method
+#' calculates heritability using "entry-differences". Entry here is
+#' referring to the genotype, line or variety of interest. See
+#' reference for origin and interpretation of `h2/H2_Delta_by_genotype` and it's variants
+#' @usage
+#' h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
+#' H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 #' @inheritParams h2_Delta
 #' @aliases H2_Delta_by_genotype
+#' @returns Numeric
+#' @details
+#' The heritability of differences for a given genotype is given by:
+#'
+#' \deqn{H^2_{\Delta i.} = 1 - \frac{PEV^{BLUP}_{\overline\Delta i.}}{2\sigma^2_g}}
+#'
+#' where:
+#'
+#' - \eqn{PEV^{BLUP}_{\overline\Delta i.}} is the arithmetic mean of the prediction error variance matrix for pairwise differences among BLUPs (or BLUEs if `method = "BLUE"`) for a given genotype
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
+#'
+#' See reference page 995 - 997 for full derivation of this heritability measure and related variants
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
-#' @seealso [`h2_Delta()`], [`H2_Delta=e()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
+#' @seealso [`h2_Delta()`], [`H2_Delta()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @returns Named list, with each element containing a named numeric vector
 #' @export
 h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
@@ -190,9 +224,17 @@ h2_Delta_by_genotype.default <- function(model,
 }
 
 #' Calculate pairwise heritability of differences between genotypes
+#' @description
+#' Instead of computing heritability on a "entry-mean" basis, this method
+#' calculates heritability using "entry-differences". Entry here is
+#' referring to the genotype, line or variety of interest. See
+#' reference for origin and interpretation of `h2/H2_Delta_pairwise` and it's variants
+#' @usage
+#' h2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
+#' H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
 #' @inheritParams h2_Delta
 #' @aliases H2_Delta_pairwise
-#' @returns A `dspMatrix"`
+#' @returns A `dspMatrix`
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta()`], [`H2_Delta()`]
