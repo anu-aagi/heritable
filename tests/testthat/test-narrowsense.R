@@ -14,6 +14,8 @@ test_that("h2 heritability works", {
   # should be 0.586 / getting 0.5788
   h2_Oakey(asreml_model_grm, target = "gen")
 
+  h2(asreml_model_grm, target = "gen")
+
   expect_s4_class(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP"), "dspMatrix")
   expect_type(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), "list")
 })

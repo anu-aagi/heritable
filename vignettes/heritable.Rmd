@@ -10,44 +10,48 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
-)
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7, 
+  fig.height = 5, 
+  fig.align = "center",
+  out.width = "80%"
+  )
 ```
 
 ## Motivation
 
 A key goal in any breeding trial is calculate heritability, which describes the extent of which a trait of interest underpinned by genes.
 
-`heritable` is the one-stop shop for heritability calculations in R. The aim of our package is to implement existing methods for heritability to aid reproducibility and reporting of it's calculations.  This vignette is a brief overview of `heritable`'s workflow and key features.
+`heritable` is the one-stop shop for heritability calculations in R. Here, we have implemented existing methods for heritability to aid reproducibility and reporting of it's calculations. This vignette is a brief overview of `heritable`'s workflow and key features.
 
 ## Installation
 
 Note that this package is under active development. You can install the development version of heritable from [GitHub](https://github.com/) with: 
 
-``` r
-# install.packages("pak")
-pak::pak("anu-aagi/heritable")
-```
 
 ```{r setup}
+# install.packages("pak")
+# pak::pak("anu-aagi/heritable")
 library(heritable)
 ```
 
 ### An overview
 
-`heritable` works with model outputs from `asreml` and `lme4` and extracts the relevant variance components to calculate heritabililty. Let's work with  dataset that contains phenotypic measurements of downy mildew resistance of 89 lettuce genotypes across 3 locations (environments), with replicates. For demonstration purposes, we will use subset of single environment (`L2`)
+`heritable` is compatible with model outputs from `asreml` and `lme4` and extracts the relevant variance components to calculate heritability. 
+
+Let's work with  dataset that contains phenotypic measurements of downy mildew resistance of 89 lettuce genotypes across 3 locations (environments), with replicates. For demonstration purposes, we will use subset of single environment (`L2`) where genotypes are fully replicated. 
 
 ```{r}
+library(dplyr)
 head(lettuce_phenotypes)
 
 lettuce_subset <- lettuce_phenotypes |> 
   filter(loc == "L2")
 ```
 
- Let's visualise the experimental design:
-
-```{r}
-library(dplyr)
+```{r, echo=FALSE}
 library(ggplot2)
 
 # Create the field layout plot
@@ -62,7 +66,7 @@ ggplot(lettuce_subset, aes(x = gen, y = rep)) +
   )
 ```
 
-We also have access to a genomic relationship matrix (GRM) calculated from 300 genetic markers that we will use for narrow-sense heritability
+We also have access to a genomic relationship matrix (GRM) calculated from 300 genetic markers that we will use for narrow-sense heritability. 
 
 ```{r}
 # View the structure of the GRM
@@ -70,55 +74,48 @@ dim(lettuce_GRM)
 lettuce_GRM[1:5, 1:5]
 ```
 
-## Fitting a single environment model
+### Broad-sense heritability
 
-### Broad-sense heritability with asreml
-
-For broad-sense heritability, we fit a model with genotype as a random effect:
+Here we have provided code for both `ASREML-R` and `lme4` to fit a model with genotype as a random effect. **Note** that since this is a single environment and balanced subset of the data, all heritability estimates should be the same. 
 
 ```{r, eval=FALSE}
+# Fit an asreml model with genotype as random effect
 library(asreml)
-
-# Fit model with genotype as random effect
-model_asreml <- asreml(
-  fixed = y ~ loc,
-  random = ~ gen + loc:rep,
-  data = lettuce_phenotypes
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random = ~ gen,
+  data = lettuce_subset, 
+  trace = FALSE
 )
 
+# Fit an lme4 model with genotype as random effect
+library(lme4)
+lettuce_lme4 <- lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+```
+
+
+```{r, eval=FALSE}
 # Calculate broad-sense heritability using multiple methods
-H2(model_asreml, target = "gen", method = c("Cullis", "Oakey", "Piepho"))
+H2(lettuce_asreml, target = "gen", method = c("Standard", "Cullis", "Oakey"))
+H2(lettuce_lme4, target = "gen", method = c("Standard", "Cullis", "Oakey"))
 ```
 
 ### Narrow-sense heritability with asreml and GRM
 
-For narrow-sense heritability, we use the genomic relationship matrix with `vm()`:
+Narrow-sense heritability is currently only implemented for `asreml`. 
+In the model, we will use the `lettuce_GRM` genomic relationship matrix and fit it using `asreml::vm()`:
 
 ```{r, eval=FALSE}
 # Fit model with GRM for narrow-sense heritability
-model_asreml_grm <- asreml(
+lettuce_asreml_grm <- asreml(
   fixed = y ~ loc,
-  random = ~ vm(gen, lettuce_GRM) + loc:rep,
-  data = lettuce_phenotypes
+  random = ~ vm(gen, lettuce_GRM) + rep,
+  data = lettuce_phenotypes, 
+  trace = FALSE
 )
 
 # Calculate narrow-sense heritability
-h2(model_asreml_grm, target = "gen", method = "Oakey")
-```
-
-### Broad-sense heritability with lme4
-
-```{r, eval=FALSE}
-library(lme4)
-
-# Fit model with genotype as random effect
-model_lmer <- lmer(
-  y ~ loc + (1|gen) + (1|loc:rep),
-  data = lettuce_phenotypes
-)
-
-# Calculate broad-sense heritability
-H2(model_lmer, target = "gen", method = c("Cullis", "Oakey"))
+h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
 ```
 
 ## Heritability methods
