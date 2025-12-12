@@ -112,20 +112,26 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
   return(H2_Piepho)
 }
 
-#' Estimate narrow-sense heritability of differences for BLUPs or BLUEs
-#' @description Compute narrow-sense heritability of differences
+#' Estimate heritability of differences for BLUPs or BLUEs
+#' @description Compute narrow-sense or broad-sense heritability of differences
 #' using the variance of differences between two BLUPs/BLUEs
-#' @aliases h2_Delta_BLUE_parameters
+#' @aliases H2_Delta_BLUP_parameters h2_Delta_BLUE_parameters H2_Delta_BLUE_parameters
 #' @usage
 #' h2_Delta_BLUP_parameters(G_g, vd_matrix)
 #' h2_Delta_BLUE_parameters(G_g, vd_matrix)
-#' @details See [`h2_Delta()`] and reference for full derivation and equation for heritability Delta
+#'
+#' H2_Delta_BLUP_parameters(vc_g, vd_matrix)
+#' H2_Delta_BLUE_parameters(vc_g, vd_matrix)
+#'
+#' @details See [`h2_Delta()`], [H2_Delta()] and reference for full derivation and equation for heritability Delta
 #' @param G_g Numeric. Genotypic variance-covariance matrix.
+#' @param vc_g Numeric. Genotype variance component
 #' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#'
 #' @examples
 #' h2_Delta_BLUP_parameters(G_g = diag(0.15, 2, 2), vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+#'
+#' H2_Delta_BLUP_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
 #'
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
@@ -146,25 +152,7 @@ h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   1 / (1 + vd_matrix / denom)
 }
 
-#' Estimate broad-sense heritability of differences for BLUPs or BLUEs
-#' @description Compute broad-sense heritability of differences
-#' using the variance of differences between two BLUPs/BLUEs
-#' @aliases H2_Delta_BLUE_parameters
-#' @usage
-#' H2_Delta_BLUP_parameters(vc_g, vd_matrix)
-#' H2_Delta_BLUE_parameters(vc_g, vd_matrix)
-#' @details See [`H2_Delta()`] and reference for full derivation and equation for heritability Delta
-#'
-#' @param vc_g Numeric. Genotype variance component
-#' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#'
-#' @examples
-#' H2_Delta_BLUP_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
-#'
-#' @references
-#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
-
+#' @noRd
 #' @export
 H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
   denom <- 2 * vc_g
