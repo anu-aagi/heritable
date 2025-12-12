@@ -1,9 +1,11 @@
 Package: heritable
-Title: Calculate various heritability summary statistics from breeding experiments
+Title: heritable: R package for heritability calculations for plant breeding trials
 Version: 0.0.0.9000
 Authors@R: 
-    c(person("Fonti", "Kar", email = "fonti.kar@anu.edu.au", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-2760-3974")),
-        person("Emi", "Tanaka", email = "emi.tanaka@anu.edu.au", role = "aut" ,comment = c(ORCID = "0000-0002-1455-259X"))
+    c(
+    person(given = "Fonti", family = "Kar", role = c("aut", "cre"), email = c("fonti.kar@anu.edu.au"), comment = c(ORCID = "0000-0002-2760-3974")),
+    person(given = "Yidi", family=  "Deng", role = c("aut"), comment = c(ORCID = "0000-0003-0380-2124")),
+    person(given = "Emi", family = "Tanaka", role = c("aut", "ctb", "cph"), comment = c(ORCID = "0000-0002-1455-259X"))
     )
 Description: Reporting heritability estimates is an important part of quantitative genetics in breeding experiments.
  This package provides functions to calculate various heritability summary statistics, including narrow-sense heritability, broad-sense heritability, and other related metrics
