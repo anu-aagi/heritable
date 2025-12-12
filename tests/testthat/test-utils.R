@@ -1,5 +1,6 @@
 test_that("Helper functions working with asreml", {
   skip_if_not_installed("asreml")
+  skip_on_ci()
   skip_on_cran()
 
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))

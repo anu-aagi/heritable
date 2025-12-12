@@ -1,6 +1,7 @@
 test_that("H2 for asreml works", {
   skip_if_not_installed("asreml")
   skip_on_cran()
+  skip_on_ci()
 
   # ASREML Random "gen" --------------------------------------------------------
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
@@ -71,6 +72,7 @@ test_that("H2 works for lme4",{
 
 test_that("H2 can handle multiple methods", {
   skip_if_not_installed("asreml")
+  skip_on_ci()
   skip_on_cran()
 
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
