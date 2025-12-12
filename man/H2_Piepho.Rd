@@ -2,10 +2,35 @@
 % Please edit documentation in R/broad-sense.R
 \name{H2_Piepho}
 \alias{H2_Piepho}
-\title{Calculate broad-sense heritability using Piepho's method}
+\title{Calculate Piepho's heritability from model object
+Compute Piepho's heritability using variance differences between genotype BLUEs}
 \usage{
-H2_Piepho(model, target = NULL, options)
+H2_Piepho(model, target, options)
+}
+\arguments{
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
+
+\item{target}{The name of the random effect for which heritability is to be calculated.}
+
+\item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \description{
-Calculate broad-sense heritability using Piepho's method
+Calculate Piepho's heritability from model object
+Compute Piepho's heritability using variance differences between genotype BLUEs
+}
+\details{
+The equation for Piepho's heritability is as follows:
+
+\deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+
+where:
+\itemize{
+\item \eqn{\overline{PEV_{BLUE_g}}} is the prediction error variance matrix for genotype BLUEs
+\item \eqn{\sigma^2_g} is the variance attributed to differences between genotype
+}
+
+See reference for full derivation and details.
+}
+\references{
+Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 }

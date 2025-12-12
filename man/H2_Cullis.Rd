@@ -2,10 +2,35 @@
 % Please edit documentation in R/broad-sense.R
 \name{H2_Cullis}
 \alias{H2_Cullis}
-\title{Calculate broad-sense heritability using Cullis' method}
+\title{Calculate Cullis' heritability from model object}
 \usage{
-H2_Cullis(model, target = NULL, options)
+H2_Cullis(model, target, options)
+}
+\arguments{
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
+
+\item{target}{The name of the random effect for which heritability is to be calculated.}
+
+\item{options}{NULL by default, for internal checking of model object before calculations}
+}
+\value{
+Single numeric value
 }
 \description{
-Calculate broad-sense heritability using Cullis' method
+Compute "generalised heritability" for unbalanced experimental designs.
+See Cullis, Smith and Coombes (2006) for derivation.
+}
+\details{
+The equation for Cullis heritability is as follow
+
+\deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+
+where:
+\itemize{
+\item \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
+\item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
+}
+\references{
+Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
 }

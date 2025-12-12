@@ -2,10 +2,36 @@
 % Please edit documentation in R/broad-sense.R
 \name{H2_Standard}
 \alias{H2_Standard}
-\title{Calculate standard broad-sense heritability}
+\title{Calculate standard heritability from model object}
 \usage{
 H2_Standard(model, target, options)
 }
+\arguments{
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
+
+\item{target}{The name of the random effect for which heritability is to be calculated.}
+
+\item{options}{NULL by default, for internal checking of model object before calculations}
+}
+\value{
+Single numeric value
+}
 \description{
-Calculate standard broad-sense heritability
+Compute standard heritability using the classic ratio method of
+genotypic and phenotypic variance. See Falconer & Mackay (1996)
+}
+\details{
+The equation used to calculate standard heritability is:
+\deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+where:
+\itemize{
+\item \eqn{n_g} is the number of genotypes
+\item \eqn{n_{gi}} is the number of replicate for a given genotype i
+\item \eqn{\sigma_g} is the variance attributed to genotype differences
+\item \eqn{\sigma_p} is the variance attributed to phenotypic differences
+}
+}
+\references{
+@references
+Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 }

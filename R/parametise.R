@@ -1,64 +1,4 @@
-#' Estimate Cullis heritability
-#'
-#' @description Compute the Cullis heritability for genotype means using the average
-#' variance of pairwise differences of best linear unbiased predictors (BLUPs).
-#'
-#' @details The equation for Cullis heritability is as follow
-#'
-#' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-#'
-#' where:
-#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
-#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
-#'
-#' @param vd_BLUP_avg Numeric. Average variance of pairwise differences among BLUPs
-#' @param vc_g Numeric. Genotype variance component
-#' @return Single numeric value
-#'
-#' @examples
-#' H2_Cullis_parameters(vd_BLUP_avg = 0.25, vc_g = 0.8)
-#'
-#' @references
-#' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
-#'
-#' @export
- H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
-    H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
-
-    return(H2_Cullis)
- }
-
-#' Estimate Oakey's heritability using variance components
-#'
-#' @description Rather than providing a model object, supply the necessary components to compute
-#' this heritability measure.
-#'
-#' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
-#' @param C_gg Prediction error variance matrix associated with the genotype effects.
-#' @return Single numeric value
-#' @examples
-#' Gg_inv = diag(1/0.15, 3, 3)
-#' C_gg <- matrix(
-#'   c(
-#'     0.08, 0.01, 0.00,
-#'     0.01, 0.07, 0.01,
-#'     0.00, 0.01, 0.09
-#'   ),
-#'   nrow = 3, byrow = TRUE
-#' )
-#' H2_Oakey_parameters(Gg_inv, C_gg)
-#' @export
-H2_Oakey_parameters <- function(Gg_inv, C_gg) {
-   n_g <- nrow(Gg_inv)
-   M <- diag(n_g) - (Gg_inv %*% C_gg)
-   eM <- eigen(M)
-
-   thres <- 1e-5
-   H2_Oakey <- mean(eM$values[eM$values > thres])
-   return(H2_Oakey)
-}
-
-#' Estimate Standard heritability
+#' Calculate Standard heritability using variance parameters
 #'
 #' @description Compute Standard heritability for genotype means using the variance components of genotype and residuals.
 #'
@@ -88,13 +28,77 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
   return(H2_Standard)
 }
 
-#' Estimate Piepho's heritability
+#' Calculate Cullis heritability using variance parameters
+#'
+#' @description Compute the Cullis heritability for genotype means using the average
+#' variance of pairwise differences of best linear unbiased predictors (BLUPs).
+#'
+#' @details The equation for Cullis heritability is as follow
+#'
+#' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#'
+#' where:
+#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
+#'
+#' @param vd_BLUP_avg Numeric. Average variance of pairwise differences among BLUPs
+#' @param vc_g Numeric. Genotype variance component
+#' @return Single numeric value
+#'
+#' @examples
+#' H2_Cullis_parameters(vd_BLUP_avg = 0.25, vc_g = 0.8)
+#'
+#' @references
+#' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+#'
+#' @export
+ H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
+    H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
+
+    return(H2_Cullis)
+ }
+
+#' Calculate Oakey's heritability using variance parameters
+#'
+#' @description Rather than providing a model object, supply the necessary components to compute
+#' this heritability measure.
+#'
+#' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
+#' @param C_gg Prediction error variance matrix associated with the genotype effects.
+#' @return Single numeric value
+#' @examples
+#' Gg_inv = diag(1/0.15, 3, 3)
+#' C_gg <- matrix(
+#'   c(
+#'     0.08, 0.01, 0.00,
+#'     0.01, 0.07, 0.01,
+#'     0.00, 0.01, 0.09
+#'   ),
+#'   nrow = 3, byrow = TRUE
+#' )
+#' H2_Oakey_parameters(Gg_inv, C_gg)
+#' @export
+H2_Oakey_parameters <- function(Gg_inv, C_gg) {
+   n_g <- nrow(Gg_inv)
+   M <- diag(n_g) - (Gg_inv %*% C_gg)
+   eM <- eigen(M)
+
+   thres <- 1e-5
+   H2_Oakey <- mean(eM$values[eM$values > thres])
+   return(H2_Oakey)
+}
+
+#' Calculate Piepho's heritability using variance parameters
 #'
 #' @description Compute Piepho's heritability using the variance of differences between two BLUES.
 #'
 #' @details The equation for Piepho's heritability is as follows:
 #'
-#' \deqn{H^2_{Piepho} = \frac{\sigma^2_g_}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#' \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#'
+#' where:
+#' - \eqn{\overline{PEV_{BLUE_g}}} is the prediction error variance matrix for genotype BLUEs
+#' - \eqn{\sigma^2_g} is the variance attributed to differences between genotype
 #'
 #' @param vc_g Numeric. Genotype variance component
 #' @param vd_BLUE_avg Numeric. Mean variance of pairwise differences among BLUES
@@ -112,7 +116,7 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
   return(H2_Piepho)
 }
 
-#' Estimate heritability of differences for BLUPs or BLUEs
+#' Calculate heritability of pairwise differences using variance parameters
 #' @description Compute narrow-sense or broad-sense heritability of differences
 #' using the variance of differences between two BLUPs/BLUEs
 #' @aliases H2_Delta_BLUP_parameters h2_Delta_BLUE_parameters H2_Delta_BLUE_parameters
@@ -123,7 +127,8 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' H2_Delta_BLUP_parameters(vc_g, vd_matrix)
 #' H2_Delta_BLUE_parameters(vc_g, vd_matrix)
 #'
-#' @details See [`h2_Delta()`], [H2_Delta()] and reference for full derivation and equation for heritability Delta
+#' @details See [`h2_Delta()`], [H2_Delta()] and reference for full derivation
+#'  and equation for heritability Delta
 #' @param G_g Numeric. Genotypic variance-covariance matrix.
 #' @param vc_g Numeric. Genotype variance component
 #' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
@@ -134,7 +139,9 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' H2_Delta_BLUP_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
 #'
 #' @references
-#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
+#' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating
+#' Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar
+#' Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @export
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
 vd <- diag(G_g)

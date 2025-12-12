@@ -3,7 +3,7 @@
 \name{h2_Delta_pairwise}
 \alias{h2_Delta_pairwise}
 \alias{H2_Delta_pairwise}
-\title{Calculate pairwise heritability of differences between genotypes}
+\title{Calculate pairwise heritability of differences between genotypes from model object}
 \usage{
 h2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
 H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)

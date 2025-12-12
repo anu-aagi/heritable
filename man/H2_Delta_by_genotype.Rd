@@ -3,7 +3,7 @@
 \name{h2_Delta_by_genotype}
 \alias{h2_Delta_by_genotype}
 \alias{H2_Delta_by_genotype}
-\title{Calculate heritability of differences for a given genotype}
+\title{Calculate heritability of differences for a given genotype from model object}
 \usage{
 h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)

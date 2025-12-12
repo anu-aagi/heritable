@@ -3,7 +3,7 @@
 \name{h2_Oakey}
 \alias{h2_Oakey}
 \alias{H2_Oakey}
-\title{Calculate Oakey's heritability}
+\title{Calculate Oakey's heritability from model object}
 \usage{
 h2_Oakey(model, target, options)
 H2_Oakey(model, target, options)

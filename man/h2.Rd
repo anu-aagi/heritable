@@ -3,7 +3,7 @@
 \name{h2}
 \alias{h2}
 \alias{H2}
-\title{Calculate broad-sense or narrow sense heritability}
+\title{Calculate broad-sense or narrow sense heritability from model object}
 \usage{
 h2(model, target, method = c("Oakey", "Delta"), options)
 H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)

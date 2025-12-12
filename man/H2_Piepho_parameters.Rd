@@ -2,7 +2,7 @@
 % Please edit documentation in R/parametise.R
 \name{H2_Piepho_parameters}
 \alias{H2_Piepho_parameters}
-\title{Estimate Piepho's heritability}
+\title{Calculate Piepho's heritability using variance parameters}
 \usage{
 H2_Piepho_parameters(vc_g, vd_BLUE_avg)
 }
@@ -20,7 +20,13 @@ Compute Piepho's heritability using the variance of differences between two BLUE
 \details{
 The equation for Piepho's heritability is as follows:
 
-\deqn{H^2_{Piepho} = \frac{\sigma^2_g_}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+\deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+
+where:
+\itemize{
+\item \eqn{\overline{PEV_{BLUE_g}}} is the prediction error variance matrix for genotype BLUEs
+\item \eqn{\sigma^2_g} is the variance attributed to differences between genotype
+}
 }
 \examples{
 H2_Piepho_parameters(vc_g = 0.25, vd_BLUE_avg = 0.68)

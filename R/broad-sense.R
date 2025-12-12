@@ -38,27 +38,72 @@ H2.default <- function(model,
   )
 }
 
-#' Calculate standard broad-sense heritability
+#' Calculate standard heritability from model object
+#' @description Compute standard heritability using the classic ratio method of
+#' genotypic and phenotypic variance. See Falconer & Mackay (1996)
+#' @usage H2_Standard(model, target, options)
+#' @inheritParams h2
+#' @return Single numeric value
+#' @details
+#' The equation used to calculate standard heritability is:
+#' \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+#' where:
+#'
+#' - \eqn{n_g} is the number of genotypes
+#' - \eqn{n_{gi}} is the number of replicate for a given genotype i
+#' - \eqn{\sigma_g} is the variance attributed to genotype differences
+#' - \eqn{\sigma_p} is the variance attributed to phenotypic differences
 #' @export
+#' @references @references
+#' Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 H2_Standard <- function(model, target, options) {
   UseMethod("H2_Standard")
 }
 
-#' Calculate broad-sense heritability using Cullis' method
+#' Calculate Cullis' heritability from model object
+#' @description Compute "generalised heritability" for unbalanced experimental designs.
+#' See Cullis, Smith and Coombes (2006) for derivation.
+#' @inheritParams h2
+#' @usage H2_Cullis(model, target, options)
+#' @return Single numeric value
+#' @details The equation for Cullis heritability is as follow
+#'
+#' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#'
+#' where:
+#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
+#' @references
+#' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
 #' @export
-H2_Cullis <- function(model, target = NULL, options) {
+H2_Cullis <- function(model, target, options) {
   UseMethod("H2_Cullis")
 }
 
-
+#' @noRd
 #' @export
 H2_Oakey <- function(model, target, options) {
   UseMethod("H2_Oakey")
 }
 
-#' Calculate broad-sense heritability using Piepho's method
+#' Calculate Piepho's heritability from model object
+#' Compute Piepho's heritability using variance differences between genotype BLUEs
+#' @usage H2_Piepho(model, target, options)
+#' @inheritParams h2
+#' @details The equation for Piepho's heritability is as follows:
+#'
+#' \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#'
+#' where:
+#' - \eqn{\overline{PEV_{BLUE_g}}} is the prediction error variance matrix for genotype BLUEs
+#' - \eqn{\sigma^2_g} is the variance attributed to differences between genotype
+#'
+#' See reference for full derivation and details.
 #' @export
-H2_Piepho <- function(model, target = NULL, options) {
+#' @references
+#' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+#'
+H2_Piepho <- function(model, target, options) {
   UseMethod("H2_Piepho")
 }
 

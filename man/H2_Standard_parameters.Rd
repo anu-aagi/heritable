@@ -2,7 +2,7 @@
 % Please edit documentation in R/parametise.R
 \name{H2_Standard_parameters}
 \alias{H2_Standard_parameters}
-\title{Estimate Standard heritability}
+\title{Calculate Standard heritability using variance parameters}
 \usage{
 H2_Standard_parameters(vc_g, vc_e, n_r = 1)
 }

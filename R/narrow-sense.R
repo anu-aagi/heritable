@@ -1,4 +1,4 @@
-#' Calculate broad-sense or narrow sense heritability
+#' Calculate broad-sense or narrow sense heritability from model object
 #' @description
 #' A case-specific wrapper for calculating broad / narrow sense heritability.
 #'
@@ -75,7 +75,7 @@ h2.default <- function(
   )
 }
 
-#' @title Calculate Oakey's heritability
+#' @title Calculate Oakey's heritability from model object
 #' @description
 #' Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 #' as described by Oakey et al. (2006).
@@ -102,7 +102,7 @@ h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
 }
 
-#' Calculate average heritability of differences between genotypes
+#' Calculate average heritability of differences between genotypes  from model object
 #' @description
 #' Instead of computing heritability on a "entry-mean" basis, this method
 #' calculates heritability using "entry-differences". Entry here is
@@ -170,7 +170,7 @@ h2_Delta.default <- function(model,
 
 }
 
-#' Calculate heritability of differences for a given genotype
+#' Calculate heritability of differences for a given genotype from model object
 #' @description
 #' Instead of computing heritability on a "entry-mean" basis, this method
 #' calculates heritability using "entry-differences". Entry here is
@@ -223,7 +223,7 @@ h2_Delta_by_genotype.default <- function(model,
   return(H2D_i_list)
 }
 
-#' Calculate pairwise heritability of differences between genotypes
+#' Calculate pairwise heritability of differences between genotypes from model object
 #' @description
 #' Instead of computing heritability on a "entry-mean" basis, this method
 #' calculates heritability using "entry-differences". Entry here is

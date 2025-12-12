@@ -2,7 +2,7 @@
 % Please edit documentation in R/parametise.R
 \name{H2_Oakey_parameters}
 \alias{H2_Oakey_parameters}
-\title{Estimate Oakey's heritability using variance components}
+\title{Calculate Oakey's heritability using variance parameters}
 \usage{
 H2_Oakey_parameters(Gg_inv, C_gg)
 }

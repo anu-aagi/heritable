@@ -2,7 +2,7 @@
 % Please edit documentation in R/parametise.R
 \name{H2_Cullis_parameters}
 \alias{H2_Cullis_parameters}
-\title{Estimate Cullis heritability}
+\title{Calculate Cullis heritability using variance parameters}
 \usage{
 H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 }
