@@ -10,6 +10,9 @@
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![CRAN
 status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
+[![Codecov test
+coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
+[![R-CMD-check](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 The goal of heritable is to be the one stop shop for heritability
@@ -57,6 +60,10 @@ Working as data using tidyverse style of data wrangling.
 
 ``` r
 library(tidyverse)
+#> Warning: package 'ggplot2' was built under R version 4.3.3
+#> Warning: package 'tibble' was built under R version 4.3.3
+#> Warning: package 'purrr' was built under R version 4.3.3
+#> Warning: package 'lubridate' was built under R version 4.3.3
 tibble(model = list(fit_lme4, fit_asreml)) |> 
   mutate(H2 = map(model, ~H2(.x, target = "gen"))) |> 
   unnest_wider(H2)
