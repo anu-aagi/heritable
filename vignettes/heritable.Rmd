@@ -3,8 +3,10 @@ title: "heritable"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{heritable}
-  %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::rmarkdown}
+editor_options: 
+  chunk_output_type: console
 ---
 
 ```{r, include = FALSE}
@@ -18,13 +20,22 @@ knitr::opts_chunk$set(
   fig.align = "center",
   out.width = "80%"
   )
+
+
+# Load fixtures for printing of output
+lettuce_asreml <- readRDS("fixtures/lettuce_asreml.rds")
+lettuce_lme4 <- readRDS("fixtures/lettuce_lme4.rds")
+
+# Libraries
+library(asreml)
+library(lme4)
 ```
 
 ## Motivation
 
-A key goal in any breeding trial is calculate heritability, which describes the extent of which a trait of interest underpinned by genes.
+A key goal in any breeding trial is to calculate heritability, which describes the extent of which a trait of interest is underpinned by genetic variance. `heritable` is the one-stop shop for heritability calculations in R. Here, we have implemented existing methods for heritability to aid more reproducbile and transperant reporting of it's calculations. This vignette is a brief overview of `heritable`'s workflow and key features.
 
-`heritable` is the one-stop shop for heritability calculations in R. Here, we have implemented existing methods for heritability to aid reproducibility and reporting of it's calculations. This vignette is a brief overview of `heritable`'s workflow and key features.
+`heritable` is compatible with model outputs from [`asreml`](https://vsni.co.uk/software/asreml-r/) and [`lme4`](https://cran.r-project.org/package=lme4) and extracts the relevant variance components to calculate heritability for **single environment trials.**
 
 ## Installation
 
@@ -37,11 +48,9 @@ Note that this package is under active development. You can install the developm
 library(heritable)
 ```
 
-### An overview
+### An demo
 
-`heritable` is compatible with model outputs from `asreml` and `lme4` and extracts the relevant variance components to calculate heritability. 
-
-Let's work with  dataset that contains phenotypic measurements of downy mildew resistance of 89 lettuce genotypes across 3 locations (environments), with replicates. For demonstration purposes, we will use subset of single environment (`L2`) where genotypes are fully replicated. 
+Let's work with the `lettuce` dataset that contains phenotypic measurements of downy mildew resistance score of 89 lettuce genotypes across 3 locations (environments), with 3 replicates.For demonstration purposes, we will use a subset of single environment (`loc == L2`), which is displayed in the plot below.  
 
 ```{r}
 library(dplyr)
@@ -59,6 +68,7 @@ ggplot(lettuce_subset, aes(x = gen, y = rep)) +
   geom_tile(aes(fill = y), color = "white") +
   scale_fill_gradient(high = "#006d2c", low = "#d4eac7", 
                       name = "Downy Mildew\nResistance") +
+  ggtitle("Location 2 lettuce data") +
   theme_minimal(base_size = 14) +
   theme(
     axis.text.x = element_text(angle = 90, vjust = 0.5, size = 5),
@@ -76,7 +86,7 @@ lettuce_GRM[1:5, 1:5]
 
 ### Broad-sense heritability
 
-Here we have provided code for both `ASREML-R` and `lme4` to fit a model with genotype as a random effect. **Note** that since this is a single environment and balanced subset of the data, all heritability estimates should be the same. 
+Here, we have provided code for both `asreml` and `lme4` to fit a model with genotype as a random effect. **Note** that all heritability estimates should be the same as the data is balanced. 
 
 ```{r, eval=FALSE}
 # Fit an asreml model with genotype as random effect
@@ -93,12 +103,28 @@ library(lme4)
 lettuce_lme4 <- lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 ```
 
+Use the `H2()` wrapper to compute **broad-sense heritability**.
 
-```{r, eval=FALSE}
+The wrapper has three key imputs
+
+- `model`, your `lme4` or `asreml` object 
+- `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
+- `method`, which method of `H2` calculation do you want. By default, all methods are computed.
+
+```{r, eval=TRUE}
 # Calculate broad-sense heritability using multiple methods
 H2(lettuce_asreml, target = "gen", method = c("Standard", "Cullis", "Oakey"))
 H2(lettuce_lme4, target = "gen", method = c("Standard", "Cullis", "Oakey"))
 ```
+
+Alternatively if you want a single method, you can call each method's function directly. These are named with the `H2_` prefix, followed up the method name. 
+
+```{r}
+H2_Cullis(lettuce_asreml, target = "gen")
+H2_Delta(lettuce_lme4, target = "gen")
+```
+
+> Learn more about each method by looking up with help file ?H2_Cullis
 
 ### Narrow-sense heritability with asreml and GRM
 
