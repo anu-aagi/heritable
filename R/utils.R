@@ -49,6 +49,7 @@ pull_terms_without_specials.lmerMod <- function(model) {
   model_terms
 }
 
+#' @keywords internal
 semivariance <- function(X) {
   n <- nrow(X)
   1/(n - 1) * (sum(diag(X)) - 1 / n * sum(X))
@@ -71,7 +72,7 @@ pull_terms_without_specials.asreml <- function(model) {
   model_terms
 }
 
-
+#' @keywords internal
 asreml_Spcls <- c("con", "C", "lin", "pow", "pol", "leg", "spl", "dev", "ped",
                   "ide", "giv", "vm", "ma", "at", "dsum", "and", "grp", "mbf",
                   "sbs", "gpf", "uni", "id", "idv", "idh", "ar1", "ar1v", "ar1h",

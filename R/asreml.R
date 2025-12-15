@@ -1,3 +1,8 @@
+#' @keywords internal
+get_vc_g_asreml <- function(model, target) {
+  model$vparameters[[target]] * model$sigma2
+}
+
 # h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 #
 #   initial_checks(model, target, options)
@@ -67,11 +72,6 @@ h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
     h2_Delta_BLUE_parameters(Gg, Vd_g)
   }
 }
-
-get_vc_g_asreml <- function(model, target) {
-  model$vparameters[[target]] * model$sigma2
-}
-
 
 #' @export
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
