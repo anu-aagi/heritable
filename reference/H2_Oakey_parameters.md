@@ -1,0 +1,40 @@
+# Calculate Oakey's heritability using variance parameters
+
+Rather than providing a model object, supply the necessary components to
+compute this heritability measure.
+
+## Usage
+
+``` r
+H2_Oakey_parameters(Gg_inv, C_gg)
+```
+
+## Arguments
+
+- Gg_inv:
+
+  The inverse of the genotypic variance-covariance matrix.
+
+- C_gg:
+
+  Prediction error variance matrix associated with the genotype effects.
+
+## Value
+
+Single numeric value
+
+## Examples
+
+``` r
+Gg_inv = diag(1/0.15, 3, 3)
+C_gg <- matrix(
+  c(
+    0.08, 0.01, 0.00,
+    0.01, 0.07, 0.01,
+    0.00, 0.01, 0.09
+  ),
+  nrow = 3, byrow = TRUE
+)
+H2_Oakey_parameters(Gg_inv, C_gg)
+#> [1] 0.4666667
+```

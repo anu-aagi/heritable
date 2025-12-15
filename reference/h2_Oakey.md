@@ -1,0 +1,56 @@
+# Calculate Oakey's heritability from model object
+
+Compute heritability for genotype means using the variance–covariance
+matrix of the genotype BLUPs as described by Oakey et al. (2006).
+
+## Usage
+
+``` r
+h2_Oakey(model, target, options)
+H2_Oakey(model, target, options)
+```
+
+## Arguments
+
+- model:
+
+  Model object of class `lmerMod/merMod` or `asreml`
+
+- target:
+
+  The name of the random effect for which heritability is to be
+  calculated.
+
+- options:
+
+  NULL by default, for internal checking of model object before
+  calculations
+
+## Value
+
+Numeric
+
+## Details
+
+\$\$H^2\_{Oakey} = \frac{\sum\_{i = n_z+1}^{n_g}
+\lambda_i}{\sum\_{n_g}^{\lambda_i\neq 0}}\$\$ where:
+
+- \\n_g\\ is the number of genotypes
+
+- \\n_z\\ is the number of zero eigenvalues
+
+- \\\lambda_i\\ is the ith eigenvalue of the matrix \\I\_{m} -
+  G^{-1}C^{gg}\\
+
+- \\\sigma^2\\ is the variance attributed to differences between
+  genotype
+
+See pages 813 and 818 of the reference for full derivation and
+explanation for Oakey's heritability
+
+## References
+
+Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006).
+Joint modeling of additive and non-additive genetic line effects in
+single field trials. Theoretical and Applied Genetics, 113(5), 809–819.
+https://doi.org/10.1007/s00122-006-0333-z
