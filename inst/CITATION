@@ -3,7 +3,6 @@ bibentry(
   title = "heritable: R package for heritability calculations for plant breeding trials",
   author =  c(
     person(given = "Fonti", family = "Kar", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-2760-3974")),
-    person(given = "Yidi", family=  "Deng", role = c("aut"), comment = c(ORCID = "0000-0003-0380-2124")),
     person(given = "Emi", family = "Tanaka", role = c("aut", "ctb", "cph"), comment = c(ORCID = "0000-0002-1455-259X"))
     ),
     year = {2025},
