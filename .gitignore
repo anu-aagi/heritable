@@ -62,3 +62,5 @@ rsconnect/
 ignore/
 
 inst/doc
+/doc/
+/Meta/

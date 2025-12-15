@@ -9,7 +9,32 @@ editor_options:
   chunk_output_type: console
 ---
 
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 7,
+  fig.height = 5,
+  fig.align = "center",
+  out.width = "80%",
+  fig.path = "vignettes/figs/"
+  )
 
+
+# Load fixtures for printing of output
+lettuce_asreml <- readRDS(here::here("vignettes/fixtures/lettuce_asreml.rds"))
+lettuce_lme4 <- readRDS(here::here("vignettes/fixtures/lettuce_lme4.rds"))
+lettuce_asreml_grm <- readRDS(here::here("vignettes/fixtures/lettuce_asreml_grm.rds"))
+
+# Libraries
+library(asreml)
+library(lme4)
+
+# Manually precompile the vignette, note that the fig.path for images is relative to vignettes/
+# knitr::knit(here::here("vignettes/heritable.Rmd.orig"), output = here::here("vignettes/heritable.Rmd"))
+```
 
 ## Motivation
 
@@ -22,8 +47,7 @@ A key goal in any breeding trial is to calculate heritability, which describes t
 Note that this package is under active development. You can install the development version of heritable from [GitHub](https://github.com/) with:
 
 
-
-``` r
+```{r setup}
 # install.packages("pak")
 # pak::pak("anu-aagi/heritable")
 library(heritable)
@@ -33,42 +57,36 @@ library(heritable)
 
 Let's work with the `lettuce` dataset that contains phenotypic measurements of downy mildew resistance score of 89 lettuce genotypes across 3 locations (environments), with 3 replicates.For demonstration purposes, we will use a subset of single environment (`loc == L2`), which is displayed in the plot below.
 
-
-``` r
+```{r}
 library(dplyr)
 head(lettuce_phenotypes)
-#> # A tibble: 6 × 4
-#>   loc   gen   rep       y
-#>   <fct> <fct> <fct> <dbl>
-#> 1 L1    G1    R1      2  
-#> 2 L1    G1    R2      2.5
-#> 3 L1    G2    R1      1.5
-#> 4 L1    G2    R2      2  
-#> 5 L1    G3    R1      1  
-#> 6 L1    G3    R2      2
 
 lettuce_subset <- lettuce_phenotypes |>
   filter(loc == "L2")
 ```
 
-<div class="figure" style="text-align: center">
-<img src="figs/unnamed-chunk-3-1.png" width="80%" />
-</div>
+```{r, echo=FALSE}
+library(ggplot2)
+
+# Create the field layout plot
+ggplot(lettuce_subset, aes(x = gen, y = rep)) +
+  geom_tile(aes(fill = y), color = "white") +
+  scale_fill_gradient(high = "#006d2c", low = "#d4eac7",
+                      name = "Downy Mildew\nResistance") +
+  ggtitle("Location 2 lettuce data") +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 90, vjust = 0.5, size = 5),
+    legend.position = "bottom"
+  )
+```
 
 We also have access to a genomic relationship matrix (GRM) calculated from 300 genetic markers that we will use for narrow-sense heritability.
 
-
-``` r
+```{r}
 # View the structure of the GRM
 dim(lettuce_GRM)
-#> [1] 89 89
 lettuce_GRM[1:5, 1:5]
-#>     G1  G2  G3  G4  G5
-#> G1 268   9  13  -3 -46
-#> G2   9 270 -19 -50 104
-#> G3  13 -19 250  21  -5
-#> G4  -3 -50  21 281  21
-#> G5 -46 104  -5  21 296
 ```
 
 ### Broad-sense heritability
@@ -77,8 +95,7 @@ Broad-sense heritability represents the ratio of genetic variance over phenotypi
 
 Here, we have provided code for both `asreml` and `lme4` to fit a model with genotype as a random effect. **Note** that all heritability estimates should be the same as the data is balanced.
 
-
-``` r
+```{r, eval=FALSE}
 # Fit an asreml model with genotype as random effect
 library(asreml)
 lettuce_asreml <- asreml(
@@ -101,25 +118,17 @@ The wrapper has three key imputs
 - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
 - `method`, which method of `H2` calculation do you want. By default, all methods are computed.
 
-
-``` r
+```{r, eval=TRUE}
 # Calculate broad-sense heritability using multiple methods
 H2(lettuce_asreml, target = "gen", method = c("Standard", "Cullis", "Oakey"))
-#>  Standard    Cullis     Oakey 
-#> 0.8294971 0.8294971 0.8294971
 H2(lettuce_lme4, target = "gen", method = c("Standard", "Cullis", "Oakey"))
-#>  Standard    Cullis     Oakey 
-#> 0.8294971 0.8294971 0.8294971
 ```
 
 Alternatively if you want a single method, you can call each method's function directly. These are named with the `H2_` prefix, followed up the method name.
 
-
-``` r
+```{r}
 H2_Cullis(lettuce_asreml, target = "gen")
-#> [1] 0.8294971
 H2_Delta(lettuce_lme4, target = "gen")
-#> [1] 0.8294971
 ```
 
 > Learn more about each method by looking up their help file `?H2_Cullis`
@@ -130,8 +139,7 @@ Narrow-sense heritability is currently only implemented for **`asreml`** model o
 
 In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()`
 
-
-``` r
+```{r, eval=FALSE}
 # Fit model with GRM for narrow-sense heritability
 lettuce_asreml_grm <- asreml(
   fixed = y ~ loc,
@@ -147,20 +155,15 @@ Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritab
 - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
 - `method`, which method of `h2()` calculation do you want. By default, the function will compute all available methods. Currently only `"Oakey"` and `"Delta"` are implemented for `h2()`
 
-
-``` r
+```{r}
 # Calculate narrow-sense heritability
 h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
-#>     Oakey 
-#> 0.6618008
 ```
 
 Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more.
 
-
-``` r
+```{r}
 h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
-#> [1] 0.9069566
 ```
 
 ### Alternative output formats
@@ -174,8 +177,7 @@ Depending on which `heritable` function, the output will vary:
 
 If you interested in comparing heritability values across multiple models or methods, we can leverage `tidyverse` functions to wrangle the output as a dataframe/tibble
 
-
-``` r
+```{r}
 library(purrr)
 library(tidyr)
 
@@ -187,10 +189,5 @@ tibble(
                   )
          )|>
   unnest_wider(H2) # Expand the output
-#> # A tibble: 2 × 4
-#>   model     Standard Delta Oakey
-#>   <list>       <dbl> <dbl> <dbl>
-#> 1 <lmerMod>    0.829 0.829 0.829
-#> 2 <asreml>     0.829 0.829 0.829
 ```
 

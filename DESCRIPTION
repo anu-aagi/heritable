@@ -23,7 +23,12 @@ Suggests:
     knitr,
     rmarkdown,
     lme4,
-    pbkrtest
+    pbkrtest,
+    dplyr,
+    ggplot2,
+    tidyr,
+    purrr,
+    here
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3

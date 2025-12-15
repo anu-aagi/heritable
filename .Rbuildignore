@@ -9,3 +9,5 @@
 ^ignore$
 ^codecov\.yml$
 ^\.github$
+^doc$
+^Meta$
