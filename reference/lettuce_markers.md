@@ -5,7 +5,11 @@ varieties
 
 ## Usage
 
-    lettuce_markers, lettuce_GRM
+``` r
+lettuce_markers
+
+lettuce_GRM
+```
 
 ## Format
 
