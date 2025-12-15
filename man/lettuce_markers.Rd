@@ -3,6 +3,7 @@
 \docType{data}
 \name{lettuce_markers}
 \alias{lettuce_markers}
+\alias{lettuce_GRM}
 \title{Molecular marker data and genomic relatedness matrix of 89 lettuce varieties}
 \format{
 \subsection{\code{lettuce_markers}}{
@@ -24,7 +25,9 @@ a genotype
 \url{https://figshare.com/articles/dataset/Lettuce_trial_phenotypic_and_marker_data_/8299493}
 }
 \usage{
-lettuce_markers, lettuce_GRM
+lettuce_markers
+
+lettuce_GRM
 }
 \description{
 Molecular marker data and genomic relatedness matrix of 89 lettuce varieties

@@ -8,3 +8,31 @@ navbar:
   structure:
     left:  [intro, reference, news]
     right: [search, github, lightswitch]
+reference:
+- title: Reference
+- subtitle: Wrappers for heritability calculation
+- contents:
+  - h2
+  - H2
+- subtitle: Method-specific functions
+- subtitle: Narrow-sense heritability
+- contents:
+  - h2_Oakey
+  - h2_Delta
+  - h2_Delta_by_genotype
+  - h2_Delta_pairwise
+- subtitle: Broad-sense heritability
+- contents:
+  - H2_Standard
+  - H2_Cullis
+  - H2_Piepho
+  - H2_Oakey
+  - H2_Delta
+  - H2_Delta_by_genotype
+  - H2_Delta_pairwise
+- subtitle: Parameter functions for calculation
+- contents:
+  - ends_with("parameters")
+- title: Data
+- contents:
+  - starts_with("lettuce")

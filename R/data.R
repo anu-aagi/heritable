@@ -15,7 +15,9 @@
 "lettuce_phenotypes"
 
 #'Molecular marker data and genomic relatedness matrix of 89 lettuce varieties
-#' @usage lettuce_markers, lettuce_GRM
+#' @aliases lettuce_GRM
+#' @usage lettuce_markers
+#' @usage lettuce_GRM
 #' @format ## `lettuce_markers`
 #' A data frame with 89 rows and 301 columns:
 #'
