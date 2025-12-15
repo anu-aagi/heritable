@@ -12,7 +12,6 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test
 coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
-[![R-CMD-check](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `heritable` is to be the one-stop shop for heritability calculations in

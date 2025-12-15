@@ -29,7 +29,7 @@ Note that this package is under active development. You can install the developm
 library(heritable)
 ```
 
-### An demo
+### A demo
 
 Let's work with the `lettuce` dataset that contains phenotypic measurements of downy mildew resistance score of 89 lettuce genotypes across 3 locations (environments), with 3 replicates.For demonstration purposes, we will use a subset of single environment (`loc == L2`), which is displayed in the plot below.
 

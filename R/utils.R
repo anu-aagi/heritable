@@ -201,25 +201,16 @@ fit_counterpart_model <- function(model, target = NULL) {
 #' @param x An object of class "heritable"
 #' @param digits Number of digits to print
 #' @param ... Additional arguments passed to print
-#'
+#' @noRd
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
     attr(x, "model") <- NULL
     attr(x, "target") <- NULL
     print(unclass(x))
-    # # Format all values to specified digits
-    # x_rounded <- round(x, digits)
-    #
-    # # If multiple methods, print with method names
-    # if (length(x) > 1) {
-    #     cli::cli_h2("Heritability estimates:")
-    #     for (method in names(x_rounded)) {
-    #         cli::cli_text("{.var {method}}: {x_rounded[[method]]}")
-    #     }
-    # } else {
-    #     # For single method, print simple value
-    #     cli::cli_text("Heritability ({.var {names(x_rounded)}}): {x_rounded}")
-    # }
-    #
-    # invisible(x)
+}
+
+#' @keywords internal
+build_precompiled_vignette <- function(){
+  knitr::knit(here::here("vignettes/heritable.Rmd.orig"),
+              output = here::here("vignettes/heritable.Rmd"))
 }

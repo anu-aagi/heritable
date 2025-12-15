@@ -1,0 +1,10 @@
+url: https://anu-aagi.github.io/heritable/
+template:
+  bootstrap: 5
+  bootswatch: united
+  light-switch: true
+  math-rendering: katex
+navbar:
+  structure:
+    left:  [intro, reference, news]
+    right: [search, github, lightswitch]

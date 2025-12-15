@@ -19,7 +19,6 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![CRAN status](https://www.r-pkg.org/badges/version/heritable)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
-[![R-CMD-check](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `heritable` is to be the one-stop shop for heritability calculations in R. Our goal is to implement existing methods for heritability to aid reproducibility and reporting of it's calculations.`heritable` works with model outputs from `asreml` and `lme4` and support the calculations of broad and narrow sense heritability of a variety of method for single environment breeding trials. 

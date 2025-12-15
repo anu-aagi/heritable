@@ -39,3 +39,4 @@ Depends:
     R (>= 4.1.0)
 LazyData: true
 VignetteBuilder: knitr
+URL: https://anu-aagi.github.io/heritable/
