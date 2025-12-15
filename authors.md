@@ -5,9 +5,7 @@
 - **Fonti Kar**. Author, maintainer.
   [](https://orcid.org/0000-0002-2760-3974)
 
-- **Yidi Deng**. Author. [](https://orcid.org/0000-0003-0380-2124)
-
-- **Emi Tanaka**. Author, contributor, copyright holder.
+- **Emi Tanaka**. Author, copyright holder.
   [](https://orcid.org/0000-0002-1455-259X)
 
 ## Citation
