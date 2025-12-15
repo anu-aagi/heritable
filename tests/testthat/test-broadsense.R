@@ -91,3 +91,16 @@ test_that("H2 can handle multiple methods", {
   expect_type(res_all, "double")
 })
 
+
+test_that("asreml methods work", {
+  skip_if_not_installed("asreml")
+  skip_on_ci()
+  skip_on_cran()
+
+  asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
+
+  expect_equal(H2_Cullis.asreml(asreml_model_random, target = "gen"), 0.8090841, tolerance = 1e-5)
+  expect_equal(H2_Oakey.asreml(asreml_model_random, target = "gen"), 0.8090728, tolerance = 1e-3)
+  expect_equal(H2_Piepho.asreml(asreml_model_random, target = "gen"), 0.8029759, tolerance = 1e-5)
+  expect_equal(H2_Standard.asreml(asreml_model_random, target = "gen"), 0.8400648, tolerance = 1e-5)
+})
