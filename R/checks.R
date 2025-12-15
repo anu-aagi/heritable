@@ -15,7 +15,7 @@
   if (is.null(x)) y else x
 }
 
-#
+#' @keywords internal
 initial_checks <- function(model, target, options) {
   if (options$check %||% TRUE) {
     # If there is more than one target, error
