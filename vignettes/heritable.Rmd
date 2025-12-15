@@ -23,8 +23,9 @@ knitr::opts_chunk$set(
 
 
 # Load fixtures for printing of output
-lettuce_asreml <- readRDS("fixtures/lettuce_asreml.rds")
-lettuce_lme4 <- readRDS("fixtures/lettuce_lme4.rds")
+lettuce_asreml <- readRDS(here::here("vignettes/fixtures/lettuce_asreml.rds"))
+lettuce_lme4 <- readRDS(here::here("vignettes/fixtures/lettuce_lme4.rds"))
+lettuce_asreml_grm <- readRDS(here::here("vignettes/fixtures/lettuce_asreml_grm.rds"))
 
 # Libraries
 library(asreml)
@@ -33,7 +34,7 @@ library(lme4)
 
 ## Motivation
 
-A key goal in any breeding trial is to calculate heritability, which describes the extent of which a trait of interest is underpinned by genetic variance. `heritable` is the one-stop shop for heritability calculations in R. Here, we have implemented existing methods for heritability to aid more reproducbile and transperant reporting of it's calculations. This vignette is a brief overview of `heritable`'s workflow and key features.
+A key goal in any breeding trial is to calculate heritability, which describes the extent of which a trait of interest is underpinned by genetic variance. `heritable` is the one-stop shop for heritability calculations in R. Here, we have implemented existing methods for heritability to aid more reproducible and transparent reporting of it's calculations. This vignette is a brief overview of `heritable`'s workflow and key features.
 
 `heritable` is compatible with model outputs from [`asreml`](https://vsni.co.uk/software/asreml-r/) and [`lme4`](https://cran.r-project.org/package=lme4) and extracts the relevant variance components to calculate heritability for **single environment trials.**
 
@@ -86,6 +87,8 @@ lettuce_GRM[1:5, 1:5]
 
 ### Broad-sense heritability
 
+Broad-sense heritability represents the ratio of genetic variance over phenotypic variance. Genetic variance here incorporates additive, epistatic and dominance effects. 
+
 Here, we have provided code for both `asreml` and `lme4` to fit a model with genotype as a random effect. **Note** that all heritability estimates should be the same as the data is balanced. 
 
 ```{r, eval=FALSE}
@@ -124,12 +127,13 @@ H2_Cullis(lettuce_asreml, target = "gen")
 H2_Delta(lettuce_lme4, target = "gen")
 ```
 
-> Learn more about each method by looking up with help file ?H2_Cullis
+> Learn more about each method by looking up their help file `?H2_Cullis`
 
-### Narrow-sense heritability with asreml and GRM
+### Narrow-sense heritability
 
-Narrow-sense heritability is currently only implemented for `asreml`. 
-In the model, we will use the `lettuce_GRM` genomic relationship matrix and fit it using `asreml::vm()`:
+Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](http://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://cran.r-project.org/web/packages/lme4breeding/lme4breeding.pdf)
+
+In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()`
 
 ```{r, eval=FALSE}
 # Fit model with GRM for narrow-sense heritability
@@ -139,11 +143,46 @@ lettuce_asreml_grm <- asreml(
   data = lettuce_phenotypes, 
   trace = FALSE
 )
+```
 
+Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritability. Remembering to specify: 
+
+- `model`, your `asreml` object
+- `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
+- `method`, which method of `h2()` calculation do you want. By default, the function will compute all available methods. Currently only `"Oakey"` and `"Delta"` are implemented for `h2()`
+
+```{r}
 # Calculate narrow-sense heritability
 h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
 ```
 
-## Heritability methods
+Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more.
 
-`heritable` supports calculations of both narrow-sense ($h^2$) and broad-sense heritability ($H^2$) using a variety of methods for single environment breeding trials:
+```{r}
+h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
+```
+
+### Alternative output formats
+
+Depending on which `heritable` function, the output will vary:
+
+- `h2` / `H2()` wrappers will return a named vector by `method`
+- `h2_Oakey()` / `H2_Delta()` will return a numeric value
+- `h2_Delta_by_genotype()` / `H2_Delta_by_genotype()` will return a named list according to the `target` variable
+- `h2_Delta_pairwise()` / `H2_Delta_pairwise()` will return a symmetrical matrix for all pairwise combinations of `target`
+
+If you interested in comparing heritability values across multiple models or methods, we can leverage `tidyverse` functions to wrangle the output as a dataframe/tibble
+
+```{r}
+library(tidyverse)
+
+tibble(
+  model = list(lettuce_lme4, lettuce_asreml) # Include model as a list variable
+  ) |>  
+  mutate(H2 = map(model, # Apply the `H2()` function over each model object
+                  ~H2(.x, target = "gen", method = c("Standard", "Delta", "Oakey"))  
+                  )
+         )|> 
+  unnest_wider(H2) # Expand the output
+```
+
