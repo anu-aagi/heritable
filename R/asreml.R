@@ -30,48 +30,48 @@ get_vc_g_asreml <- function(model, target) {
 #   H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 # }
 
-#' @export
-h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
-  initial_checks(model, target, options)
+#' @keywords internal
+# h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
+#   initial_checks(model, target, options)
+#
+#   vm <- target_vm_term_asreml(model, target)
+#   n_g <- model$noeff[[vm$target_vm]]
+#   Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
+#   vcov_g <- asreml::predict.asreml(model,
+#     classify = target,
+#     only = target,
+#     vcov = TRUE,
+#     trace = FALSE
+#   )$vcov
+#
+#
+#   H2_Oakey_parameters(Gg_inv, vcov_g)
+# }
 
-  vm <- target_vm_term_asreml(model, target)
-  n_g <- model$noeff[[vm$target_vm]]
-  Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
-  vcov_g <- asreml::predict.asreml(model,
-    classify = target,
-    only = target,
-    vcov = TRUE,
-    trace = FALSE
-  )$vcov
 
-
-  H2_Oakey_parameters(Gg_inv, vcov_g)
-}
-
-
-#' @export
-h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
-  initial_checks(model, target, options)
-
-  vm <- target_vm_term_asreml(model, target)
-  n_g <- model$noeff[[vm$target_vm]]
-  Gg <- model$vparameters[[vm$target_vm]] * model$sigma2 * solve(vm$GRMinv)
-
-  if (type == "BLUP") {
-    gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE, trace = FALSE)
-    Vd_g <- gpred$sed^2 # Variance of difference
-    genotype_names <- gpred$pvals[[target]] # list of genotype names
-    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    h2_Delta_BLUP_parameters(Gg, Vd_g)
-  } else if (type == "BLUE") {
-    model_fix <- fit_counterpart_model.asreml(model, target)
-    gpred <- asreml::predict.asreml(model_fix, classify = target, sed = TRUE, trace = FALSE)
-    Vd_g <- gpred$sed^2 # Variance of difference
-    genotype_names <- gpred$pvals[[target]] # list of genotype names
-    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    h2_Delta_BLUE_parameters(Gg, Vd_g)
-  }
-}
+#' @keywords internal
+# h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
+#   initial_checks(model, target, options)
+#
+#   vm <- target_vm_term_asreml(model, target)
+#   n_g <- model$noeff[[vm$target_vm]]
+#   Gg <- model$vparameters[[vm$target_vm]] * model$sigma2 * solve(vm$GRMinv)
+#
+#   if (type == "BLUP") {
+#     gpred <- asreml::predict.asreml(model, classify = target, sed = TRUE, trace = FALSE)
+#     Vd_g <- gpred$sed^2 # Variance of difference
+#     genotype_names <- gpred$pvals[[target]] # list of genotype names
+#     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+#     h2_Delta_BLUP_parameters(Gg, Vd_g)
+#   } else if (type == "BLUE") {
+#     model_fix <- fit_counterpart_model.asreml(model, target)
+#     gpred <- asreml::predict.asreml(model_fix, classify = target, sed = TRUE, trace = FALSE)
+#     Vd_g <- gpred$sed^2 # Variance of difference
+#     genotype_names <- gpred$pvals[[target]] # list of genotype names
+#     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+#     h2_Delta_BLUE_parameters(Gg, Vd_g)
+#   }
+# }
 
 #' @export
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {

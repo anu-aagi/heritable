@@ -102,7 +102,7 @@ h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
 }
 
-#' Calculate average heritability of differences between genotypes  from model object
+#' Calculate average heritability of differences between genotypes from model object
 #' @description
 #' Instead of computing heritability on a "entry-mean" basis, this method
 #' calculates heritability using "entry-differences". Entry here is

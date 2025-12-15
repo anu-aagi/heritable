@@ -15,12 +15,12 @@ reference:
   - h2
   - H2
 - subtitle: Method-specific functions
-- subtitle: Narrow-sense heritability
-- contents:
-  - h2_Oakey
-  - h2_Delta
-  - h2_Delta_by_genotype
-  - h2_Delta_pairwise
+# - subtitle: Narrow-sense heritability
+# - contents:
+#   - h2_Oakey
+#   - h2_Delta
+#   - h2_Delta_by_genotype
+#   - h2_Delta_pairwise
 - subtitle: Broad-sense heritability
 - contents:
   - H2_Standard

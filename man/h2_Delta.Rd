@@ -3,7 +3,7 @@
 \name{h2_Delta}
 \alias{h2_Delta}
 \alias{H2_Delta}
-\title{Calculate average heritability of differences between genotypes  from model object}
+\title{Calculate average heritability of differences between genotypes from model object}
 \usage{
 h2_Delta(model,
          target,
