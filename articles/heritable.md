@@ -131,59 +131,6 @@ H2_Delta(lettuce_lme4, target = "gen")
 > Learn more about each method by looking up their help file
 > [`?H2_Cullis`](https://anu-aagi.github.io/heritable/reference/H2_Cullis.md)
 
-### Narrow-sense heritability
-
-Narrow-sense heritability is currently only implemented for **`asreml`**
-model object as there is no native workflow to fit a GRM using `lme4`.
-However it is possible using other extension packages such as
-[`lme4qtl`](http://dx.doi.org/10.1186/s12859-018-2057-x) and
-[`lme4breeding`](https://cran.r-project.org/web/packages/lme4breeding/lme4breeding.pdf)
-
-In the following model, we will fit the `lettuce_GRM` genomic
-relationship matrix using `asreml::vm()`
-
-``` r
-# Fit model with GRM for narrow-sense heritability
-lettuce_asreml_grm <- asreml(
-  fixed = y ~ loc,
-  random = ~ vm(gen, lettuce_GRM) + rep,
-  data = lettuce_phenotypes,
-  trace = FALSE
-)
-```
-
-Similar to
-[`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md), we can
-use the [`h2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
-wrapper to compute narrow-sense heritability. Remembering to specify:
-
-- `model`, your `asreml` object
-- `target`, the name of your genotype/varietal/line variable in your
-  model e.g. `"gen"`
-- `method`, which method of
-  [`h2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
-  calculation do you want. By default, the function will compute all
-  available methods. Currently only `"Oakey"` and `"Delta"` are
-  implemented for
-  [`h2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
-
-``` r
-# Calculate narrow-sense heritability
-h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
-#>     Oakey 
-#> 0.6618008
-```
-
-Similarly, you can call the single method sub-functions using the prefix
-`h2_` followed by the method name. Here we are calculating pairwise
-heritability between every genotype. See `?h2_Delta_pairwise()` to learn
-more.
-
-``` r
-h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
-#> [1] 0.9069566
-```
-
 ### Alternative output formats
 
 Depending on which `heritable` function, the output will vary:

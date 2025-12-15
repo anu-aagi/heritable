@@ -10,24 +10,6 @@
 
 ### Method-specific functions
 
-### Narrow-sense heritability
-
-- [`h2_Oakey()`](https://anu-aagi.github.io/heritable/reference/h2_Oakey.md)
-  [`H2_Oakey()`](https://anu-aagi.github.io/heritable/reference/h2_Oakey.md)
-  : Calculate Oakey's heritability from model object
-- [`h2_Delta()`](https://anu-aagi.github.io/heritable/reference/h2_Delta.md)
-  [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/h2_Delta.md)
-  : Calculate average heritability of differences between genotypes from
-  model object
-- [`h2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md)
-  [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md)
-  : Calculate heritability of differences for a given genotype from
-  model object
-- [`h2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
-  [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
-  : Calculate pairwise heritability of differences between genotypes
-  from model object
-
 ### Broad-sense heritability
 
 - [`H2_Standard()`](https://anu-aagi.github.io/heritable/reference/H2_Standard.md)
