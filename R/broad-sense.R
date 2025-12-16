@@ -124,7 +124,7 @@ H2_Cullis <- function(model, target, options) {
 #' @description
 #' Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 #' as described by Oakey et al. (2006).
-# @inheritParams h2
+#' @inheritParams H2
 # @aliases H2_Oakey
 #' @details
 #' \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
@@ -173,7 +173,7 @@ H2_Piepho <- function(model, target, options) {
 #' calculates heritability using "entry-differences". Entry here is
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `H2_Delta` and it's variants
-# @inheritParams h2
+#' @inheritParams H2
 # @aliases H2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
@@ -204,7 +204,7 @@ H2_Piepho <- function(model, target, options) {
 #' See reference page 995 - 997 for full derivation of this heritability measure and related variants
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
-#' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
+#' @seealso [`H2_Delta_by_genotype()`], [`H2_Delta_pairwise()`]
 #' @export
 H2_Delta <- function(
     model,
@@ -243,7 +243,7 @@ H2_Delta.default <- function(model,
 #' @usage
 # h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 #' H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
-# @inheritParams h2_Delta
+#' @inheritParams H2_Delta
 # @aliases H2_Delta_by_genotype
 #' @returns Numeric
 #' @details
@@ -294,7 +294,7 @@ H2_Delta_by_genotype.default <- function(model,
 #' @usage
 # h2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
 #' H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
-# @inheritParams h2_Delta
+#' @inheritParams H2_Delta
 # @aliases H2_Delta_pairwise
 #' @returns A `dspMatrix`
 #' @references

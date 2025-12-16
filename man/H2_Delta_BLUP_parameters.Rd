@@ -13,8 +13,6 @@ H2_Delta_BLUE_parameters(vc_g, vd_matrix)
 \item{vc_g}{Numeric. Genotype variance component}
 
 \item{vd_matrix}{Matrix. Variance of pairwise differences among BLUES or BLUPs}
-
-\item{G_g}{Numeric. Genotypic variance-covariance matrix.}
 }
 \value{
 Matrix of pairwise heritability of differences among BLUES or BLUPs

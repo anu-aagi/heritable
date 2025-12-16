@@ -12,6 +12,10 @@ H2_Delta(model,
          )
 }
 \arguments{
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
+
+\item{target}{The name of the random effect for which heritability is to be calculated.}
+
 \item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
 
 \item{aggregate}{character, when taking means in the calculation, should harmonic or arithmetic mean be used?}
@@ -44,5 +48,5 @@ See reference page 995 - 997 for full derivation of this heritability measure an
 Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 }
 \seealso{
-\code{\link[=h2_Delta_by_genotype]{h2_Delta_by_genotype()}}, \code{\link[=h2_Delta_by_genotype]{H2_Delta_by_genotype()}}, \code{\link[=h2_Delta_pairwise]{h2_Delta_pairwise()}}, \code{\link[=h2_Delta_pairwise]{H2_Delta_pairwise()}}
+\code{\link[=H2_Delta_by_genotype]{H2_Delta_by_genotype()}}, \code{\link[=H2_Delta_pairwise]{H2_Delta_pairwise()}}
 }

@@ -19,7 +19,8 @@ knitr::opts_chunk$set(
   fig.height = 5,
   fig.align = "center",
   out.width = "80%",
-  fig.path = "vignettes/figs/"
+  fig.path = "vignettes/figs/",
+  fig.cap=""
   )
 
 
@@ -52,7 +53,7 @@ Note that this package is under active development. You can install the developm
 library(heritable)
 ```
 
-### A demo
+## A demo
 
 Let's work with the `lettuce` dataset that contains phenotypic measurements of downy mildew resistance score of 89 lettuce genotypes across 3 locations (environments), with 3 replicates.For demonstration purposes, we will use a subset of single environment (`loc == L2`), which is displayed in the plot below.
 
@@ -88,7 +89,7 @@ dim(lettuce_GRM)
 lettuce_GRM[1:5, 1:5]
 ```
 
-### Broad-sense heritability
+## Broad-sense heritability
 
 Broad-sense heritability represents the ratio of genetic variance over phenotypic variance. Genetic variance here incorporates additive, epistatic and dominance effects.
 
@@ -165,14 +166,14 @@ Similarly, you can call the single method sub-functions using the prefix `h2_` f
 h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
 ```
 
-### Alternative output formats
+## Alternative output formats
 
 Depending on which `heritable` function, the output will vary:
 
-- `h2` / `H2()` wrappers will return a named vector by `method`
-- `h2_Oakey()` / `H2_Delta()` will return a numeric value
-- `h2_Delta_by_genotype()` / `H2_Delta_by_genotype()` will return a named list according to the `target` variable
-- `h2_Delta_pairwise()` / `H2_Delta_pairwise()` will return a symmetrical matrix for all pairwise combinations of `target`
+- `H2()` wrappers will return a named vector by `method`
+- `H2_Delta()` will return a numeric value
+- `H2_Delta_by_genotype()` will return a named list according to the `target` variable
+- `H2_Delta_pairwise()` will return a symmetrical matrix for all pairwise combinations of `target`
 
 If you interested in comparing heritability values across multiple models or methods, we can leverage `tidyverse` functions to wrangle the output as a dataframe/tibble
 

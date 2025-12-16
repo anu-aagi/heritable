@@ -6,6 +6,15 @@
 \usage{
 H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
 }
+\arguments{
+\item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
+
+\item{target}{The name of the random effect for which heritability is to be calculated.}
+
+\item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
+
+\item{options}{NULL by default, for internal checking of model object before calculations}
+}
 \value{
 A \code{dspMatrix}
 }
