@@ -28,7 +28,7 @@ with:
 library(heritable)
 ```
 
-### A demo
+## A demo
 
 Let’s work with the `lettuce` dataset that contains phenotypic
 measurements of downy mildew resistance score of 89 lettuce genotypes
@@ -71,7 +71,7 @@ lettuce_GRM[1:5, 1:5]
 #> G5 -46 104  -5  21 296
 ```
 
-### Broad-sense heritability
+## Broad-sense heritability
 
 Broad-sense heritability represents the ratio of genetic variance over
 phenotypic variance. Genetic variance here incorporates additive,
@@ -110,8 +110,7 @@ The wrapper has three key imputs
 ``` r
 # Calculate broad-sense heritability using multiple methods
 H2(lettuce_asreml, target = "gen", method = c("Standard", "Cullis", "Oakey"))
-#>  Standard    Cullis     Oakey 
-#> 0.8294971 0.8294971 0.8294971
+#> Error in eval(newcall, parent.frame()): object 'lettuce_subset' not found
 H2(lettuce_lme4, target = "gen", method = c("Standard", "Cullis", "Oakey"))
 #>  Standard    Cullis     Oakey 
 #> 0.8294971 0.8294971 0.8294971
@@ -123,7 +122,7 @@ the method name.
 
 ``` r
 H2_Cullis(lettuce_asreml, target = "gen")
-#> [1] 0.8294971
+#> Error in eval(newcall, parent.frame()): object 'lettuce_subset' not found
 H2_Delta(lettuce_lme4, target = "gen")
 #> [1] 0.8294971
 ```
@@ -131,20 +130,17 @@ H2_Delta(lettuce_lme4, target = "gen")
 > Learn more about each method by looking up their help file
 > [`?H2_Cullis`](https://anu-aagi.github.io/heritable/reference/H2_Cullis.md)
 
-### Alternative output formats
+## Alternative output formats
 
 Depending on which `heritable` function, the output will vary:
 
-- `h2` / [`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
+- [`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
   wrappers will return a named vector by `method`
-- `h2_Oakey()` /
-  [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md)
+- [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md)
   will return a numeric value
-- `h2_Delta_by_genotype()` /
-  [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md)
+- [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md)
   will return a named list according to the `target` variable
-- `h2_Delta_pairwise()` /
-  [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
+- [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
   will return a symmetrical matrix for all pairwise combinations of
   `target`
 
@@ -164,9 +160,10 @@ tibble(
                   )
          )|>
   unnest_wider(H2) # Expand the output
-#> # A tibble: 2 × 4
-#>   model     Standard Delta Oakey
-#>   <list>       <dbl> <dbl> <dbl>
-#> 1 <lmerMod>    0.829 0.829 0.829
-#> 2 <asreml>     0.829 0.829 0.829
+#> Error in `mutate()`:
+#> ℹ In argument: `H2 = map(...)`.
+#> Caused by error in `map()`:
+#> ℹ In index: 2.
+#> Caused by error:
+#> ! object 'lettuce_subset' not found
 ```

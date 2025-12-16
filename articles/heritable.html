@@ -91,9 +91,10 @@ the development version of heritable from <a href="https://github.com/" class="e
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="co"># pak::pak("anu-aagi/heritable")</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://anu-aagi.github.io/heritable/">heritable</a></span><span class="op">)</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="a-demo">A demo<a class="anchor" aria-label="anchor" href="#a-demo"></a>
-</h3>
+</div>
+<div class="section level2">
+<h2 id="a-demo">A demo<a class="anchor" aria-label="anchor" href="#a-demo"></a>
+</h2>
 <p>Let’s work with the <code>lettuce</code> dataset that contains
 phenotypic measurements of downy mildew resistance score of 89 lettuce
 genotypes across 3 locations (environments), with 3 replicates.For
@@ -114,9 +115,7 @@ demonstration purposes, we will use a subset of single environment
 <span></span>
 <span><span class="va">lettuce_subset</span> <span class="op">&lt;-</span> <span class="va">lettuce_phenotypes</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html" class="external-link">filter</a></span><span class="op">(</span><span class="va">loc</span> <span class="op">==</span> <span class="st">"L2"</span><span class="op">)</span></span></code></pre></div>
-<div class="figure" style="text-align: center">
-<p><img src="figs/unnamed-chunk-3-1.png" width="80%"></p>
-</div>
+<p><img src="figs/unnamed-chunk-3-1.png" width="80%" style="display: block; margin: auto;"></p>
 <p>We also have access to a genomic relationship matrix (GRM) calculated
 from 300 genetic markers that we will use for narrow-sense
 heritability.</p>
@@ -132,9 +131,9 @@ heritability.</p>
 <span><span class="co">#&gt; G4  -3 -50  21 281  21</span></span>
 <span><span class="co">#&gt; G5 -46 104  -5  21 296</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="broad-sense-heritability">Broad-sense heritability<a class="anchor" aria-label="anchor" href="#broad-sense-heritability"></a>
-</h3>
+<div class="section level2">
+<h2 id="broad-sense-heritability">Broad-sense heritability<a class="anchor" aria-label="anchor" href="#broad-sense-heritability"></a>
+</h2>
 <p>Broad-sense heritability represents the ratio of genetic variance
 over phenotypic variance. Genetic variance here incorporates additive,
 epistatic and dominance effects.</p>
@@ -173,8 +172,7 @@ you want. By default, all methods are computed.</li>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate broad-sense heritability using multiple methods</span></span>
 <span><span class="fu"><a href="../reference/h2.html">H2</a></span><span class="op">(</span><span class="va">lettuce_asreml</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Standard"</span>, <span class="st">"Cullis"</span>, <span class="st">"Oakey"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;  Standard    Cullis     Oakey </span></span>
-<span><span class="co">#&gt; 0.8294971 0.8294971 0.8294971</span></span>
+<span><span class="co">#&gt; Error in eval(newcall, parent.frame()): object 'lettuce_subset' not found</span></span>
 <span><span class="fu"><a href="../reference/h2.html">H2</a></span><span class="op">(</span><span class="va">lettuce_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Standard"</span>, <span class="st">"Cullis"</span>, <span class="st">"Oakey"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;  Standard    Cullis     Oakey </span></span>
 <span><span class="co">#&gt; 0.8294971 0.8294971 0.8294971</span></span></code></pre></div>
@@ -183,14 +181,14 @@ function directly. These are named with the <code>H2_</code> prefix,
 followed up the method name.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/H2_Cullis.html">H2_Cullis</a></span><span class="op">(</span><span class="va">lettuce_asreml</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.8294971</span></span>
+<span><span class="co">#&gt; Error in eval(newcall, parent.frame()): object 'lettuce_subset' not found</span></span>
 <span><span class="fu"><a href="../reference/H2_Delta.html">H2_Delta</a></span><span class="op">(</span><span class="va">lettuce_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.8294971</span></span></code></pre></div>
 <blockquote>
 <p>Learn more about each method by looking up their help file
 <code><a href="../reference/H2_Cullis.html">?H2_Cullis</a></code></p>
 </blockquote>
-<!-- ### Narrow-sense heritability -->
+<!-- ## Narrow-sense heritability -->
 <!-- Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](http://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://cran.r-project.org/web/packages/lme4breeding/lme4breeding.pdf) -->
 <!-- In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()` -->
 <!-- ``` r -->
@@ -209,36 +207,32 @@ followed up the method name.</p>
 <!-- ``` r -->
 <!-- # Calculate narrow-sense heritability -->
 <!-- h2(lettuce_asreml_grm, target = "gen", method = "Oakey") -->
-<!-- #>     Oakey  -->
-<!-- #> 0.6618008 -->
+<!-- #> Error in UseMethod("h2"): no applicable method for 'h2' applied to an object of class "asreml" -->
 <!-- ``` -->
 <!-- Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more. -->
 <!-- ``` r -->
 <!-- h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP") -->
-<!-- #> [1] 0.9069566 -->
+<!-- #> Error in UseMethod("h2_Delta"): no applicable method for 'h2_Delta' applied to an object of class "asreml" -->
 <!-- ``` -->
 </div>
-<div class="section level3">
-<h3 id="alternative-output-formats">Alternative output formats<a class="anchor" aria-label="anchor" href="#alternative-output-formats"></a>
-</h3>
+<div class="section level2">
+<h2 id="alternative-output-formats">Alternative output formats<a class="anchor" aria-label="anchor" href="#alternative-output-formats"></a>
+</h2>
 <p>Depending on which <code>heritable</code> function, the output will
 vary:</p>
 <ul>
 <li>
-<code>h2</code> / <code><a href="../reference/h2.html">H2()</a></code> wrappers will return a named
-vector by <code>method</code>
+<code><a href="../reference/h2.html">H2()</a></code> wrappers will return a named vector by
+<code>method</code>
 </li>
 <li>
-<code>h2_Oakey()</code> / <code><a href="../reference/H2_Delta.html">H2_Delta()</a></code> will return a
-numeric value</li>
+<code><a href="../reference/H2_Delta.html">H2_Delta()</a></code> will return a numeric value</li>
 <li>
-<code>h2_Delta_by_genotype()</code> /
-<code><a href="../reference/H2_Delta_by_genotype.html">H2_Delta_by_genotype()</a></code> will return a named list according
-to the <code>target</code> variable</li>
+<code><a href="../reference/H2_Delta_by_genotype.html">H2_Delta_by_genotype()</a></code> will return a named list
+according to the <code>target</code> variable</li>
 <li>
-<code>h2_Delta_pairwise()</code> / <code><a href="../reference/H2_Delta_pairwise.html">H2_Delta_pairwise()</a></code>
-will return a symmetrical matrix for all pairwise combinations of
-<code>target</code>
+<code><a href="../reference/H2_Delta_pairwise.html">H2_Delta_pairwise()</a></code> will return a symmetrical matrix
+for all pairwise combinations of <code>target</code>
 </li>
 </ul>
 <p>If you interested in comparing heritability values across multiple
@@ -256,12 +250,12 @@ wrangle the output as a dataframe/tibble</p>
 <span>                  <span class="op">)</span></span>
 <span>         <span class="op">)</span><span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://tidyr.tidyverse.org/reference/unnest_wider.html" class="external-link">unnest_wider</a></span><span class="op">(</span><span class="va">H2</span><span class="op">)</span> <span class="co"># Expand the output</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 4</span></span>
-<span><span class="co">#&gt;   model     Standard Delta Oakey</span></span>
-<span><span class="co">#&gt;   &lt;list&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 &lt;lmerMod&gt;    0.829 0.829 0.829</span></span>
-<span><span class="co">#&gt; 2 &lt;asreml&gt;     0.829 0.829 0.829</span></span></code></pre></div>
-</div>
+<span><span class="co">#&gt; Error in `mutate()`:</span></span>
+<span><span class="co">#&gt; ℹ In argument: `H2 = map(...)`.</span></span>
+<span><span class="co">#&gt; Caused by error in `map()`:</span></span>
+<span><span class="co">#&gt; ℹ In index: 2.</span></span>
+<span><span class="co">#&gt; Caused by error:</span></span>
+<span><span class="co">#&gt; ! object 'lettuce_subset' not found</span></span></code></pre></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

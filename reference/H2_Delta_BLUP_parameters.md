@@ -20,10 +20,6 @@ H2_Delta_BLUE_parameters(vc_g, vd_matrix)
 
   Matrix. Variance of pairwise differences among BLUES or BLUPs
 
-- G_g:
-
-  Numeric. Genotypic variance-covariance matrix.
-
 ## Value
 
 Matrix of pairwise heritability of differences among BLUES or BLUPs

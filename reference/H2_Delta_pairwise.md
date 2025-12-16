@@ -12,6 +12,26 @@ variants
 H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
 ```
 
+## Arguments
+
+- model:
+
+  Model object of class `lmerMod/merMod` or `asreml`
+
+- target:
+
+  The name of the random effect for which heritability is to be
+  calculated.
+
+- type:
+
+  character, whether heritability is calculated using BLUEs or BLUPs
+
+- options:
+
+  NULL by default, for internal checking of model object before
+  calculations
+
 ## Value
 
 A `dspMatrix`

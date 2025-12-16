@@ -18,6 +18,15 @@ H2_Delta(model,
 
 ## Arguments
 
+- model:
+
+  Model object of class `lmerMod/merMod` or `asreml`
+
+- target:
+
+  The name of the random effect for which heritability is to be
+  calculated.
+
 - type:
 
   character, whether heritability is calculated using BLUEs or BLUPs
@@ -64,7 +73,5 @@ https://doi.org/10.2135/cropsci2018.06.0376
 
 ## See also
 
-`h2_Delta_by_genotype()`,
 [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md),
-`h2_Delta_pairwise()`,
 [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
