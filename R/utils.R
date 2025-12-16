@@ -221,7 +221,7 @@ build_precompiled_vignette <- function(){
 sp2Matrix <- function (x, dense = FALSE, triplet = FALSE)
 {
   triplet <- ifelse(triplet, yes = "T", no = "C")
-  A <- sparseMatrix(x[, 1], x[, 2], x = x[, 3], repr = triplet,
+  A <- Matrix::sparseMatrix(x[, 1], x[, 2], x = x[, 3], repr = triplet,
                     symmetric = TRUE)
   if (dense) {
     if (canCoerce(A, "packedMatrix")) {
