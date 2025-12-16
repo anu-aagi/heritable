@@ -68,6 +68,10 @@ test_that("H2 works for lme4",{
   lmer_model_g_by_e <- readRDS(test_path("fixtures/lmer_model_g_by_e.rds"))
 
   expect_error(H2(lmer_model_g_by_e, target = "gen"))
+
+  # lme4 Random "gen" single RE----------------------------------------------------------
+  lettuce_lme4 <- readRDS(here::here("vignettes/fixtures/lettuce_lme4.rds"))
+  expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"))
 })
 
 test_that("H2 can handle multiple methods", {
@@ -104,3 +108,5 @@ test_that("asreml methods work", {
   expect_equal(H2_Piepho.asreml(asreml_model_random, target = "gen"), 0.8029759, tolerance = 1e-5)
   expect_equal(H2_Standard.asreml(asreml_model_random, target = "gen"), 0.8400648, tolerance = 1e-5)
 })
+
+

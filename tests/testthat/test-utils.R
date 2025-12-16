@@ -29,6 +29,7 @@ test_that("Helper functions working with lme4", {
   expect_true("gen" %in% pull_terms(lmer_model_fixed)$fixed)
 
   lm_model <- fit_counterpart_model(lme4_lettuce)
+  expect_named(lm_model)
 })
 
 
