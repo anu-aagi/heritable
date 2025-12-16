@@ -3,7 +3,7 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   heritable: heritable.html
-last_built: 2025-12-15T22:51Z
+last_built: 2025-12-16T00:35Z
 urls:
   reference: https://anu-aagi.github.io/heritable/reference
   article: https://anu-aagi.github.io/heritable/articles
