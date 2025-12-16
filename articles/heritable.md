@@ -137,16 +137,13 @@ Depending on which `heritable` function, the output will vary:
 
 - `h2` / [`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
   wrappers will return a named vector by `method`
-- [`h2_Oakey()`](https://anu-aagi.github.io/heritable/reference/h2_Oakey.md)
-  /
-  [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/h2_Delta.md)
+- `h2_Oakey()` /
+  [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md)
   will return a numeric value
-- [`h2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md)
-  /
+- `h2_Delta_by_genotype()` /
   [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md)
   will return a named list according to the `target` variable
-- [`h2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
-  /
+- `h2_Delta_pairwise()` /
   [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
   will return a symmetrical matrix for all pairwise combinations of
   `target`

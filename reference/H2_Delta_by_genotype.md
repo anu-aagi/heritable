@@ -9,29 +9,8 @@ variants
 ## Usage
 
 ``` r
-h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 ```
-
-## Arguments
-
-- model:
-
-  Model object of class `lmerMod/merMod` or `asreml`
-
-- target:
-
-  The name of the random effect for which heritability is to be
-  calculated.
-
-- type:
-
-  character, whether heritability is calculated using BLUEs or BLUPs
-
-- options:
-
-  NULL by default, for internal checking of model object before
-  calculations
 
 ## Value
 
@@ -67,7 +46,5 @@ https://doi.org/10.2135/cropsci2018.06.0376
 
 ## See also
 
-[`h2_Delta()`](https://anu-aagi.github.io/heritable/reference/h2_Delta.md),
-[`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/h2_Delta.md),
-[`h2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md),
+[`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md),
 [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)

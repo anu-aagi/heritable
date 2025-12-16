@@ -45,5 +45,5 @@ The equation used to calculate standard heritability is:
 
 ## References
 
-@references Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to
-quantitative genetics (4th ed.). Longman.
+Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative
+genetics (4th ed.). Longman.
