@@ -174,19 +174,31 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target = NULL) {
-    # get the terms from model object
-    trms <- pull_terms.lmerMod(model)
+  # get the terms from model object
+  trms <- pull_terms.lmerMod(model)
 
+  # check whether there is only a single RE
+  if(check_single_random_effect(trms)){
+    # Fit a lm instead
+    fixed_formula <- lme4::nobars(formula(model))
+    fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
+    # Pull out data
+    model_data <- model@frame %||% model.frame(model)
+    refit_model <- lm(fixed_formula, data = model_data)
+  } else if(length(trms$random) > 1){
     # If target is in random effects
     if (target %in% trms$random) {
       refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
+      check_model_convergence(refit_model)
     } else if (target %in% trms$fixed) { # If target is in fixed effects
       refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
-    } else {
-        cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+      check_model_convergence(refit_model)
     }
-    check_model_convergence(refit_model)
-    return(refit_model)
+  }  else {
+    cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+  }
+
+  return(refit_model)
 }
 
 

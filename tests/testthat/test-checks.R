@@ -2,6 +2,7 @@ test_that("Inner checks are triggered", {
   skip_if_not_installed("asreml")
   skip_on_cran()
 
+  lme4_lettuce <- readRDS(here::here("vignettes/fixtures/lettuce_lme4.rds"))
   lmer_model_random <- readRDS(test_path("fixtures/lmer_model_random.rds"))
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
   asreml_model_fixed <- readRDS(test_path("fixtures/asreml_model_fixed.rds"))
@@ -27,4 +28,8 @@ test_that("Inner checks are triggered", {
   # Method level
   expect_error(H2(asreml_model_fixed, target, "Oakey"))
   expect_error(H2(asreml_model_fixed, target, "Cullis"))
+
+  # Model level
+  expect_true(check_single_random_effect(pull_terms(lme4_lettuce)))
+  expect_false(check_single_random_effect(pull_terms(lmer_model_random)))
 })
