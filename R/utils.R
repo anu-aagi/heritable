@@ -172,6 +172,7 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
     return(model_counter)
 }
 
+#' @importFrom stats lm model.frame
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target = NULL) {
   # get the terms from model object

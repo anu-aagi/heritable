@@ -18,7 +18,7 @@ test_that("Helper functions working with lme4", {
   skip_on_cran()
   skip_if_not_installed("lme4")
 
-  lme4_lettuce <- readRDS(here::here("vignettes/fixtures/lettuce_lme4.rds"))
+  lme4_lettuce <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
   lmer_model_random <- readRDS(test_path("fixtures/lmer_model_random.rds"))
   lmer_model_fixed <- fit_counterpart_model(lmer_model_random, target = "gen")
 

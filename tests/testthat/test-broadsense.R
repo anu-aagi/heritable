@@ -70,7 +70,7 @@ test_that("H2 works for lme4",{
   expect_error(H2(lmer_model_g_by_e, target = "gen"))
 
   # lme4 Random "gen" single RE----------------------------------------------------------
-  lettuce_lme4 <- readRDS(here::here("vignettes/fixtures/lettuce_lme4.rds"))
+  lettuce_lme4 <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
   expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"))
 })
 
