@@ -12,7 +12,7 @@ reference:
 - title: Reference
 - subtitle: Wrappers for heritability calculation
 - contents:
-  - h2
+  # - h2
   - H2
 - subtitle: Method-specific functions
 # - subtitle: Narrow-sense heritability
