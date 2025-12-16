@@ -7,13 +7,13 @@ Authors@R:
     person(given = "Emi", family = "Tanaka", role = c("aut", "cph"), comment = c(ORCID = "0000-0002-1455-259X"))
     )
 Description: Reporting heritability estimates is an important part of quantitative genetics in breeding experiments.
- This package provides functions to calculate various summary statistics, including narrow-sense heritability, broad-sense heritability, and other related metrics
- from 'asreml' and 'lme4' model objects.
+ Here we provide functions to calculate various broad-sense heritabilities from 'asreml' and 'lme4' model objects.
 License: GPL (>= 3) + file LICENSE
 Imports: 
     cli,
     emmeans,
     Matrix,
+    methods,
     stringr,
     vctrs
 Suggests: 

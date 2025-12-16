@@ -98,7 +98,7 @@ target_vm_term_asreml <- function(model, target) {
     if(exists(name_GRM, envir = env)) {
       GRM_source <- get(name_GRM, envir = env)
       if(is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
-        GRMinv <- solve(asreml::sp2Matrix(GRM_source))
+        GRMinv <- solve(sp2Matrix(GRM_source))
       } else {
         GRMinv <- solve(GRM_source)
       }
@@ -148,19 +148,19 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
     # when target is in random
     if (target %in% ran_trms_without_specials) {
       if(target %in% ran_trms) {
-        model_counter <- asreml::update.asreml(model,
+        model_counter <- update(model,
                                                fixed = as.formula(paste(". ~ . +", target)),
                                                random =  as.formula(paste("~ . -", target)),
                                                trace = FALSE)
       } else {
         target_spcl <- ran_trms[which(ran_trms_without_specials == target)]
-        model_counter <- asreml::update.asreml(model,
+        model_counter <- update(model,
                                                fixed = as.formula(paste(". ~ . +", target)),
                                                random =  as.formula(paste("~ . -", target_spcl)),
                                                trace = FALSE)
       }
     } else if (target %in% fixed_trms) { # when target is in fixed
-        model_counter <- asreml::update.asreml(model,
+        model_counter <- update(model,
                                                fixed = as.formula(paste(". ~ . -", target)),
                                                random =  as.formula(paste("~ . +", target)),
                                                trace = FALSE)
@@ -214,4 +214,44 @@ print.heritable <- function(x, digits = getOption("digits"), ...) {
 build_precompiled_vignette <- function(){
   knitr::knit(here::here("vignettes/heritable.Rmd.orig"),
               output = here::here("vignettes/heritable.Rmd"))
+}
+
+#' @keywords internal
+#' @importFrom methods canCoerce hasMethod as
+sp2Matrix <- function (x, dense = FALSE, triplet = FALSE)
+{
+  triplet <- ifelse(triplet, yes = "T", no = "C")
+  A <- sparseMatrix(x[, 1], x[, 2], x = x[, 3], repr = triplet,
+                    symmetric = TRUE)
+  if (dense) {
+    if (canCoerce(A, "packedMatrix")) {
+      A <- as(A, "packedMatrix")
+    }
+    else if (canCoerce(A, "dsyMatrix") && hasMethod("coerce",
+                                                    c("dsyMatrix", "dspMatrix"))) {
+      A <- as(as(A, "dsyMatrix"), "dspMatrix")
+    }
+    else {
+      stop("Unable to return a dense matrix")
+    }
+  }
+  if (inherits(x, "ginv")) {
+    dimnames(A) <- list(attr(x, "rowNames"), attr(x, "rowNames"))
+    attr(A, "INVERSE") <- TRUE
+    for (i in c("inbreeding", "logdet", "geneticGroups")) attr(A,
+                                                               i) <- attr(x, i)
+  }
+  else {
+    att <- c("rowNames", "INVERSE")
+    w <- which(is.element(att, names(attributes(x))))
+    if (length(w) > 0) {
+      for (i in w) {
+        if (i == 1)
+          dimnames(A) <- list(attr(x, "rowNames"), attr(x,
+                                                        "rowNames"))
+        else attr(A, att[i]) <- attr(x, att[i])
+      }
+    }
+  }
+  return(A)
 }
