@@ -36,6 +36,22 @@ The following methods are currently implemented for broad-sense heritability \co
 
 For further details of a specific method - take a look at help file for each subfunctions \code{?H2_Cullis}
 }
+\examples{
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+H2(lettuce_lme4, target = "gen", method = c("Standard", "Delta"))
+
+# asreml model (Requires license)
+\dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2(lettuce_asreml, target = "gen", method = c("Standard", "Delta"))
+}
+}
 \references{
 \itemize{
 \item Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443

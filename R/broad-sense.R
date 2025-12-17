@@ -37,7 +37,21 @@
 #' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 #' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()]
-# [`h2_Oakey()`], [`h2_Delta()`]
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2(lettuce_lme4, target = "gen", method = c("Standard", "Delta"))
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2(lettuce_asreml, target = "gen", method = c("Standard", "Delta"))
+#' }
 #' @export
 H2 <- function(model,
                target = NULL,
@@ -83,7 +97,7 @@ H2.default <- function(model,
 #' genotypic and phenotypic variance. See Falconer & Mackay (1996)
 #' @usage H2_Standard(model, target, options)
 #' @inheritParams H2
-#' @return Single numeric value
+#' @return Numeric value
 #' @details
 #' The equation used to calculate standard heritability is:
 #' \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
@@ -94,8 +108,22 @@ H2.default <- function(model,
 #' - \eqn{\sigma_g} is the variance attributed to genotype differences
 #' - \eqn{\sigma_p} is the variance attributed to phenotypic differences
 #' @export
-#' @references
-#' Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Standard(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Standard(lettuce_asreml, target = "gen")
+#' }
+#' @references Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 H2_Standard <- function(model, target, options) {
   UseMethod("H2_Standard")
 }
@@ -105,7 +133,7 @@ H2_Standard <- function(model, target, options) {
 #' See Cullis, Smith and Coombes (2006) for derivation.
 #' @inheritParams H2
 #' @usage H2_Cullis(model, target, options)
-#' @return Single numeric value
+#' @return Numeric value
 #' @details The equation for Cullis heritability is as follow
 #'
 #' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
@@ -116,6 +144,22 @@ H2_Standard <- function(model, target, options) {
 #' @references
 #' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
 #' @export
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Cullis(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Cullis(lettuce_asreml, target = "gen")
+#' }
+#' Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 H2_Cullis <- function(model, target, options) {
   UseMethod("H2_Cullis")
 }
@@ -139,6 +183,22 @@ H2_Cullis <- function(model, target, options) {
 # h2_Oakey(model, target, options)
 #' H2_Oakey(model, target, options)
 #' @returns Numeric
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Oakey(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Oakey(lettuce_asreml, target = "gen")
+#' }
+#'
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #' @export
@@ -162,7 +222,21 @@ H2_Oakey <- function(model, target, options) {
 #' @export
 #' @references
 #' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Piepho(lettuce_lme4, target = "gen")
 #'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Piepho(lettuce_asreml, target = "gen")
+#' }
 H2_Piepho <- function(model, target, options) {
   UseMethod("H2_Piepho")
 }
@@ -206,6 +280,22 @@ H2_Piepho <- function(model, target, options) {
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso [`H2_Delta_by_genotype()`], [`H2_Delta_pairwise()`]
 #' @export
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Delta(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Delta(lettuce_asreml, target = "gen")
+#' }
+
 H2_Delta <- function(
     model,
     target,
@@ -262,6 +352,21 @@ H2_Delta.default <- function(model,
 #' @seealso [`H2_Delta()`], [`H2_Delta_pairwise()`]
 #' @returns Named list, with each element containing a named numeric vector
 #' @export
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Delta_by_genotype(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Delta_by_genotype(lettuce_asreml, target = "gen")
+#' }
 H2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("H2_Delta_by_genotype")
 }
@@ -301,6 +406,21 @@ H2_Delta_by_genotype.default <- function(model,
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso  [`H2_Delta_by_genotype()`], [`H2_Delta()`]
 #' @export
+#' @examples
+#' # lme4 model
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Delta_pairwise(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Delta_pairwise(lettuce_asreml, target = "gen")
+#' }
 H2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("H2_Delta_pairwise")
 }

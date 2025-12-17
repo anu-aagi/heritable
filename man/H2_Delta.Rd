@@ -44,6 +44,22 @@ where:
 
 See reference page 995 - 997 for full derivation of this heritability measure and related variants
 }
+\examples{
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+H2_Delta(lettuce_lme4, target = "gen")
+
+# asreml model (Requires license)
+\dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Delta(lettuce_asreml, target = "gen")
+}
+}
 \references{
 Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 }

@@ -24,6 +24,22 @@ calculates heritability using "entry-differences". Entry here is
 referring to the genotype, line or variety of interest. See
 reference for origin and interpretation of \code{h2/H2_Delta_pairwise} and it's variants
 }
+\examples{
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+H2_Delta_pairwise(lettuce_lme4, target = "gen")
+
+# asreml model (Requires license)
+\dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Delta_pairwise(lettuce_asreml, target = "gen")
+}
+}
 \references{
 Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 }

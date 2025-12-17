@@ -32,6 +32,23 @@ where:
 
 See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
 }
+\examples{
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+H2_Oakey(lettuce_lme4, target = "gen")
+
+# asreml model (Requires license)
+\dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Oakey(lettuce_asreml, target = "gen")
+}
+
+}
 \references{
 Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 }
