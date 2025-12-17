@@ -1,3 +1,3 @@
-# heritable (development version)
+# heritable 0.1.0
 
 * Initial CRAN submission.
