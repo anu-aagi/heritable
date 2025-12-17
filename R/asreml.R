@@ -113,6 +113,17 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 #' @export
 #' @noRd
 #' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Oakey.asreml(lettuce_asreml, target = "gen")
+#' }
 H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -141,6 +152,17 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
 #' @export
 #' @noRd
 #' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Piepho.asreml(lettuce_asreml, target = "gen")
+#' }
 H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -169,6 +191,16 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 #' @export
 #' @noRd
 #' @return Numeric
+#' @examples
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP")
+#' }
 H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
   initial_checks(model, target, options)
   vc_g <- get_vc_g_asreml(model, target)
@@ -192,6 +224,17 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
 #' @export
 #' @noRd
 #' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Standard.asreml(lettuce_asreml, target = "gen")
+#' }
 H2_Standard.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 

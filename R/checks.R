@@ -9,8 +9,8 @@
 #' @noRd
 #' @keywords internal
 #' @examples
-#' NULL %||% "default" # returns "default"
-#' "value" %||% "default" # returns "value"
+#' NULL heritable:::`%||%` "default" # returns "default"
+#' "value" heritable:::`%||%` "default" # returns "value"
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
 }
