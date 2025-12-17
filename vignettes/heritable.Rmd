@@ -124,7 +124,7 @@ H2_Delta(lettuce_lme4, target = "gen")
 
 ### Narrow-sense heritability
 
-Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](http://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://cran.r-project.org/web/packages/lme4breeding/lme4breeding.pdf)
+Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](https://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://CRAN.R-project.org/package=lme4breeding)
 
 In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()`
 
