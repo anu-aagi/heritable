@@ -93,7 +93,7 @@ lettuce_lme4 <- lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 
 Use the `H2()` wrapper to compute **broad-sense heritability**.
 
-The wrapper has three key imputs
+The wrapper has three key inputs
 
 - `model`, your `lme4` or `asreml` object
 - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
@@ -103,7 +103,8 @@ The wrapper has three key imputs
 ``` r
 # Calculate broad-sense heritability using multiple methods
 H2(lettuce_asreml, target = "gen", method = c("Standard", "Cullis", "Oakey"))
-#> Error in eval(newcall, parent.frame()): object 'lettuce_subset' not found
+#>  Standard    Cullis     Oakey 
+#> 0.8294971 0.8294971 0.8294971
 H2(lettuce_lme4, target = "gen", method = c("Standard", "Cullis", "Oakey"))
 #>  Standard    Cullis     Oakey 
 #> 0.8294971 0.8294971 0.8294971
@@ -114,50 +115,50 @@ Alternatively if you want a single method, you can call each method's function d
 
 ``` r
 H2_Cullis(lettuce_asreml, target = "gen")
-#> Error in eval(newcall, parent.frame()): object 'lettuce_subset' not found
+#> [1] 0.8294971
 H2_Delta(lettuce_lme4, target = "gen")
 #> [1] 0.8294971
 ```
 
 > Learn more about each method by looking up their help file `?H2_Cullis`
 
-<!-- ## Narrow-sense heritability -->
+### Narrow-sense heritability
 
-<!-- Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](http://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://cran.r-project.org/web/packages/lme4breeding/lme4breeding.pdf) -->
+Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](http://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://cran.r-project.org/web/packages/lme4breeding/lme4breeding.pdf)
 
-<!-- In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()` -->
-
-
-<!-- ``` r -->
-<!-- # Fit model with GRM for narrow-sense heritability -->
-<!-- lettuce_asreml_grm <- asreml( -->
-<!--   fixed = y ~ loc, -->
-<!--   random = ~ vm(gen, lettuce_GRM) + rep, -->
-<!--   data = lettuce_phenotypes, -->
-<!--   trace = FALSE -->
-<!-- ) -->
-<!-- ``` -->
-
-<!-- Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritability. Remembering to specify: -->
-
-<!-- - `model`, your `asreml` object -->
-<!-- - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"` -->
-<!-- - `method`, which method of `h2()` calculation do you want. By default, the function will compute all available methods. Currently only `"Oakey"` and `"Delta"` are implemented for `h2()` -->
+In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()`
 
 
-<!-- ``` r -->
-<!-- # Calculate narrow-sense heritability -->
-<!-- h2(lettuce_asreml_grm, target = "gen", method = "Oakey") -->
-<!-- #> Error in UseMethod("h2"): no applicable method for 'h2' applied to an object of class "asreml" -->
-<!-- ``` -->
+``` r
+# Fit model with GRM for narrow-sense heritability
+lettuce_asreml_grm <- asreml(
+  fixed = y ~ loc,
+  random = ~ vm(gen, lettuce_GRM) + rep,
+  data = lettuce_phenotypes,
+  trace = FALSE
+)
+```
 
-<!-- Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more. -->
+Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritability. Remembering to specify:
+
+- `model`, your `asreml` object
+- `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
+- `method`, which method of `h2()` calculation do you want. By default, the function will compute all available methods. Currently only `"Oakey"` and `"Delta"` are implemented for `h2()`
 
 
-<!-- ``` r -->
-<!-- h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP") -->
-<!-- #> Error in UseMethod("h2_Delta"): no applicable method for 'h2_Delta' applied to an object of class "asreml" -->
-<!-- ``` -->
+``` r
+# Calculate narrow-sense heritability
+h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
+#> Error in UseMethod("h2"): no applicable method for 'h2' applied to an object of class "asreml"
+```
+
+Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more.
+
+
+``` r
+h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
+#> Error in UseMethod("h2_Delta"): no applicable method for 'h2_Delta' applied to an object of class "asreml"
+```
 
 ## Alternative output formats
 
@@ -183,11 +184,10 @@ tibble(
                   )
          )|>
   unnest_wider(H2) # Expand the output
-#> Error in `mutate()`:
-#> ℹ In argument: `H2 = map(...)`.
-#> Caused by error in `map()`:
-#> ℹ In index: 2.
-#> Caused by error:
-#> ! object 'lettuce_subset' not found
+#> # A tibble: 2 × 4
+#>   model     Standard Delta Oakey
+#>   <list>       <dbl> <dbl> <dbl>
+#> 1 <lmerMod>    0.829 0.829 0.829
+#> 2 <asreml>     0.829 0.829 0.829
 ```
 

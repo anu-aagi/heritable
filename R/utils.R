@@ -131,9 +131,7 @@ target_vm_term_asreml <- function(model, target) {
 #' as the opposite effect (for example, calculating Piepho's heritability).
 #'
 #'
-#' @param model An existing fitted asreml model object. The function expects
-#'   that formulas can be retrieved via formula(model)$fixed and
-#'   formula(model)$random and that the model frame is available as model$mf.
+#' @param model An existing fitted asreml model object.
 #' @param target Character(1). Name of the term (e.g. a factor variable) to be
 #'   switched between fixed and random effects. Must match one of the terms
 #'   present in either the model's fixed or random formulas.
@@ -146,7 +144,7 @@ target_vm_term_asreml <- function(model, target) {
 #'   variance-component calculations.
 #' @importFrom stats as.formula update
 #' @keywords internal
-
+#' @noRd
 fit_counterpart_model.asreml <- function(model, target = NULL) {
   # get the terms from model object
   fixed_trms <- pull_terms.asreml(model)$fixed

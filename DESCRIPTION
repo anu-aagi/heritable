@@ -6,8 +6,10 @@ Authors@R:
     person(given = "Fonti", family = "Kar", role = c("aut", "cre"), email = c("fonti.kar@anu.edu.au"), comment = c(ORCID = "0000-0002-2760-3974")),
     person(given = "Emi", family = "Tanaka", role = c("aut", "cph"), comment = c(ORCID = "0000-0002-1455-259X"))
     )
-Description: Reporting heritability estimates is an important part of quantitative genetics in breeding experiments.
- Here we provide functions to calculate various broad-sense heritabilities from 'asreml' and 'lme4' model objects.
+Description: Reporting heritability estimates is an important to quantitative genetics 
+  studies and breeding experiments. Here we provide functions to calculate various broad-sense
+  heritabilities from 'asreml' and 'lme4' model objects. All methods we have implemented 
+  in this package have extensively discussed in the article by Schmidt et al. (2019) <doi:10.1534/genetics.119.302134>.
 License: GPL (>= 3) + file LICENSE
 Imports: 
     cli,
@@ -39,3 +41,4 @@ Depends:
 LazyData: true
 VignetteBuilder: knitr
 URL: https://anu-aagi.github.io/heritable/
+Language: en

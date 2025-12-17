@@ -1,5 +1,7 @@
 ---
 format: gfm
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -60,7 +62,7 @@ H2(fit_asreml, target = "gen")
 H2(fit_lme4, target = "gen")
 ```
 
-Alteratively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.
+Alternatively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.
 
 ```{r}
 #| message: false

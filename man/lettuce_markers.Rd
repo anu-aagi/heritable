@@ -37,12 +37,12 @@ The varieties were genotyped with a total of 300 markers
 (i.e. 95 single nucleotide polymorphisms and 205 amplified fragment length
 polymorphism markers, see Hayes et al. (2014) for more details of marker
 matrix.
-The biallelic marker \eqn{M_iw} for the ith genotype and the wth marker with
-alleles A_1 (i.e. the reference allele) and A_2 was coded as:
+The biallelic marker \eqn{M_iw} for the ith genotype and the \eqn{w}th marker with
+alleles \eqn{A_1} (i.e. the reference allele) and \eqn{A_2} was coded as:
 \itemize{
-\item 1 for A_1 A_1,
-\item -1 for A_2 A_2
-\item 0 for A_1 A_2 and A_2 A_1.
+\item 1 for \eqn{A_1} \eqn{A_1},
+\item -1 for \eqn{A_2} \eqn{A_2}
+\item 0 for \eqn{A_1} \eqn{A_2} and \eqn{A_2} \eqn{A_1}
 }
 }
 \references{

@@ -112,7 +112,7 @@ lettuce_lme4 <- lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 
 Use the `H2()` wrapper to compute **broad-sense heritability**.
 
-The wrapper has three key imputs
+The wrapper has three key inputs
 
 - `model`, your `lme4` or `asreml` object
 - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"`
