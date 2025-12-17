@@ -1,6 +1,6 @@
 Package: heritable
 Title: Heritability Estimation from Mixed Models
-Version: 0.0.0.9000
+Version: 0.1.0
 Authors@R: 
     c(
     person(given = "Fonti", family = "Kar", role = c("aut", "cre"), email = c("fonti.kar@anu.edu.au"), comment = c(ORCID = "0000-0002-2760-3974")),
