@@ -92,25 +92,1179 @@ reference for origin and interpretation of <code>h2/H2_Delta_pairwise</code> and
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># lme4 model</span></span></span>
-<span class="r-in"><span><span class="va">lettuce_phenotypes</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">loc</span> <span class="op">==</span> <span class="st">"L2"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 267 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    loc   gen   rep       y</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;fct&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> L2    G1    R1      2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> L2    G1    R2      1.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> L2    G1    R3      2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> L2    G2    R1      2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> L2    G2    R2      2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> L2    G2    R3      1.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> L2    G3    R1      1.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> L2    G3    R2      2  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> L2    G3    R3      2.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> L2    G4    R1      3.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 257 more rows</span></span>
+<span class="r-in"><span><span class="va">lettuce_subset</span> <span class="op">&lt;-</span> <span class="va">lettuce_phenotypes</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">loc</span> <span class="op">==</span> <span class="st">"L2"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">lettuce_lme4</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">rep</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">lettuce_subset</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> bad 'data': object 'lettuce_subset' not found</span>
-<span class="r-in"><span><span class="fu">H2_Delta_pairwise</span><span class="op">(</span><span class="va">lettuce_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span></span>
-<span class="r-err co"><span class="r-pr">#&gt;</span> <span class="error">Error:</span> object 'lettuce_lme4' not found</span>
+<span class="r-in"><span><span class="fu">H2_Delta_pairwise</span><span class="op">(</span><span class="va">lettuce_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span>, type <span class="op">=</span> <span class="st">"BLUP"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            G1        G2        G3        G4        G5        G6        G7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1         NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            G8        G9       G10       G11       G12       G13       G14</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8         NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G15       G16       G17       G18       G19       G20       G21</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G22       G23       G24       G25       G26       G27       G28</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G29       G30       G31       G32       G33       G34       G35</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G36       G37       G39       G40       G41       G42       G43</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G44       G45       G46       G47       G49       G50       G51</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G52       G53       G54       G55       G56       G57       G58</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G59       G60       G61       G62       G63       G64       G65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G66       G67       G68       G69       G70       G71       G72</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G73       G74       G75       G76       G77       G78       G79</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G80       G82       G83       G84       G85       G86       G87</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           G88       G89       G38       G48       G81</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G1  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G2  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G3  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G4  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G5  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G6  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G7  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G8  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G9  0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G10 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G11 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G12 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G13 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G14 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G15 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G16 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G17 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G18 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G19 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G20 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G21 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G22 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G23 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G24 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G25 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G26 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G27 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G28 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G29 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G30 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G31 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G32 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G33 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G34 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G35 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G36 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G37 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G39 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G40 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G41 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G42 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G43 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G44 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G45 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G46 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G47 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G49 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G50 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G51 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G52 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G53 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G54 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G55 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G56 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G57 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G58 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G59 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G60 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G61 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G62 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G63 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G64 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G65 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G66 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G67 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G68 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G69 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G70 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G71 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G72 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G73 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G74 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G75 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G76 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G77 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G78 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G79 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G80 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G82 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G83 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G84 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G85 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G86 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G87 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G88        NA 0.8294971 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G89 0.8294971        NA 0.8294971 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G38 0.8294971 0.8294971        NA 0.8294971 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G48 0.8294971 0.8294971 0.8294971        NA 0.8294971</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> G81 0.8294971 0.8294971 0.8294971 0.8294971        NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># asreml model (Requires license)</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
@@ -120,7 +1274,7 @@ reference for origin and interpretation of <code>h2/H2_Delta_pairwise</code> and
 <span class="r-in"><span>                                 trace <span class="op">=</span> <span class="cn">FALSE</span></span></span>
 <span class="r-in"><span>                                 <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">H2_Delta_pairwise</span><span class="op">(</span><span class="va">lettuce_asreml</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">H2_Delta_pairwise</span><span class="op">(</span><span class="va">lettuce_asreml</span>, target <span class="op">=</span> <span class="st">"gen"</span>, type <span class="op">=</span> <span class="st">"BLUP"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
