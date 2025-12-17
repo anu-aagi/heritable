@@ -12,7 +12,7 @@ H2_Piepho_parameters(vc_g, vd_BLUE_avg)
 \item{vd_BLUE_avg}{Numeric. Mean variance of pairwise differences among BLUES}
 }
 \value{
-Single numeric value
+Numeric value
 }
 \description{
 Compute Piepho's heritability using the variance of differences between two BLUES.

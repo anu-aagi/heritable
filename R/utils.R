@@ -14,25 +14,25 @@
 #' @keywords internal
 
 pull_terms.asreml <- function(model) {
-    fixed_trms <- attr(model$formulae$fixed, "term.labels")
-    ran_trms <- attr(model$formulae$random, "term.labels")
-    return(list(fixed = fixed_trms, random = ran_trms))
+  fixed_trms <- attr(model$formulae$fixed, "term.labels")
+  ran_trms <- attr(model$formulae$random, "term.labels")
+  return(list(fixed = fixed_trms, random = ran_trms))
 }
 
 #' @keywords internal
 pull_terms.lmerMod <- function(model) {
-    model_formula <- formula(model)
-    term_labels <- attr(terms(model_formula), "term.labels")
+  model_formula <- formula(model)
+  term_labels <- attr(terms(model_formula), "term.labels")
 
-    ran_trms <- names(lme4::ranef(model))
-    fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
+  ran_trms <- names(lme4::ranef(model))
+  fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
 
-    return(list(fixed = fixed_trms, random = ran_trms))
+  return(list(fixed = fixed_trms, random = ran_trms))
 }
 
 #' @keywords internal
 pull_terms <- function(model) {
-    UseMethod("pull_terms")
+  UseMethod("pull_terms")
 }
 .S3method("pull_terms", "asreml", pull_terms.asreml)
 .S3method("pull_terms", "lmerMod", pull_terms.lmerMod)
@@ -49,66 +49,75 @@ pull_terms_without_specials.lmerMod <- function(model) {
   model_terms
 }
 
+#' @keywords internal
 semivariance <- function(X) {
   n <- nrow(X)
-  1/(n - 1) * (sum(diag(X)) - 1 / n * sum(X))
+  1 / (n - 1) * (sum(diag(X)) - 1 / n * sum(X))
 }
 
 #' @keywords internal
 pull_terms_without_specials.asreml <- function(model) {
   model_terms <- pull_terms(model)
-  pattern <- paste0("^(",
-                    paste0(asreml_Spcls, collapse = "|"),
-                    ")\\(([^,]+),?.*\\)")
+  pattern <- paste0(
+    "^(",
+    paste0(asreml_Spcls, collapse = "|"),
+    ")\\(([^,]+),?.*\\)"
+  )
   clean_which <- stringr::str_detect(model_terms$fixed, pattern)
   model_terms$fixed[clean_which] <- stringr::str_extract(model_terms$fixed[clean_which],
-                                                         pattern,
-                                                         group = 2)
+    pattern,
+    group = 2
+  )
   clean_which <- stringr::str_detect(model_terms$random, pattern)
   model_terms$random[clean_which] <- stringr::str_extract(model_terms$random[clean_which],
-                                                          pattern,
-                                                          group = 2)
+    pattern,
+    group = 2
+  )
   model_terms
 }
 
-
-asreml_Spcls <- c("con", "C", "lin", "pow", "pol", "leg", "spl", "dev", "ped",
-                  "ide", "giv", "vm", "ma", "at", "dsum", "and", "grp", "mbf",
-                  "sbs", "gpf", "uni", "id", "idv", "idh", "ar1", "ar1v", "ar1h",
-                  "ar2", "ar2v", "ar2h", "ar3", "ar3v", "ar3h", "sar", "sarv",
-                  "sarh", "sar2", "sar2v", "sar2h", "ma1", "ma1v", "ma1h", "ma2",
-                  "ma2v", "ma2h", "arma", "armav", "armah", "cor", "corv", "corh",
-                  "corb", "corbv", "corbh", "corg", "corgv", "corgh", "diag", "us",
-                  "sfa", "chol", "cholc", "ante", "exp", "expv", "exph", "iexp",
-                  "iexpv", "iexph", "aexp", "aexpv", "bexpv", "aexph", "gau", "gauv",
-                  "gauh", "lvr", "lvrv", "lvrh", "igau", "igauv", "igauh", "agau",
-                  "agauv", "agauh", "ieuc", "ieucv", "ieuch", "ilv", "ilvv", "ilvh",
-                  "sph", "sphv", "sphh", "cir", "cirv", "cirh", "mtrn", "mtrnv",
-                  "mtrnh", "mthr", "facv", "fa", "rr", "str", "own")
+#' @keywords internal
+asreml_Spcls <- c(
+  "con", "C", "lin", "pow", "pol", "leg", "spl", "dev", "ped",
+  "ide", "giv", "vm", "ma", "at", "dsum", "and", "grp", "mbf",
+  "sbs", "gpf", "uni", "id", "idv", "idh", "ar1", "ar1v", "ar1h",
+  "ar2", "ar2v", "ar2h", "ar3", "ar3v", "ar3h", "sar", "sarv",
+  "sarh", "sar2", "sar2v", "sar2h", "ma1", "ma1v", "ma1h", "ma2",
+  "ma2v", "ma2h", "arma", "armav", "armah", "cor", "corv", "corh",
+  "corb", "corbv", "corbh", "corg", "corgv", "corgh", "diag", "us",
+  "sfa", "chol", "cholc", "ante", "exp", "expv", "exph", "iexp",
+  "iexpv", "iexph", "aexp", "aexpv", "bexpv", "aexph", "gau", "gauv",
+  "gauh", "lvr", "lvrv", "lvrh", "igau", "igauv", "igauh", "agau",
+  "agauv", "agauh", "ieuc", "ieucv", "ieuch", "ilv", "ilvv", "ilvh",
+  "sph", "sphv", "sphh", "cir", "cirv", "cirh", "mtrn", "mtrnv",
+  "mtrnh", "mthr", "facv", "fa", "rr", "str", "own"
+)
 
 #' @keywords internal
 target_vm_term_asreml <- function(model, target) {
   vpars <- names(model$vparameters)
   env <- attr(model$formulae$random, ".Environment")
   w <- grepl(paste0("^vm\\(", target), vpars)
-  if(sum(w) == 1) {
+  if (sum(w) == 1) {
     target_vm <- vpars[w]
     name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
-    if(exists(name_GRM, envir = env)) {
+    if (exists(name_GRM, envir = env)) {
       GRM_source <- get(name_GRM, envir = env)
-      if(is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
-        GRMinv <- solve(asreml::sp2Matrix(GRM_source))
+      if (is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
+        GRMinv <- solve(sp2Matrix(GRM_source))
       } else {
         GRMinv <- solve(GRM_source)
       }
-      if(inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
+      if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
         GRMinv <- GRM_source
       }
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
     }
-    return(list(target_vm = vpars[w],
-                GRMinv = GRMinv))
+    return(list(
+      target_vm = vpars[w],
+      GRMinv = GRMinv
+    ))
   } else {
     cli::cli_abort("The {.value target} should be wrapped with vm() in the model with a known relationship matrix.")
   }
@@ -122,9 +131,7 @@ target_vm_term_asreml <- function(model, target) {
 #' as the opposite effect (for example, calculating Piepho's heritability).
 #'
 #'
-#' @param model An existing fitted asreml model object. The function expects
-#'   that formulas can be retrieved via formula(model)$fixed and
-#'   formula(model)$random and that the model frame is available as model$mf.
+#' @param model An existing fitted asreml model object.
 #' @param target Character(1). Name of the term (e.g. a factor variable) to be
 #'   switched between fixed and random effects. Must match one of the terms
 #'   present in either the model's fixed or random formulas.
@@ -137,61 +144,77 @@ target_vm_term_asreml <- function(model, target) {
 #'   variance-component calculations.
 #' @importFrom stats as.formula update
 #' @keywords internal
-
+#' @noRd
 fit_counterpart_model.asreml <- function(model, target = NULL) {
-    # get the terms from model object
-    fixed_trms <- pull_terms.asreml(model)$fixed
-    ran_trms_without_specials <- pull_terms_without_specials.asreml(model)$random
-    ran_trms <- pull_terms.asreml(model)$random
+  # get the terms from model object
+  fixed_trms <- pull_terms.asreml(model)$fixed
+  ran_trms_without_specials <- pull_terms_without_specials.asreml(model)$random
+  ran_trms <- pull_terms.asreml(model)$random
 
-    # when target is in random
-    if (target %in% ran_trms_without_specials) {
-      if(target %in% ran_trms) {
-        model_counter <- asreml::update.asreml(model,
-                                               fixed = as.formula(paste(". ~ . +", target)),
-                                               random =  as.formula(paste("~ . -", target)),
-                                               trace = FALSE)
-      } else {
-        target_spcl <- ran_trms[which(ran_trms_without_specials == target)]
-        model_counter <- asreml::update.asreml(model,
-                                               fixed = as.formula(paste(". ~ . +", target)),
-                                               random =  as.formula(paste("~ . -", target_spcl)),
-                                               trace = FALSE)
-      }
-    } else if (target %in% fixed_trms) { # when target is in fixed
-        model_counter <- asreml::update.asreml(model,
-                                               fixed = as.formula(paste(". ~ . -", target)),
-                                               random =  as.formula(paste("~ . +", target)),
-                                               trace = FALSE)
+  # when target is in random
+  if (target %in% ran_trms_without_specials) {
+    if (target %in% ran_trms) {
+      model_counter <- update(model,
+        fixed = as.formula(paste(". ~ . +", target)),
+        random =  as.formula(paste("~ . -", target)),
+        trace = FALSE
+      )
     } else {
-        cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+      target_spcl <- ran_trms[which(ran_trms_without_specials == target)]
+      model_counter <- update(model,
+        fixed = as.formula(paste(". ~ . +", target)),
+        random =  as.formula(paste("~ . -", target_spcl)),
+        trace = FALSE
+      )
     }
-    check_model_convergence(model_counter)
+  } else if (target %in% fixed_trms) { # when target is in fixed
+    model_counter <- update(model,
+      fixed = as.formula(paste(". ~ . -", target)),
+      random =  as.formula(paste("~ . +", target)),
+      trace = FALSE
+    )
+  } else {
+    cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+  }
+  check_model_convergence(model_counter)
 
-    return(model_counter)
+  return(model_counter)
 }
 
+#' @importFrom stats lm model.frame
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target = NULL) {
-    # get the terms from model object
-    trms <- pull_terms.lmerMod(model)
+  # get the terms from model object
+  trms <- pull_terms.lmerMod(model)
 
+  # check whether there is only a single RE
+  if (check_single_random_effect(trms)) {
+    # Fit a lm instead
+    fixed_formula <- lme4::nobars(formula(model))
+    fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
+    # Pull out data
+    model_data <- model@frame %||% model.frame(model)
+    refit_model <- lm(fixed_formula, data = model_data)
+  } else if (length(trms$random) > 1) {
     # If target is in random effects
     if (target %in% trms$random) {
       refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
+      check_model_convergence(refit_model)
     } else if (target %in% trms$fixed) { # If target is in fixed effects
       refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
-    } else {
-        cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+      check_model_convergence(refit_model)
     }
-    check_model_convergence(refit_model)
-    return(refit_model)
+  } else {
+    cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
+  }
+
+  return(refit_model)
 }
 
 
 #' @keywords internal
 fit_counterpart_model <- function(model, target = NULL) {
-    UseMethod("fit_counterpart_model")
+  UseMethod("fit_counterpart_model")
 }
 .S3method("fit_counterpart_model", "asreml", fit_counterpart_model.asreml)
 .S3method("fit_counterpart_model", "lmerMod", fit_counterpart_model.lmerMod)
@@ -201,25 +224,85 @@ fit_counterpart_model <- function(model, target = NULL) {
 #' @param x An object of class "heritable"
 #' @param digits Number of digits to print
 #' @param ... Additional arguments passed to print
-#'
+#' @noRd
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
-    attr(x, "model") <- NULL
-    attr(x, "target") <- NULL
-    print(unclass(x))
-    # # Format all values to specified digits
-    # x_rounded <- round(x, digits)
-    #
-    # # If multiple methods, print with method names
-    # if (length(x) > 1) {
-    #     cli::cli_h2("Heritability estimates:")
-    #     for (method in names(x_rounded)) {
-    #         cli::cli_text("{.var {method}}: {x_rounded[[method]]}")
-    #     }
-    # } else {
-    #     # For single method, print simple value
-    #     cli::cli_text("Heritability ({.var {names(x_rounded)}}): {x_rounded}")
-    # }
-    #
-    # invisible(x)
+  attr(x, "model") <- NULL
+  attr(x, "target") <- NULL
+  print(unclass(x))
+}
+
+#' @keywords internal
+build_precompiled_vignette <- function(input = "vignettes/heritable.Rmd.orig",
+                                       output = "vignettes/heritable.Rmd") {
+  # Build the precompiled vignette
+  knitr::knit(here::here(input),
+    output = here::here(output)
+  )
+
+  # Fix the paths
+  lines <- readLines(here::here(output), warn = FALSE)
+
+  # Update the img src and remove any alt attribute
+  lines <- gsub(
+    'src="vignettes/figs/unnamed-chunk-3-1.png"',
+    'src="figs/unnamed-chunk-3-1.png"',
+    lines,
+    fixed = TRUE
+  )
+  lines <- gsub(' alt="[^"]+"', "", lines)
+
+  # # Drop caption paragraph lines
+  # lines <- lines[!grepl('<p class="caption">', lines, fixed = TRUE)]
+
+  writeLines(lines, here::here(output), useBytes = TRUE)
+  invisible(here::here(output))
+}
+
+#' @keywords internal
+#' @importFrom methods canCoerce hasMethod as
+sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
+  triplet <- ifelse(triplet, yes = "T", no = "C")
+  A <- Matrix::sparseMatrix(x[, 1], x[, 2],
+    x = x[, 3], repr = triplet,
+    symmetric = TRUE
+  )
+  if (dense) {
+    if (canCoerce(A, "packedMatrix")) {
+      A <- as(A, "packedMatrix")
+    } else if (canCoerce(A, "dsyMatrix") && hasMethod(
+      "coerce",
+      c("dsyMatrix", "dspMatrix")
+    )) {
+      A <- as(as(A, "dsyMatrix"), "dspMatrix")
+    } else {
+      stop("Unable to return a dense matrix")
+    }
+  }
+  if (inherits(x, "ginv")) {
+    dimnames(A) <- list(attr(x, "rowNames"), attr(x, "rowNames"))
+    attr(A, "INVERSE") <- TRUE
+    for (i in c("inbreeding", "logdet", "geneticGroups")) {
+      attr(
+        A,
+        i
+      ) <- attr(x, i)
+    }
+  } else {
+    att <- c("rowNames", "INVERSE")
+    w <- which(is.element(att, names(attributes(x))))
+    if (length(w) > 0) {
+      for (i in w) {
+        if (i == 1) {
+          dimnames(A) <- list(attr(x, "rowNames"), attr(
+            x,
+            "rowNames"
+          ))
+        } else {
+          attr(A, att[i]) <- attr(x, att[i])
+        }
+      }
+    }
+  }
+  return(A)
 }

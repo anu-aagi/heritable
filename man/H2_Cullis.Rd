@@ -14,7 +14,7 @@ H2_Cullis(model, target, options)
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \value{
-Single numeric value
+Numeric value
 }
 \description{
 Compute "generalised heritability" for unbalanced experimental designs.
@@ -29,6 +29,23 @@ where:
 \itemize{
 \item \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
 \item \eqn{\sigma^2} is the variance attributed to differences between genotype
+}
+}
+\examples{
+# lme4 model
+lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+H2_Cullis(lettuce_lme4, target = "gen")
+
+# asreml model (Requires license)
+\dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Cullis(lettuce_asreml, target = "gen")
 }
 }
 \references{

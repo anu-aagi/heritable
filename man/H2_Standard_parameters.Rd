@@ -14,7 +14,7 @@ H2_Standard_parameters(vc_g, vc_e, n_r = 1)
 \item{n_r}{A numeric vector of size n_g, the number of genotype replicates.}
 }
 \value{
-Single numeric value
+Numeric value
 }
 \description{
 Compute Standard heritability for genotype means using the variance components of genotype and residuals.

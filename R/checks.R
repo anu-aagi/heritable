@@ -9,13 +9,13 @@
 #' @noRd
 #' @keywords internal
 #' @examples
-#' NULL %||% "default"  # returns "default"
-#' "value" %||% "default"  # returns "value"
+#' NULL heritable:::`%||%` "default" # returns "default"
+#' "value" heritable:::`%||%` "default" # returns "value"
 `%||%` <- function(x, y) {
   if (is.null(x)) y else x
 }
 
-#
+#' @keywords internal
 initial_checks <- function(model, target, options) {
   if (options$check %||% TRUE) {
     # If there is more than one target, error
@@ -27,7 +27,7 @@ initial_checks <- function(model, target, options) {
     # Check if target appears in the model
     check_target_exists(model, target)
 
-    if(check_target_both(model, target)) {
+    if (check_target_both(model, target)) {
       cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
     }
 
@@ -95,9 +95,13 @@ check_target_exists <- function(model, target) {
 
 check_target_appears_once <- function(model, target) {
   model_terms <- pull_terms_without_specials(model)
-  form <- as.formula(paste("~", paste(c(model_terms$fixed,
-                                        model_terms$random),
-                                      collapse = " + ")))
+  form <- as.formula(paste("~", paste(
+    c(
+      model_terms$fixed,
+      model_terms$random
+    ),
+    collapse = " + "
+  )))
   form <- update(form, paste0("~ . - ", target))
   fcts <- rownames(attr(terms(form), "factors"))
   if (target %in% fcts) {
@@ -127,6 +131,16 @@ check_target_both <- function(model, target) {
     any(grepl(target, model_terms$fixed, fixed = TRUE)) &&
       any(grepl(target, model_terms$random, fixed = TRUE))
   ) {
+    TRUE
+  } else {
+    FALSE
+  }
+}
+
+# Check length of random effects
+#' @keywords internal
+check_single_random_effect <- function(terms) {
+  if (length(terms$random) == 1) { #
     TRUE
   } else {
     FALSE

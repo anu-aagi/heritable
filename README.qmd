@@ -1,5 +1,7 @@
 ---
 format: gfm
+editor_options: 
+  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -19,7 +21,6 @@ knitr::opts_chunk$set(
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![CRAN status](https://www.r-pkg.org/badges/version/heritable)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
-[![R-CMD-check](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `heritable` is to be the one-stop shop for heritability calculations in R. Our goal is to implement existing methods for heritability to aid reproducibility and reporting of it's calculations.`heritable` works with model outputs from `asreml` and `lme4` and support the calculations of broad and narrow sense heritability of a variety of method for single environment breeding trials. 
@@ -61,7 +62,7 @@ H2(fit_asreml, target = "gen")
 H2(fit_lme4, target = "gen")
 ```
 
-Alteratively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.
+Alternatively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.
 
 ```{r}
 #| message: false

@@ -12,7 +12,6 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test
 coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
-[![R-CMD-check](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/anu-aagi/heritable/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `heritable` is to be the one-stop shop for heritability calculations in
@@ -63,7 +62,7 @@ H2(fit_lme4, target = "gen")
 #> 0.8091338 0.8091338 0.7966375 0.8091338 0.8400678
 ```
 
-Alteratively, with the help of tidyverse functions, you can return all
+Alternatively, with the help of tidyverse functions, you can return all
 the measures for different models as a tibble.
 
 ``` r
@@ -84,15 +83,15 @@ tibble(model = list(fit_lme4, fit_asreml)) |>
 citation("heritable")
 #> To cite package 'heritable' in publications use:
 #> 
-#>   Kar F, Deng Y, Tanaka E (2025). _heritable: R package for
-#>   heritability calculations for plant breeding trials_. R package
-#>   version 0.0.9000, <https://github.com/anu-aagi/heritable>.
+#>   Kar F, Tanaka E (2025). _heritable: R package for heritability
+#>   calculations for plant breeding trials_. R package version 0.0.9000,
+#>   <https://github.com/anu-aagi/heritable>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {heritable: R package for heritability calculations for plant breeding trials},
-#>     author = {Fonti Kar and Yidi Deng and Emi Tanaka},
+#>     author = {Fonti Kar and Emi Tanaka},
 #>     year = {2025},
 #>     note = {R package version 0.0.9000},
 #>     url = {https://github.com/anu-aagi/heritable},

@@ -18,6 +18,7 @@ test_that("Helper functions working with lme4", {
   skip_on_cran()
   skip_if_not_installed("lme4")
 
+  lme4_lettuce <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
   lmer_model_random <- readRDS(test_path("fixtures/lmer_model_random.rds"))
   lmer_model_fixed <- fit_counterpart_model(lmer_model_random, target = "gen")
 
@@ -26,6 +27,9 @@ test_that("Helper functions working with lme4", {
   expect_named(pull_terms(lmer_model_random), c("fixed", "random"))
   expect_true("gen" %in% pull_terms(lmer_model_random)$random)
   expect_true("gen" %in% pull_terms(lmer_model_fixed)$fixed)
+
+  lm_model <- fit_counterpart_model(lme4_lettuce)
+  expect_named(lm_model)
 })
 
 

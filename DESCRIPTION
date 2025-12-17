@@ -1,20 +1,21 @@
 Package: heritable
-Title: heritable: R package for heritability calculations for plant breeding trials
+Title: Heritability Estimation from Mixed Models
 Version: 0.1.0
 Authors@R: 
     c(
     person(given = "Fonti", family = "Kar", role = c("aut", "cre"), email = c("fonti.kar@anu.edu.au"), comment = c(ORCID = "0000-0002-2760-3974")),
-    person(given = "Yidi", family=  "Deng", role = c("aut"), comment = c(ORCID = "0000-0003-0380-2124")),
-    person(given = "Emi", family = "Tanaka", role = c("aut", "ctb", "cph"), comment = c(ORCID = "0000-0002-1455-259X"))
+    person(given = "Emi", family = "Tanaka", role = c("aut", "cph"), comment = c(ORCID = "0000-0002-1455-259X"))
     )
-Description: Reporting heritability estimates is an important part of quantitative genetics in breeding experiments.
- This package provides functions to calculate various heritability summary statistics, including narrow-sense heritability, broad-sense heritability, and other related metrics
- from asreml and soon to be lme4 model objects.
-License: GPL (>= 3) + file LICENSE
+Description: Reporting heritability estimates is an important to quantitative genetics 
+  studies and breeding experiments. Here we provide functions to calculate various broad-sense
+  heritabilities from 'asreml' and 'lme4' model objects. All methods we have implemented 
+  in this package have extensively discussed in the article by Schmidt et al. (2019) <doi:10.1534/genetics.119.302134>.
+License: GPL (>= 3) | file LICENSE
 Imports: 
     cli,
     emmeans,
     Matrix,
+    methods,
     stringr,
     vctrs
 Suggests: 
@@ -23,7 +24,12 @@ Suggests:
     knitr,
     rmarkdown,
     lme4,
-    pbkrtest
+    pbkrtest,
+    dplyr,
+    ggplot2,
+    tidyr,
+    purrr,
+    here
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3
@@ -34,3 +40,5 @@ Depends:
     R (>= 4.1.0)
 LazyData: true
 VignetteBuilder: knitr
+URL: https://anu-aagi.github.io/heritable/
+Language: en

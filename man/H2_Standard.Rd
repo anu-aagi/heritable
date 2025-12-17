@@ -14,7 +14,7 @@ H2_Standard(model, target, options)
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \value{
-Single numeric value
+Numeric value
 }
 \description{
 Compute standard heritability using the classic ratio method of
@@ -31,7 +31,23 @@ where:
 \item \eqn{\sigma_p} is the variance attributed to phenotypic differences
 }
 }
+\examples{
+# lme4 model
+lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+H2_Standard(lettuce_lme4, target = "gen")
+
+# asreml model (Requires license)
+\dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Standard(lettuce_asreml, target = "gen")
+}
+}
 \references{
-@references
 Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 }
