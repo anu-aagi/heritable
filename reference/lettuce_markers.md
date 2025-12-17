@@ -51,10 +51,10 @@ Hadasch, S., Simko, I., Hayes, R.J., Ogutu, J.O. and Piepho, H.-P.
 (2016), Comparing the Predictive Abilities of Phenotypic and
 Marker-Assisted Selection Methods in a Biparental Lettuce Population.
 The Plant Genome, 9: plantgenome2015.03.0014.
-<https://doi.org/10.3835/plantgenome2015.03.0014>
+[doi:10.3835/plantgenome2015.03.0014](https://doi.org/10.3835/plantgenome2015.03.0014)
 
 Hayes, R. J., Galeano, C. H., Luo, Y., Antonise, R., & Simko, I. (2014).
 Inheritance of Decay of Fresh-cut Lettuce in a Recombinant Inbred Line
 Population from ‘Salinas 88’ × ‘La Brillante’. Journal of the American
 Society for Horticultural Science, 139(4), 388–398.
-<https://doi.org/10.21273/JASHS.139.4.388>
+[doi:10.21273/JASHS.139.4.388](https://doi.org/10.21273/JASHS.139.4.388)
