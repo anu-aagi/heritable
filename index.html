@@ -12,8 +12,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Heritability Estimation From Mixed Models">
-<meta name="description" content="Reporting heritability estimates is an important part of quantitative genetics in breeding experiments. Here we provide functions to calculate various broad-sense heritabilities from asreml and lme4 model objects.">
-<meta property="og:description" content="Reporting heritability estimates is an important part of quantitative genetics in breeding experiments. Here we provide functions to calculate various broad-sense heritabilities from asreml and lme4 model objects.">
+<meta name="description" content="Reporting heritability estimates is an important to quantitative genetics studies and breeding experiments. Here we provide functions to calculate various broad-sense heritabilities from asreml and lme4 model objects. All methods we have implemented in this package have extensively discussed in the article by Schmidt et al. (2019) &lt;doi:10.1534/genetics.119.302134&gt;.">
+<meta property="og:description" content="Reporting heritability estimates is an important to quantitative genetics studies and breeding experiments. Here we provide functions to calculate various broad-sense heritabilities from asreml and lme4 model objects. All methods we have implemented in this package have extensively discussed in the article by Schmidt et al. (2019) &lt;doi:10.1534/genetics.119.302134&gt;.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -92,7 +92,7 @@
 <span><span class="fu"><a href="reference/h2.html">H2</a></span><span class="op">(</span><span class="va">fit_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
 <span><span class="co">#&gt; 0.8091338 0.8091338 0.7966375 0.8091338 0.8400678</span></span></code></pre></div>
-<p>Alteratively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.</p>
+<p>Alternatively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
 <span><span class="fu">tibble</span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme4</span>, <span class="va">fit_asreml</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
@@ -111,15 +111,15 @@
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"heritable"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; To cite package 'heritable' in publications use:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Kar F, Deng Y, Tanaka E (2025). _heritable: R package for</span></span>
-<span><span class="co">#&gt;   heritability calculations for plant breeding trials_. R package</span></span>
-<span><span class="co">#&gt;   version 0.0.9000, &lt;https://github.com/anu-aagi/heritable&gt;.</span></span>
+<span><span class="co">#&gt;   Kar F, Tanaka E (2025). _heritable: R package for heritability</span></span>
+<span><span class="co">#&gt;   calculations for plant breeding trials_. R package version 0.0.9000,</span></span>
+<span><span class="co">#&gt;   &lt;https://github.com/anu-aagi/heritable&gt;.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   @Manual{,</span></span>
 <span><span class="co">#&gt;     title = {heritable: R package for heritability calculations for plant breeding trials},</span></span>
-<span><span class="co">#&gt;     author = {Fonti Kar and Yidi Deng and Emi Tanaka},</span></span>
+<span><span class="co">#&gt;     author = {Fonti Kar and Emi Tanaka},</span></span>
 <span><span class="co">#&gt;     year = {2025},</span></span>
 <span><span class="co">#&gt;     note = {R package version 0.0.9000},</span></span>
 <span><span class="co">#&gt;     url = {https://github.com/anu-aagi/heritable},</span></span>

@@ -35,14 +35,15 @@ represents a genotype
 The varieties were genotyped with a total of 300 markers (i.e. 95 single
 nucleotide polymorphisms and 205 amplified fragment length polymorphism
 markers, see Hayes et al. (2014) for more details of marker matrix. The
-biallelic marker \\M_iw\\ for the ith genotype and the wth marker with
-alleles A_1 (i.e. the reference allele) and A_2 was coded as:
+biallelic marker \\M_iw\\ for the ith genotype and the \\w\\th marker
+with alleles \\A_1\\ (i.e. the reference allele) and \\A_2\\ was coded
+as:
 
-- 1 for A_1 A_1,
+- 1 for \\A_1\\ \\A_1\\,
 
-- -1 for A_2 A_2
+- -1 for \\A_2\\ \\A_2\\
 
-- 0 for A_1 A_2 and A_2 A_1.
+- 0 for \\A_1\\ \\A_2\\ and \\A_2\\ \\A_1\\
 
 ## References
 
