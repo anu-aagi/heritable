@@ -38,7 +38,7 @@ For further details of a specific method - take a look at help file for each sub
 }
 \examples{
 # lme4 model
-lettuce_phenotypes |> subset(loc == "L2")
+lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2(lettuce_lme4, target = "gen", method = c("Standard", "Delta"))
 
