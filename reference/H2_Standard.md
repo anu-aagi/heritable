@@ -27,7 +27,7 @@ H2_Standard(model, target, options)
 
 ## Value
 
-Single numeric value
+Numeric value
 
 ## Details
 
@@ -47,3 +47,24 @@ The equation used to calculate standard heritability is:
 
 Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative
 genetics (4th ed.). Longman.
+
+## Examples
+
+``` r
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#> Error: bad 'data': object 'lettuce_subset' not found
+H2_Standard(lettuce_lme4, target = "gen")
+#> Error: object 'lettuce_lme4' not found
+
+# asreml model (Requires license)
+if (FALSE) { # \dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Standard(lettuce_asreml, target = "gen")
+} # }
+```

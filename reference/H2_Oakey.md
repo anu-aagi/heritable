@@ -53,3 +53,24 @@ Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006).
 Joint modeling of additive and non-additive genetic line effects in
 single field trials. Theoretical and Applied Genetics, 113(5), 809–819.
 https://doi.org/10.1007/s00122-006-0333-z
+
+## Examples
+
+``` r
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#> Error: bad 'data': object 'lettuce_subset' not found
+H2_Oakey(lettuce_lme4, target = "gen")
+#> Error: object 'lettuce_lme4' not found
+
+# asreml model (Requires license)
+if (FALSE) { # \dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Oakey(lettuce_asreml, target = "gen")
+} # }
+```

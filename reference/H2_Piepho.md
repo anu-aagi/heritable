@@ -47,3 +47,24 @@ See reference for full derivation and details.
 Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and
 Selection Response From Unbalanced Plant Breeding Trials. Genetics,
 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+
+## Examples
+
+``` r
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#> Error: bad 'data': object 'lettuce_subset' not found
+H2_Piepho(lettuce_lme4, target = "gen")
+#> Error: object 'lettuce_lme4' not found
+
+# asreml model (Requires license)
+if (FALSE) { # \dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Piepho(lettuce_asreml, target = "gen")
+} # }
+```

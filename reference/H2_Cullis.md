@@ -27,7 +27,7 @@ H2_Cullis(model, target, options)
 
 ## Value
 
-Single numeric value
+Numeric value
 
 ## Details
 
@@ -50,3 +50,5 @@ Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of
 early generation variety trials with correlated data. Journal of
 Agricultural, Biological, and Environmental Statistics, 11(4), 381–393.
 https://doi.org/10.1198/108571106X154443
+
+## Examples

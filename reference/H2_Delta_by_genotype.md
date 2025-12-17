@@ -68,3 +68,24 @@ https://doi.org/10.2135/cropsci2018.06.0376
 
 [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md),
 [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
+
+## Examples
+
+``` r
+# lme4 model
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#> Error: bad 'data': object 'lettuce_subset' not found
+H2_Delta_by_genotype(lettuce_lme4, target = "gen")
+#> Error: object 'lettuce_lme4' not found
+
+# asreml model (Requires license)
+if (FALSE) { # \dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Delta_by_genotype(lettuce_asreml, target = "gen")
+} # }
+```
