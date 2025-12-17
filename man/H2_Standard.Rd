@@ -33,6 +33,7 @@ where:
 }
 \examples{
 # lme4 model
+lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Standard(lettuce_lme4, target = "gen")
 

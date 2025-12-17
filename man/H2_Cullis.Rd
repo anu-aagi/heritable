@@ -33,6 +33,7 @@ where:
 }
 \examples{
 # lme4 model
+lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Cullis(lettuce_lme4, target = "gen")
 
@@ -46,7 +47,6 @@ lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
 
 H2_Cullis(lettuce_asreml, target = "gen")
 }
-Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 }
 \references{
 Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443

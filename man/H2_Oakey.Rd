@@ -34,6 +34,7 @@ See pages 813 and 818 of the reference for full derivation and explanation for O
 }
 \examples{
 # lme4 model
+lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Oakey(lettuce_lme4, target = "gen")
 

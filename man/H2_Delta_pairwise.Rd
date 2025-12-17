@@ -26,6 +26,7 @@ reference for origin and interpretation of \code{h2/H2_Delta_pairwise} and it's 
 }
 \examples{
 # lme4 model
+lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Delta_pairwise(lettuce_lme4, target = "gen")
 

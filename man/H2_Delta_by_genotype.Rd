@@ -41,6 +41,7 @@ See reference page 995 - 997 for full derivation of this heritability measure an
 }
 \examples{
 # lme4 model
+lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Delta_by_genotype(lettuce_lme4, target = "gen")
 

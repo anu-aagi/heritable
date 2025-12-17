@@ -39,6 +39,7 @@
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()]
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2(lettuce_lme4, target = "gen", method = c("Standard", "Delta"))
 #'
@@ -108,8 +109,10 @@ H2.default <- function(model,
 #' - \eqn{\sigma_g} is the variance attributed to genotype differences
 #' - \eqn{\sigma_p} is the variance attributed to phenotypic differences
 #' @export
+#' @references Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Standard(lettuce_lme4, target = "gen")
 #'
@@ -123,7 +126,6 @@ H2.default <- function(model,
 #'
 #' H2_Standard(lettuce_asreml, target = "gen")
 #' }
-#' @references Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 H2_Standard <- function(model, target, options) {
   UseMethod("H2_Standard")
 }
@@ -146,6 +148,7 @@ H2_Standard <- function(model, target, options) {
 #' @export
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Cullis(lettuce_lme4, target = "gen")
 #'
@@ -159,7 +162,7 @@ H2_Standard <- function(model, target, options) {
 #'
 #' H2_Cullis(lettuce_asreml, target = "gen")
 #' }
-#' Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
+
 H2_Cullis <- function(model, target, options) {
   UseMethod("H2_Cullis")
 }
@@ -185,6 +188,7 @@ H2_Cullis <- function(model, target, options) {
 #' @returns Numeric
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Oakey(lettuce_lme4, target = "gen")
 #'
@@ -224,6 +228,7 @@ H2_Oakey <- function(model, target, options) {
 #' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Piepho(lettuce_lme4, target = "gen")
 #'
@@ -282,6 +287,7 @@ H2_Piepho <- function(model, target, options) {
 #' @export
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Delta(lettuce_lme4, target = "gen")
 #'
@@ -354,6 +360,7 @@ H2_Delta.default <- function(model,
 #' @export
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Delta_by_genotype(lettuce_lme4, target = "gen")
 #'
@@ -408,6 +415,7 @@ H2_Delta_by_genotype.default <- function(model,
 #' @export
 #' @examples
 #' # lme4 model
+#' lettuce_phenotypes |> subset(loc == "L2")
 #' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #' H2_Delta_pairwise(lettuce_lme4, target = "gen")
 #'
