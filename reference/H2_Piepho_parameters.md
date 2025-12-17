@@ -21,7 +21,7 @@ H2_Piepho_parameters(vc_g, vd_BLUE_avg)
 
 ## Value
 
-Single numeric value
+Numeric value
 
 ## Details
 

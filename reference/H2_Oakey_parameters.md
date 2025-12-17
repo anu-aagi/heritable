@@ -21,7 +21,7 @@ H2_Oakey_parameters(Gg_inv, C_gg)
 
 ## Value
 
-Single numeric value
+Numeric value
 
 ## Examples
 

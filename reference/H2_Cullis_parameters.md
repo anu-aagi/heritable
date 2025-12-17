@@ -22,7 +22,7 @@ H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 
 ## Value
 
-Single numeric value
+Numeric value
 
 ## Details
 
