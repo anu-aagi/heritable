@@ -1,4 +1,7 @@
+#' Get genotype variance component from asreml model
 #' @keywords internal
+#' @noRd
+#' @return Numeric, genotype variance component
 get_vc_g_asreml <- function(model, target) {
   model$vparameters[[target]] * model$sigma2
 }
@@ -30,7 +33,6 @@ get_vc_g_asreml <- function(model, target) {
 #   H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 # }
 
-#' @keywords internal
 # h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
 #   initial_checks(model, target, options)
 #
@@ -48,8 +50,6 @@ get_vc_g_asreml <- function(model, target) {
 #   H2_Oakey_parameters(Gg_inv, vcov_g)
 # }
 
-
-#' @keywords internal
 # h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
 #   initial_checks(model, target, options)
 #
@@ -73,8 +73,22 @@ get_vc_g_asreml <- function(model, target) {
 #   }
 # }
 
+#' Calculate Cullis's heritability from asreml model
 #' @export
+#' @noRd
 #' @importFrom stats predict
+#' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Cullis.asreml(lettuce_asreml, target = "gen")
+#' }
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -95,7 +109,10 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   return(H2_Cullis)
 }
 
+#' Calculate Oakey's heritability from asreml model
 #' @export
+#' @noRd
+#' @return Numeric
 H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -120,8 +137,10 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   return(H2_Oakey)
 }
 
-
+#' Calculate Piepho's heritability from asreml model
 #' @export
+#' @noRd
+#' @return Numeric
 H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -146,7 +165,10 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
   return(H2_Piepho)
 }
 
+#' Calculate pairwise heritability from asreml model
 #' @export
+#' @noRd
+#' @return Numeric
 H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
   initial_checks(model, target, options)
   vc_g <- get_vc_g_asreml(model, target)
@@ -166,7 +188,10 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
   }
 }
 
+#' Calculate standard heritability from asreml model
 #' @export
+#' @noRd
+#' @return Numeric
 H2_Standard.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 

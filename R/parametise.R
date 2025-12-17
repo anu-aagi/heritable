@@ -14,8 +14,7 @@
 #' @param vc_g Numeric. Genotype variance component
 #' @param vc_e Numeric. Residuals variance component
 #' @param n_r A numeric vector of size n_g, the number of genotype replicates.
-#' @return Single numeric value
-#'
+#' @return Numeric value
 #' @examples
 #' H2_Standard_parameters(vc_g = 0.25, vc_e = 0.8)
 #'
@@ -43,8 +42,7 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #'
 #' @param vd_BLUP_avg Numeric. Average variance of pairwise differences among BLUPs
 #' @param vc_g Numeric. Genotype variance component
-#' @return Single numeric value
-#'
+#' @return Numeric value
 #' @examples
 #' H2_Cullis_parameters(vd_BLUP_avg = 0.25, vc_g = 0.8)
 #'
@@ -65,7 +63,7 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #'
 #' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
 #' @param C_gg Prediction error variance matrix associated with the genotype effects.
-#' @return Single numeric value
+#' @return Numeric value
 #' @examples
 #' Gg_inv = diag(1/0.15, 3, 3)
 #' C_gg <- matrix(
@@ -102,8 +100,7 @@ H2_Oakey_parameters <- function(Gg_inv, C_gg) {
 #'
 #' @param vc_g Numeric. Genotype variance component
 #' @param vd_BLUE_avg Numeric. Mean variance of pairwise differences among BLUES
-#' @return Single numeric value
-#'
+#' @return Numeric value
 #' @examples
 #' H2_Piepho_parameters(vc_g = 0.25, vd_BLUE_avg = 0.68)
 #'
@@ -157,6 +154,7 @@ H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
 
 
 #' @noRd
+#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
 #' @keywords internal
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
 vd <- diag(G_g)
@@ -166,6 +164,7 @@ denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
 }
 
 #' @noRd
+#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
 #' @keywords internal
 h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   vd <- diag(G_g)

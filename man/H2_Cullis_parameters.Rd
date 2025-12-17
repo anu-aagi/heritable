@@ -12,7 +12,7 @@ H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 \item{vc_g}{Numeric. Genotype variance component}
 }
 \value{
-Single numeric value
+Numeric value
 }
 \description{
 Compute the Cullis heritability for genotype means using the average

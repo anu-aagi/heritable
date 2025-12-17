@@ -12,7 +12,7 @@ H2_Oakey_parameters(Gg_inv, C_gg)
 \item{C_gg}{Prediction error variance matrix associated with the genotype effects.}
 }
 \value{
-Single numeric value
+Numeric value
 }
 \description{
 Rather than providing a model object, supply the necessary components to compute
