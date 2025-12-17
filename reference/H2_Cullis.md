@@ -52,3 +52,37 @@ Agricultural, Biological, and Environmental Statistics, 11(4), 381–393.
 https://doi.org/10.1198/108571106X154443
 
 ## Examples
+
+``` r
+# lme4 model
+lettuce_phenotypes |> subset(loc == "L2")
+#> # A tibble: 267 × 4
+#>    loc   gen   rep       y
+#>    <fct> <fct> <fct> <dbl>
+#>  1 L2    G1    R1      2  
+#>  2 L2    G1    R2      1.5
+#>  3 L2    G1    R3      2  
+#>  4 L2    G2    R1      2  
+#>  5 L2    G2    R2      2  
+#>  6 L2    G2    R3      1.5
+#>  7 L2    G3    R1      1.5
+#>  8 L2    G3    R2      2  
+#>  9 L2    G3    R3      2.5
+#> 10 L2    G4    R1      3.5
+#> # ℹ 257 more rows
+lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#> Error: bad 'data': object 'lettuce_subset' not found
+H2_Cullis(lettuce_lme4, target = "gen")
+#> Error: object 'lettuce_lme4' not found
+
+# asreml model (Requires license)
+if (FALSE) { # \dontrun{
+lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+                                 random = ~ gen,
+                                 data = lettuce_subset,
+                                 trace = FALSE
+                                 )
+
+H2_Cullis(lettuce_asreml, target = "gen")
+} # }
+```
