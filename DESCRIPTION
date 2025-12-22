@@ -10,7 +10,7 @@ Description: Reporting heritability estimates is an important to quantitative ge
   studies and breeding experiments. Here we provide functions to calculate various broad-sense
   heritabilities from 'asreml' and 'lme4' model objects. All methods we have implemented 
   in this package have extensively discussed in the article by Schmidt et al. (2019) <doi:10.1534/genetics.119.302134>.
-License: GPL (>= 3) + file LICENSE
+License: GPL (>= 3)
 Imports: 
     cli,
     emmeans,
