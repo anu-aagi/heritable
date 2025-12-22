@@ -14,6 +14,9 @@ H2_Piepho(model, target, options)
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
+\value{
+Numeric
+}
 \description{
 Calculate Piepho's heritability from model object
 Compute Piepho's heritability using variance differences between genotype BLUEs

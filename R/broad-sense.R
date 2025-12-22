@@ -223,6 +223,7 @@ H2_Oakey <- function(model, target, options) {
 #' - \eqn{\sigma^2_g} is the variance attributed to differences between genotype
 #'
 #' See reference for full derivation and details.
+#' @returns Numeric
 #' @export
 #' @references
 #' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
