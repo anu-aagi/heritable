@@ -78,9 +78,10 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' @export
 H2_Oakey_parameters <- function(Gg_inv, C_gg) {
    n_g <- nrow(Gg_inv)
-   M <- diag(n_g) - (Gg_inv %*% C_gg)
+   svds <- svd(Gg_inv)
+   Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
+   M <- diag(n_g) - (Gg_inv_sqrt %*% C_gg %*% Gg_inv_sqrt)
    eM <- eigen(M)
-
    thres <- 1e-5
    H2_Oakey <- mean(eM$values[eM$values > thres])
    return(H2_Oakey)
