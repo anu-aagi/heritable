@@ -25,6 +25,10 @@ H2_Piepho(model, target, options)
   NULL by default, for internal checking of model object before
   calculations
 
+## Value
+
+Numeric
+
 ## Details
 
 The equation for Piepho's heritability is as follows:

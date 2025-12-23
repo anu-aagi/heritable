@@ -10,8 +10,8 @@ environment breeding trials.
 ## Installation
 
 Note that this package is under active development. You can install the
-development version of heritable from [GitHub](https://github.com/)
-with:
+development version of heritable from
+[GitHub](https://github.com/anu-aagi/heritable) with:
 
 ``` r
 # install.packages("pak")
