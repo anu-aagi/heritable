@@ -42,4 +42,4 @@ Depends:
 LazyData: true
 VignetteBuilder: knitr
 URL: https://anu-aagi.github.io/heritable/
-Language: ch
+Language: en
