@@ -79,10 +79,17 @@ df_long <- df_n |>
 
 # G matrix and scaled G matrix (From paper Gs = MM'/r, r = trace G/m where m = number of genotypes))
 # M: individuals x markers
-marker_var <- apply(M, 2, var)
+M <- markers[,-1] |> as.matrix()
+
+marker_var <- apply(M, 2, var, na.rm = TRUE)
 scaling <- mean(marker_var)
 
 G <- tcrossprod(M) / scaling
+
+# gkeep and gdrop
+# Are gkeep the genotypes where their marker data was NOT imputed? (-1,0,1)
+# and are gdrop the genotypes where their marker data was imputed? (e.g. fractional values?)
+# Is this across all markers? If one SNP was imputed then you count it for gdrop? 
 
 
 # ------- Univariate baseline --------
