@@ -93,6 +93,7 @@ Gscaled <- tcrossprod(M) / (diag(G) / nrow(G))
 # and are gdrop the genotypes where their marker data was imputed? (e.g. fractional values?)
 # Is this across all markers? If one SNP was imputed then you count it for gdrop? 
 
+# What are prange and prow?! 
 
 # ------- Univariate baseline --------
 
