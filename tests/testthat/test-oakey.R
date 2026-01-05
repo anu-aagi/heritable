@@ -86,6 +86,8 @@ scaling <- mean(marker_var)
 
 G <- tcrossprod(M) / scaling
 
+Gscaled <- tcrossprod(M) / (diag(G) / nrow(G)) 
+
 # gkeep and gdrop
 # Are gkeep the genotypes where their marker data was NOT imputed? (-1,0,1)
 # and are gdrop the genotypes where their marker data was imputed? (e.g. fractional values?)
