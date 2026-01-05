@@ -71,7 +71,7 @@ H2.default <- function(model,
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = NULL)
+  initial_checks(model, target, options = options)
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
