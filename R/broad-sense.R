@@ -67,7 +67,7 @@ H2 <- function(model,
 H2.default <- function(model,
                        target = NULL,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       options
+                       options = NULL
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
@@ -88,7 +88,7 @@ H2.default <- function(model,
   # Set names and class
   H2_values <- stats::setNames(H2_values, method)
   structure(H2_values,
-    class = c("heritable", class(H2_values)),
+    class = c("heritable", "broad_sense", class(H2_values)),
     model = model, target = target
   )
 }
