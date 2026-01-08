@@ -37,15 +37,13 @@
 #' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 #' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
-#' @noRd
-#' @keywords internal
-
+#' @export
 h2 <- function(model, target, method = c("Oakey", "Delta"), options) {
   UseMethod("h2")
 }
 
-#' @keywords internal
 #' @noRd
+#' @export
 h2.default <- function(
     model,
     target = NULL,
@@ -97,7 +95,6 @@ h2.default <- function(
 #' @returns Numeric
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
-#' @keywords internal
 #' @noRd
 h2_Oakey <- function(model, target, options) {
   UseMethod("h2_Oakey")
@@ -142,7 +139,6 @@ h2_Oakey <- function(model, target, options) {
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @noRd
-#' @keywords internal
 h2_Delta <- function(model,
                      target,
                      type = c("BLUP", "BLUE"),
@@ -151,8 +147,8 @@ h2_Delta <- function(model,
   UseMethod("h2_Delta")
 }
 
-#' @keywords internal
 #' @noRd
+#' @export
 h2_Delta.default <- function(model,
                              target = NULL,
                              type = c("BLUP", "BLUE"),
@@ -200,13 +196,13 @@ h2_Delta.default <- function(model,
 #' @seealso [`h2_Delta()`], [`H2_Delta()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @returns Named list, with each element containing a named numeric vector
 #' @noRd
-#' @keywords internal
+
 h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_by_genotype")
 }
 
-#' @keywords internal
 #' @noRd
+#' @export
 h2_Delta_by_genotype.default <- function(model,
                                          target = NULL,
                                          type = c("BLUP", "BLUE"),
@@ -242,7 +238,7 @@ h2_Delta_by_genotype.default <- function(model,
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta()`], [`H2_Delta()`]
 #' @noRd
-#' @keywords internal
+
 h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")
 }
