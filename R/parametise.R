@@ -140,16 +140,44 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar
 #' Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @export
+H2_Delta_parameters <- function(vc_g, vd_matrix, type = c("BLUP", "BLUE")) {
+  type <- match.arg(type)
+  denom <- 2 * vc_g
+
+  if (type == "BLUP") {
+    1 - vd_matrix / denom
+  } else {
+    1 / (1 + vd_matrix / denom)
+  }
+}
+#' @noRd
+#' @keywords internal
 H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
   denom <- 2 * vc_g
   1 - vd_matrix / denom
 }
 
 #' @noRd
-#' @export
+#' @keywords internal
 H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
   denom <- 2 * vc_g
   1 / (1 + vd_matrix / denom)
+}
+
+#' @noRd
+#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
+#' @export
+h2_Delta_parameters <- function(G_g, vd_matrix, type = c("BLUP", "BLUE")) {
+  type <- match.arg(type)
+  vd <- diag(G_g)
+  n_g <- nrow(G_g)
+  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
+
+  if (type == "BLUP") {
+    1 - vd_matrix / denom
+  } else {
+    1 / (1 + vd_matrix / denom)
+  }
 }
 
 
@@ -172,7 +200,3 @@ h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
   denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
   1 / (1 + vd_matrix / denom)
 }
-
-
-
-
