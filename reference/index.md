@@ -34,8 +34,8 @@
 
 - [`H2_Cullis_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Cullis_parameters.md)
   : Calculate Cullis heritability using variance parameters
-- [`H2_Delta_BLUP_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_BLUP_parameters.md)
-  [`H2_Delta_BLUE_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_BLUP_parameters.md)
+- [`h2_Delta_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_parameters.md)
+  [`H2_Delta_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_parameters.md)
   : Calculate heritability of pairwise differences using variance
   parameters
 - [`H2_Oakey_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Oakey_parameters.md)
