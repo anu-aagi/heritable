@@ -25,3 +25,31 @@ test_that("h2 heritability works", {
   expect_named(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), levels(asreml_model_grm$mf$gen), ignore.order = TRUE)
   expect_equal(nrow(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP")), length(levels(asreml_model_grm$mf$gen)))
 })
+
+
+test_that("VanRadden GRM", {
+  skip_if_not_installed("asreml")
+  skip_on_ci()
+  skip_on_cran()
+  
+  library(sommer)
+  lettuce_GRM_vanradden <- sommer::A.mat(as.matrix(lettuce_markers[, -1]))
+  dimnames(lettuce_GRM_vanradden) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  # saveRDS(lettuce_GRM_vanradden, file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
+  # lettuce_GRM_vanradden <- readRDS(file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
+
+  # VanRadden is standardised by marker means
+  lettuce_GRM_vanradden |> head()
+  lettuce_GRM |> head()
+
+  # Genotypes in GRM? No missing values
+  setdiff(
+  lettuce_GRM_vanradden |> rownames() |> sort(),
+  lettuce_phenotypes |> subset(loc == "L2") |> pull(gen) |> unique() |> sort()
+  )
+
+  asreml_model_gr_vr <- asreml::asreml(y ~ rep,
+                        random=~ vm(gen, lettuce_GRM_vanradden),
+                        data = lettuce_phenotypes |>
+                          subset(loc == "L2"))
+})
