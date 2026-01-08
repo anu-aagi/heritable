@@ -2,18 +2,21 @@
 % Please edit documentation in R/parametise.R
 \name{H2_Delta_parameters}
 \alias{H2_Delta_parameters}
-\alias{H2_Delta_BLUP_parameters}
-\alias{h2_Delta_BLUE_parameters}
-\alias{H2_Delta_BLUE_parameters}
+\alias{h2_Delta_parameters}
 \title{Calculate heritability of pairwise differences using variance parameters}
 \usage{
-H2_Delta_BLUP_parameters(vc_g, vd_matrix)
-H2_Delta_BLUE_parameters(vc_g, vd_matrix)
+h2_Delta_parameters(G_g, vd_matrix, type)
+
+H2_Delta_parameters(vc_g, vd_matrix, type)
 }
 \arguments{
 \item{vc_g}{Numeric. Genotype variance component}
 
 \item{vd_matrix}{Matrix. Variance of pairwise differences among BLUES or BLUPs}
+
+\item{type}{Character. Either BLUES or BLUPS used to compute the variance of pairwise differences.}
+
+\item{G_g}{Numeric. Genotypic variance-covariance matrix.}
 }
 \value{
 Matrix of pairwise heritability of differences among BLUES or BLUPs
@@ -27,8 +30,9 @@ See \code{\link[=H2_Delta]{H2_Delta()}} and reference for full derivation
 and equation for heritability Delta
 }
 \examples{
+h2_Delta_parameters(G_g = diag(0.15, 2, 2), vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), type = "BLUP")
 
-H2_Delta_BLUP_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2))
+H2_Delta_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), "BLUE")
 
 }
 \references{
