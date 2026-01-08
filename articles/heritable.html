@@ -228,14 +228,14 @@ are implemented for <code>h2()</code>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate narrow-sense heritability</span></span>
 <span><span class="fu">h2</span><span class="op">(</span><span class="va">lettuce_asreml_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="st">"Oakey"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in UseMethod("h2"): no applicable method for 'h2' applied to an object of class "asreml"</span></span></code></pre></div>
+<span><span class="co">#&gt; Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml"</span></span></code></pre></div>
 <p>Similarly, you can call the single method sub-functions using the
 prefix <code>h2_</code> followed by the method name. Here we are
 calculating pairwise heritability between every genotype. See
 <code>?h2_Delta_pairwise()</code> to learn more.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">h2_Delta</span><span class="op">(</span><span class="va">lettuce_asreml_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, type <span class="op">=</span> <span class="st">"BLUP"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in UseMethod("h2_Delta"): no applicable method for 'h2_Delta' applied to an object of class "asreml"</span></span></code></pre></div>
+<span><span class="co">#&gt; Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml"</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">

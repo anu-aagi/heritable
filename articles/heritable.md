@@ -167,7 +167,7 @@ to specify:
 ``` r
 # Calculate narrow-sense heritability
 h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
-#> Error in UseMethod("h2"): no applicable method for 'h2' applied to an object of class "asreml"
+#> Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml"
 ```
 
 Similarly, you can call the single method sub-functions using the prefix
@@ -177,7 +177,7 @@ more.
 
 ``` r
 h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
-#> Error in UseMethod("h2_Delta"): no applicable method for 'h2_Delta' applied to an object of class "asreml"
+#> Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml"
 ```
 
 ## Alternative output formats
