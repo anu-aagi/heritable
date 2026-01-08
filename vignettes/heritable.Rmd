@@ -149,7 +149,7 @@ Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritab
 ``` r
 # Calculate narrow-sense heritability
 h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
-#> Error in UseMethod("h2"): no applicable method for 'h2' applied to an object of class "asreml"
+#> Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml"
 ```
 
 Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more.
@@ -157,7 +157,7 @@ Similarly, you can call the single method sub-functions using the prefix `h2_` f
 
 ``` r
 h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
-#> Error in UseMethod("h2_Delta"): no applicable method for 'h2_Delta' applied to an object of class "asreml"
+#> Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml"
 ```
 
 ## Alternative output formats
