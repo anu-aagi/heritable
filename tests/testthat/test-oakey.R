@@ -4,9 +4,8 @@ test_that("OAKEY heritability estimation works", {
   skip_on_ci()
 
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
-  lettuce_asreml <- readRDS(here::here("vignettes/fixtures/lettuce_asreml.rds"))
-  lettuce_asreml_grm <- readRDS(here::here("vignettes/fixtures/lettuce_asreml_grm.rds"))
-  
+  lettuce_asreml <- readRDS(test_path("fixtures/lettuce_asreml.rds"))
+
   # Method implemented by ET as per Oakey et al. 2006
   H2_Oakey(asreml_model_random, target = "gen") 
 
