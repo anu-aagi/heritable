@@ -8,7 +8,7 @@
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param options NULL by default, for internal checking of model object before calculations
-# @aliases H2
+#' @aliases H2
 #' @usage
 #' h2(model, target, method = c("Oakey", "Delta"), options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
@@ -78,8 +78,8 @@ h2.default <- function(
 #' @description
 #' Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 #' as described by Oakey et al. (2006).
-# @inheritParams h2
-# @aliases H2_Oakey
+#' @inheritParams h2
+#' @aliases H2_Oakey
 #' @details
 #' \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
 #' where:
@@ -106,8 +106,8 @@ h2_Oakey <- function(model, target, options) {
 #' calculates heritability using "entry-differences". Entry here is
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `h2/H2_Delta` and it's variants
-# @inheritParams h2
-# @aliases H2_Delta
+#' @inheritParams h2
+#' @aliases H2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
