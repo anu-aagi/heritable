@@ -190,53 +190,32 @@ followed up the method name.</p>
 <p>Learn more about each method by looking up their help file
 <code><a href="../reference/H2_Cullis.html">?H2_Cullis</a></code></p>
 </blockquote>
-<div class="section level3">
-<h3 id="narrow-sense-heritability">Narrow-sense heritability<a class="anchor" aria-label="anchor" href="#narrow-sense-heritability"></a>
-</h3>
-<p>Narrow-sense heritability is currently only implemented for
-<strong><code>asreml</code></strong> model object as there is no native
-workflow to fit a GRM using <code>lme4</code>. However it is possible
-using other extension packages such as <a href="https://dx.doi.org/10.1186/s12859-018-2057-x" class="external-link"><code>lme4qtl</code></a>
-and <a href="https://CRAN.R-project.org/package=lme4breeding" class="external-link"><code>lme4breeding</code></a></p>
-<p>In the following model, we will fit the <code>lettuce_GRM</code>
-genomic relationship matrix using <code>asreml::vm()</code></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Fit model with GRM for narrow-sense heritability</span></span>
-<span><span class="va">lettuce_asreml_grm</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="op">(</span></span>
-<span>  fixed <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">loc</span>,</span>
-<span>  random <span class="op">=</span> <span class="op">~</span> <span class="fu">vm</span><span class="op">(</span><span class="va">gen</span>, <span class="va">lettuce_GRM</span><span class="op">)</span> <span class="op">+</span> <span class="va">rep</span>,</span>
-<span>  data <span class="op">=</span> <span class="va">lettuce_phenotypes</span>,</span>
-<span>  trace <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
-<p>Similar to <code><a href="../reference/h2.html">H2()</a></code>, we can use the <code>h2()</code>
-wrapper to compute narrow-sense heritability. Remembering to
-specify:</p>
-<ul>
-<li>
-<code>model</code>, your <code>asreml</code> object</li>
-<li>
-<code>target</code>, the name of your genotype/varietal/line
-variable in your model e.g. <code>"gen"</code>
-</li>
-<li>
-<code>method</code>, which method of <code>h2()</code> calculation
-do you want. By default, the function will compute all available
-methods. Currently only <code>"Oakey"</code> and <code>"Delta"</code>
-are implemented for <code>h2()</code>
-</li>
-</ul>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Calculate narrow-sense heritability</span></span>
-<span><span class="fu">h2</span><span class="op">(</span><span class="va">lettuce_asreml_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="st">"Oakey"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml"</span></span></code></pre></div>
-<p>Similarly, you can call the single method sub-functions using the
-prefix <code>h2_</code> followed by the method name. Here we are
-calculating pairwise heritability between every genotype. See
-<code>?h2_Delta_pairwise()</code> to learn more.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">h2_Delta</span><span class="op">(</span><span class="va">lettuce_asreml_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, type <span class="op">=</span> <span class="st">"BLUP"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml"</span></span></code></pre></div>
-</div>
+<!-- ### Narrow-sense heritability -->
+<!-- Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](https://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://CRAN.R-project.org/package=lme4breeding) -->
+<!-- In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()` -->
+<!-- ``` r -->
+<!-- # Fit model with GRM for narrow-sense heritability -->
+<!-- lettuce_asreml_grm <- asreml( -->
+<!--   fixed = y ~ loc, -->
+<!--   random = ~ vm(gen, lettuce_GRM) + rep, -->
+<!--   data = lettuce_phenotypes, -->
+<!--   trace = FALSE -->
+<!-- ) -->
+<!-- ``` -->
+<!-- Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritability. Remembering to specify: -->
+<!-- - `model`, your `asreml` object -->
+<!-- - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"` -->
+<!-- - `method`, which method of `h2()` calculation do you want. By default, the function will compute all available methods. Currently only `"Oakey"` and `"Delta"` are implemented for `h2()` -->
+<!-- ``` r -->
+<!-- # Calculate narrow-sense heritability -->
+<!-- h2(lettuce_asreml_grm, target = "gen", method = "Oakey") -->
+<!-- #> Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml" -->
+<!-- ``` -->
+<!-- Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more. -->
+<!-- ``` r -->
+<!-- h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP") -->
+<!-- #> Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml" -->
+<!-- ``` -->
 </div>
 <div class="section level2">
 <h2 id="alternative-output-formats">Alternative output formats<a class="anchor" aria-label="anchor" href="#alternative-output-formats"></a>
@@ -261,7 +240,7 @@ for all pairwise combinations of <code>target</code>
 <p>If you interested in comparing heritability values across multiple
 models or methods, we can leverage <code>tidyverse</code> functions to
 wrangle the output as a dataframe/tibble</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
