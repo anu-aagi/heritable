@@ -20,19 +20,20 @@
 #' A confidence interval object as returned by \code{confint()}.
 #'
 #' @examples
-#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-#' lettuce_asreml <- asreml(
-#'   fixed = y ~ rep * pseudo_var1,
-#'   random = ~gen,
-#'   sparse = ~pseudo_var2,
-#'   data = lettuce_subset,
-#'   trace = FALSE
-#' )
+#' \dontrun{
+#'   lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#'   lettuce_asreml <- asreml(
+#'     fixed = y ~ rep * pseudo_var1,
+#'     random = ~gen,
+#'     sparse = ~pseudo_var2,
+#'     data = lettuce_subset,
+#'     trace = FALSE
+#'   )
 #'
-#' my_H2 <- H2(lettuce_asreml, "gen", c("Cullis", "Standard"))
+#'   my_H2 <- H2(lettuce_asreml, "gen", c("Cullis", "Standard"))
 #'
-#' confint(my_H2)
-#'
+#'   confint(my_H2)
+#' }
 #' @export
 confint.heritable <- function(heritable,
                               B = 100,
@@ -105,22 +106,24 @@ confint.heritable <- function(heritable,
 #' - Returning a `boot` object.
 #'
 #' @examples
-#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-#' lettuce_asreml <- asreml(
-#'   fixed = y ~ rep * pseudo_var1,
-#'   random = ~gen,
-#'   sparse = ~pseudo_var2,
-#'   data = lettuce_subset,
-#'   trace = FALSE
-#' )
+#' \dontrun{
+#'   lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#'   lettuce_asreml <- asreml(
+#'     fixed = y ~ rep * pseudo_var1,
+#'     random = ~gen,
+#'     sparse = ~pseudo_var2,
+#'     data = lettuce_subset,
+#'     trace = FALSE
+#'   )
 #'
-#' b <- bootstrap_asreml(
-#'   lettuce_asreml,
-#'   R = 200,
-#'   statistic = function(fit) coef(fit)$fixed["(Intercept)", "effect"],
-#'   seed = 1
-#' )
-#' boot::boot.ci(b, type = "perc")
+#'   b <- bootstrap_asreml(
+#'     lettuce_asreml,
+#'     R = 200,
+#'     statistic = function(fit) coef(fit)$fixed["(Intercept)", "effect"],
+#'     seed = 1
+#'   )
+#'   boot::boot.ci(b, type = "perc")
+#' }
 #' @export
 bootstrap_asreml <- function(model,
                              FUN,

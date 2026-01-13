@@ -1,6 +1,5 @@
 # Setup
 devtools::document()
-devtools::load_all()
 library(asreml)
 library(dplyr)
 library(lme4)
