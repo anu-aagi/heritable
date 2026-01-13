@@ -71,7 +71,7 @@ h2.default <- function(
   # Set names and class
   h2_values <- stats::setNames(h2_values, method)
   structure(h2_values,
-            class = c("heritable", class(h2_values)),
+            class = c("heritable", "narrow_sense", class(h2_values)),
             model = model, target = target
   )
 }
