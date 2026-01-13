@@ -27,3 +27,36 @@ test_that("h2 heritability works", {
   # expect_named(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), levels(asreml_model_grm$mf$gen), ignore.order = TRUE)
   # expect_equal(nrow(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP")), length(levels(asreml_model_grm$mf$gen)))
 })
+
+
+test_that("Refactoring delta parameter functions works", {
+  G_g <- matrix(c(0.5, 0.2, 0.2,
+                  0.2, 0.6, 0.3,
+                  0.2, 0.3, 0.7), nrow = 3, byrow = TRUE)
+  vd_matrix <- matrix(c(0.1, 0.15, 0.2,
+                        0.15, 0.12, 0.18,
+                        0.2, 0.18, 0.14), nrow = 3, byrow = TRUE)
+
+  expect_equal(
+    h2_Delta_BLUP_parameters(G_g, vd_matrix),
+    h2_Delta_parameters(G_g, vd_matrix, type = "BLUP")
+  )
+
+  expect_equal(
+    h2_Delta_BLUE_parameters(G_g, vd_matrix),
+    h2_Delta_parameters(G_g, vd_matrix, type = "BLUE")
+  )
+
+  vc_g <- 0.01
+  vd_matrix <- matrix(c(NA,0.2,0.2,NA),2,2)
+
+  expect_equal(
+    H2_Delta_BLUE_parameters(vc_g, vd_matrix),
+    H2_Delta_parameters(vc_g, vd_matrix, type = "BLUE")
+  )
+
+  expect_equal(
+    H2_Delta_BLUP_parameters(vc_g, vd_matrix),
+    H2_Delta_parameters(vc_g, vd_matrix, type = "BLUP")
+  )
+})

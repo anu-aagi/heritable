@@ -39,11 +39,6 @@ pull_terms <- function(model) {
 
 
 #' @keywords internal
-pull_terms_without_specials <- function(model) {
-  UseMethod("pull_terms_without_specials")
-}
-
-#' @keywords internal
 pull_terms_without_specials.lmerMod <- function(model) {
   model_terms <- pull_terms(model)
   model_terms
@@ -63,12 +58,12 @@ pull_terms_without_specials.asreml <- function(model) {
     paste0(asreml_Spcls, collapse = "|"),
     ")\\(([^,]+),?.*\\)"
   )
-  clean_which <- stringr::str_detect(model_terms$fixed, pattern)
+  clean_which <- stringr::str_which(model_terms$fixed, pattern)
   model_terms$fixed[clean_which] <- stringr::str_extract(model_terms$fixed[clean_which],
     pattern,
     group = 2
   )
-  clean_which <- stringr::str_detect(model_terms$random, pattern)
+  clean_which <- stringr::str_which(model_terms$random, pattern)
   model_terms$random[clean_which] <- stringr::str_extract(model_terms$random[clean_which],
     pattern,
     group = 2
@@ -92,6 +87,14 @@ asreml_Spcls <- c(
   "sph", "sphv", "sphh", "cir", "cirv", "cirh", "mtrn", "mtrnv",
   "mtrnh", "mthr", "facv", "fa", "rr", "str", "own"
 )
+
+#' @keywords internal
+pull_terms_without_specials <- function(model) {
+  UseMethod("pull_terms_without_specials")
+}
+.S3method("pull_terms_without_specials", "asreml", pull_terms_without_specials.asreml)
+.S3method("pull_terms_without_specials", "lmerMod", pull_terms_without_specials.lmerMod)
+
 
 #' @keywords internal
 target_vm_term_asreml <- function(model, target) {

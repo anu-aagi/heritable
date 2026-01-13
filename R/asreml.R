@@ -62,14 +62,14 @@ get_vc_g_asreml <- function(model, target) {
 #     Vd_g <- gpred$sed^2 # Variance of difference
 #     genotype_names <- gpred$pvals[[target]] # list of genotype names
 #     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-#     h2_Delta_BLUP_parameters(Gg, Vd_g)
+#     h2_Delta_parameters(Gg, Vd_g, type = type)
 #   } else if (type == "BLUE") {
 #     model_fix <- fit_counterpart_model.asreml(model, target)
 #     gpred <- predict(model_fix, classify = target, sed = TRUE, trace = FALSE)
 #     Vd_g <- gpred$sed^2 # Variance of difference
 #     genotype_names <- gpred$pvals[[target]] # list of genotype names
 #     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-#     h2_Delta_BLUE_parameters(Gg, Vd_g)
+#     h2_Delta_parameters(Gg, Vd_g, type = type)
 #   }
 # }
 
@@ -209,14 +209,14 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
     Vd_g <- gpred$sed^2 # Variance of difference
     genotype_names <- gpred$pvals[[target]] # list of genotype names
     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    H2_Delta_BLUP_parameters(vc_g, Vd_g)
+    H2_Delta_parameters(vc_g, Vd_g, type = type)
   } else if (type == "BLUE") {
     model_fix <- fit_counterpart_model.asreml(model, target)
     gpred <- predict(model_fix, classify = target, sed = TRUE, trace = FALSE)
     Vd_g <- gpred$sed^2 # Variance of difference
     genotype_names <- gpred$pvals[[target]] # list of genotype names
     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    H2_Delta_BLUE_parameters(vc_g, Vd_g)
+    H2_Delta_parameters(vc_g, Vd_g, type = type)
   }
 }
 

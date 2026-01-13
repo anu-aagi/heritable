@@ -8,7 +8,6 @@
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param options NULL by default, for internal checking of model object before calculations
-#' @aliases H2
 #' @usage
 # h2(model, target, method = c("Oakey", "Delta"), options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
