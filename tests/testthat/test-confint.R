@@ -5,7 +5,7 @@ library(asreml)
 library(dplyr)
 library(lme4)
 library(asremlPlus)
-# install.packages("C:/Users/yidid/Downloads/asreml_4.2.0.392.zip", repos = NULL, type = "win.binary")
+# install.packages("C:/Users/u1175076/Downloads/asreml_4.2.0.392.zip", repos = NULL, type = "win.binary")
 # library(asreml)
 # asreml.license.activate()
 lettuce_subset <- lettuce_phenotypes |>
