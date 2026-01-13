@@ -36,7 +36,7 @@ PEV_from_lme4 <- function(model) {
   # C12 <- t(X) %*% solve(R) %*% Z
   # C21 <- t(Z) %*% solve(R) %*% X
   # C22 <- t(Z) %*% solve(R) %*% Z + solve(G)
-
+  #
   # C <- rbind(
   #   cbind(C11, C12),
   #   cbind(C21, C22)
@@ -48,6 +48,7 @@ PEV_from_lme4 <- function(model) {
   #     MASS::ginv(C)
   #   }
   # )
+  # Cinv
 }
 
 #' @noRd

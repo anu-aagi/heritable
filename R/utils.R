@@ -26,7 +26,7 @@ pull_terms.lmerMod <- function(model) {
 
   ran_trms <- names(lme4::ranef(model))
   ran_trms_formula <-
-    stringr::str_extract(deparse1(model_formula), "(?<=\\().*(?=\\))")
+    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|[^|()]+(?=\\))")[[1]]
   fixed_trms <- setdiff(term_labels, ran_trms_formula)
 
   return(list(fixed = fixed_trms, random = ran_trms))
