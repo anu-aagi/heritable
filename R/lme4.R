@@ -16,25 +16,47 @@ PEV_from_lme4 <- function(model) {
   X <- as.matrix(lme4::getME(model, "X"))
   Z <- as.matrix(lme4::getME(model, "Z"))
 
-  C11 <- t(X) %*% solve(R) %*% X
-  C12 <- t(X) %*% solve(R) %*% Z
-  C21 <- t(Z) %*% solve(R) %*% X
-  C22 <- t(Z) %*% solve(R) %*% Z + solve(G)
+  V <- R + Z %*% G %*% t(Z)
+  Vinv <- solve(V)
+  P <- Vinv - Vinv %*% X %*% solve(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+  C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+  dimnames(C22) <- list(colnames(Z), colnames(Z))
 
-  C <- rbind(
-    cbind(C11, C12),
-    cbind(C21, C22)
-  )
-  solve(C)
+  as.matrix(C22)
+
+  # Ginv <-   Cinv <- tryCatch(
+  #   solve(G),
+  #   error = function(e) {
+  #     warning("Matrix inversion fails due to singularity, use pseudo-inverse.")
+  #     MASS::ginv(G)
+  #   }
+  # )
+  #
+  # C11 <- t(X) %*% solve(R) %*% X
+  # C12 <- t(X) %*% solve(R) %*% Z
+  # C21 <- t(Z) %*% solve(R) %*% X
+  # C22 <- t(Z) %*% solve(R) %*% Z + solve(G)
+
+  # C <- rbind(
+  #   cbind(C11, C12),
+  #   cbind(C21, C22)
+  # )
+  # Cinv <- tryCatch(
+  #   solve(C),
+  #   error = function(e) {
+  #     warning("Matrix inversion fails due to singularity, use pseudo-inverse.")
+  #     MASS::ginv(C)
+  #   }
+  # )
 }
 
 #' @noRd
 #' @keywords internal
-geno_components_from_lme4 <- function(model, target, C_inv) {
+geno_components_from_lme4 <- function(model, target, C22) {
   vc <- lme4::VarCorr(model)
   ngrps <- lme4::ngrps(model)
   gnames <- levels(model@flist[[target]])
-  C22_g <- C_inv[gnames, gnames]
+  C22_g <- C22[gnames, gnames]
   n_g <- ngrps[[target]]
   vc_g <- vc[[target]][1]
   list(n_g = n_g, vc_g = vc_g, C22_g = C22_g, gnames = gnames)
@@ -77,8 +99,8 @@ H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
     return(NA)
   }
 
-  C_inv <- PEV_from_lme4(model)
-  g <- geno_components_from_lme4(model, target, C_inv)
+  C22 <- PEV_from_lme4(model)
+  g <- geno_components_from_lme4(model, target, C22)
 
   one <- matrix(1, nrow = g$n_g, ncol = 1)
   P_mu <- diag(g$n_g, g$n_g) - one %*% t(one)
@@ -99,8 +121,8 @@ H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
     return(NA)
   }
 
-  C_inv <- PEV_from_lme4(model)
-  g <- geno_components_from_lme4(model, target, C_inv)
+  C22 <- PEV_from_lme4(model)
+  g <- geno_components_from_lme4(model, target, C22)
   Gg_inv <- diag(1 / g$vc_g, nrow = g$n_g, ncol = g$n_g)
 
   return(H2_Oakey_parameters(Gg_inv, g$C22_g))
@@ -208,8 +230,8 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
 
   initial_checks(model, target, options)
 
-  C_inv <- PEV_from_lme4(model)
-  g <- geno_components_from_lme4(model, target, C_inv)
+  C22 <- PEV_from_lme4(model)
+  g <- geno_components_from_lme4(model, target, C22)
 
   # Compute variance of difference from PEV
   Vd_g <- outer(

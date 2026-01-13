@@ -25,7 +25,9 @@ pull_terms.lmerMod <- function(model) {
   term_labels <- attr(terms(model_formula), "term.labels")
 
   ran_trms <- names(lme4::ranef(model))
-  fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
+  ran_trms_formula <-
+    stringr::str_extract(deparse1(model_formula), "(?<=\\().*(?=\\))")
+  fixed_trms <- setdiff(term_labels, ran_trms_formula)
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -232,6 +234,7 @@ fit_counterpart_model <- function(model, target = NULL) {
 print.heritable <- function(x, digits = getOption("digits"), ...) {
   attr(x, "model") <- NULL
   attr(x, "target") <- NULL
+  attr(x, "type") <- NULL
   print(unclass(x))
 }
 
