@@ -38,32 +38,31 @@ test_that("VanRadden GRM", {
   # lettuce_GRM_vanradden <- readRDS(file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
 
   #Hand calculate vanRadden
-  M <- as.matrix(lettuce_markers[,-1] + 1)
+  M <- as.matrix(lettuce_markers[, -1] + 1)
   N <- nrow(M)
   pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)
   pm <- pmin(pmax(pm, 1e-6), 1 - 1e-6) # guard against 0 or 1
   W <- sweep(M, 2, 2 * pm, "-")
   W <- sweep(W, 2, sqrt(2 * pm * (1 - pm)), "/")
-  G <- tcrossprod(W)/ ncol(M)
-  dimnames(G) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  G <- tcrossprod(W) / ncol(M)
+  Ginv <- MASS::ginv(G)
+  dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  attr(Ginv, "INVERSE") <- TRUE
 
-  # VanRadden is standardised by marker means
-  lettuce_GRM_vanradden |> head()
-  lettuce_GRM |> head()
-
-  # Genotypes in GRM? No missing values
-  setdiff(
-  lettuce_GRM_vanradden |> rownames() |> sort(),
-  lettuce_phenotypes |> subset(loc == "L2") |> pull(gen) |> unique() |> sort()
+  # Crashes on Fonti's MBP
+  asreml_model_gr_vr <- asreml::asreml(y ~ rep,
+                                       random = ~ vm(gen, Ginv),
+                                       data = lettuce_phenotypes |>
+                                         subset(loc == "L2")
   )
 
-  # Error in asreml::asreml(y ~ rep, random = ~vm(gen, G), data = subset(lettuce_phenotypes,  :
-  #Error   : Iteration failed; ifault: 2020
-  #  Warning :  Unexpected data when GRM diagonal element is ZERO
-  asreml_model_gr_vr <- asreml::asreml(y ~ rep,
-                        random=~ vm(gen, G),
-                        data = lettuce_phenotypes |>
-                          subset(loc == "L2"))
+  matrixcalc::is.singular.matrix(Ginv)
+  det(Ginv)
+  qr(Ginv)$rank < ncol(Ginv)
+
+  saveRDS(asreml_model_gr_vr, test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
+
+  h2(asreml_model_gr_vr, "gen")
 })
 
 test_that("Refactoring delta parameter functions works", {
