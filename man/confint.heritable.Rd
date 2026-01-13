@@ -8,9 +8,10 @@
   heritable,
   B = 100,
   seed = NULL,
-  resample_u = TRUE,
+  random_effect = c("resample", "fix"),
   level = 0.95,
   type = c("basic", "norm", "perc"),
+  return_model = TRUE,
   ...
 )
 }
@@ -23,12 +24,15 @@ as an attribute.}
 
 \item{seed}{Optional random seed.}
 
-\item{resample_u}{Logical. Whether to resample random effects in the bootstrap.}
+\item{random_effect}{Character. Indicate whether to resample random
+effect; one of \code{"resample"} or \code{"fix"}.}
 
 \item{level}{Confidence level.}
 
 \item{type}{Character. Bootstrap interval type; one of \code{"basic"},
 \code{"norm"}, or \code{"perc"}.}
+
+\item{return_model}{Logical. Whether to return to the \code{boot} object.}
 
 \item{...}{Additional arguments passed to the bootstrap routine.}
 }

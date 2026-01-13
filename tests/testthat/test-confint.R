@@ -1,10 +1,10 @@
 # Setup
 devtools::document()
-devtools::load_all()
 library(asreml)
 library(dplyr)
 library(lme4)
 library(asremlPlus)
+library(ggplot2)
 # install.packages("C:/Users/yidid/Downloads/asreml_4.2.0.392.zip", repos = NULL, type = "win.binary")
 # library(asreml)
 # asreml.license.activate()
@@ -13,8 +13,19 @@ lettuce_subset <- lettuce_phenotypes |>
 
 # Test for lme4
 lettuce_lme4 <- lmer(y ~ rep + (1 | gen), data = lettuce_subset)
-H2_values_lme4 <- H2(lettuce_lme4, "gen", c("Cullis", "Standard"))
-confint(H2_values_lme4)
+boot.obj <- lme4::bootMer(lettuce_lme4,
+                          FUN = function(fit) fit@beta,
+                          nsim = 2000, seed = 2,
+                          use.u = TRUE
+)
+boot::boot.ci(boot.obj, type = "basic")
+
+H2_values_lme4 <- H2(lettuce_lme4, "gen", c("Standard")) # H2
+
+ci_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1)
+ci_fix_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1, random_effect = "fix")
+attr(ci_lme4 , "boot_mod") %>% boot::boot.ci(type = "basic")
+hist(attr(ci_lme4 , "boot_mod")$t)
 
 # Test for asreml
 N <- nrow(lettuce_subset)
@@ -25,9 +36,30 @@ lettuce_asreml <- asreml(
   trace = FALSE,
 )
 get_fixed_fit_asreml(lettuce_asreml)
-bootstrap_asreml(lettuce_asreml, function(fit) fit$sigma2, nsim = 10, use.u = TRUE)
-H2_values_asreml <- H2(lettuce_asreml, "gen", c("Cullis", "Standard"))
-confint(H2_values_asreml)
+boot.obj <- bootstrap_asreml(lettuce_asreml, function(fit) fit$sigma2, nsim = 10, use.u = TRUE)
+
+H2_values_asreml <- H2(lettuce_asreml, "gen", c("Standard")) # H2
+
+ci_asreml <- confint(H2_values_asreml, B = 1000, seed = 1)
+ci_fix_asreml <- confint(H2_values_asreml, B = 1000, seed = 1, random_effect = "fix")
+attr(ci_asreml, "boot_mod") %>% boot::boot.ci(type = "basic")
+hist(attr(ci_asreml , "boot_mod")$t)
+
+# Compare results
+plot_df <- data.frame(lme4_resample =  attr(ci_lme4, "boot_mod")$t %>% drop,
+                      asreml_resample = attr(ci_asreml, "boot_mod")$t %>% drop,
+                      lme4_fix = attr(ci_fix_lme4, "boot_mod")$t %>% drop,
+                      asreml_fix = attr(ci_fix_asreml, "boot_mod")$t %>% drop)
+plot_df <- reshape2::melt(plot_df)
+
+ggplot(plot_df) + geom_boxplot(aes(value, variable, fill = variable)) +
+  scale_fill_discrete("")+
+  theme_classic(base_size = 13)+
+  geom_vline(xintercept = H2_values_asreml, color = "red", linetype = "dashed")+
+  labs(x = "Bootstraped H2", y = "")
+
+######################## bootstrap_asreml checks ###############################
+
 
 # Model 1
 pseudo_var1 <- sample(c("A","B"), size = N, replace = T) %>% as.factor

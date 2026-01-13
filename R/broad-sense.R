@@ -54,9 +54,10 @@
 #' }
 #' @export
 H2 <- function(model,
-               target = NULL,
+               target,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-               options = NULL) {
+               options = NULL
+               ) {
   UseMethod("H2")
 }
 
@@ -64,7 +65,7 @@ H2 <- function(model,
 #' @noRd
 #' @export
 H2.default <- function(model,
-                       target = NULL,
+                       target,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
                        options = NULL
                        ) {
@@ -87,8 +88,9 @@ H2.default <- function(model,
   # Set names and class
   H2_values <- stats::setNames(H2_values, method)
   structure(H2_values,
-    class = c("heritable", "broad_sense", class(H2_values)),
-    model = model, target = target
+    class = c("heritable", class(H2_values)),
+    model = model, target = target,
+    type = "broad_sense"
   )
 }
 

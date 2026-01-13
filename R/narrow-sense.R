@@ -40,7 +40,10 @@
 #' @noRd
 #' @keywords internal
 
-h2 <- function(model, target, method = c("Oakey", "Delta"), options) {
+h2 <- function(model,
+               target,
+               method = c("Oakey", "Delta"),
+               options = NULL) {
   UseMethod("h2")
 }
 
@@ -48,12 +51,12 @@ h2 <- function(model, target, method = c("Oakey", "Delta"), options) {
 #' @noRd
 h2.default <- function(
     model,
-    target = NULL,
+    target,
     method = c("Oakey", "Delta"),
-    ...) {
+    option = NULL) {
   method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = NULL)
+  initial_checks(model, target, options = option)
 
   h2_values <- sapply(method, function(m) {
     switch(m,
@@ -71,8 +74,9 @@ h2.default <- function(
   # Set names and class
   h2_values <- stats::setNames(h2_values, method)
   structure(h2_values,
-            class = c("heritable", "narrow_sense", class(h2_values)),
-            model = model, target = target
+            class = c("heritable", class(h2_values)),
+            model = model, target = target,
+            type = "narrow_sense"
   )
 }
 

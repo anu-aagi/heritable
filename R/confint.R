@@ -10,10 +10,12 @@
 #' as an attribute.
 #' @param B Integer. Number of bootstrap replicates.
 #' @param seed Optional random seed.
-#' @param resample_u Logical. Whether to resample random effects in the bootstrap.
+#' @param random_effect Character. Indicate whether to resample random
+#' effect; one of \code{"resample"} or \code{"fix"}.
 #' @param level Confidence level.
 #' @param type Character. Bootstrap interval type; one of \code{"basic"},
 #' \code{"norm"}, or \code{"perc"}.
+#' @param return_model Logical. Whether to return to the \code{boot} object.
 #' @param ... Additional arguments passed to the bootstrap routine.
 #'
 #' @return
@@ -37,20 +39,29 @@
 confint.heritable <- function(heritable,
                               B = 100,
                               seed = NULL,
-                              resample_u = TRUE,
+                              random_effect = c("resample", "fix"),
                               level = 0.95,
                               type = c("basic", "norm", "perc"),
+                              return_model = TRUE,
                               ...) {
   # basic: bias corrected percentile interval
   # norm: bias corrected normal interval
   # perc: percentile interval
   type <- match.arg(type)
+  random_effect <- match.arg(random_effect)
+
+  if(random_effect == "fix"){
+    resample_u <- FALSE
+  } else {
+    resample_u <- TRUE
+  }
 
   method <- names(heritable)
   target <- attr(heritable, "target")
   model <- attr(heritable, "model") # Get the model
+  h2.type <- attr(heritable, "type")  # Get the heritability type
 
-  if (inherits(heritable, "broad_sense")) {
+  if (h2.type == "broad_sense") {
     Fun_use <- function(x) {
       heritable::H2(x, target, method, options = list(check = FALSE))
     }
@@ -61,22 +72,23 @@ confint.heritable <- function(heritable,
   }
 
   if (inherits(model, "lmerMod")) {
-    H2.boot <- lme4::bootMer(model,
+    boot_mod <- lme4::bootMer(model,
       FUN = Fun_use, nsim = B, seed = seed,
-      use.u = resample_u, ...
+      use.u = !resample_u, ...
     )
-    ci <- confint(H2.boot, level = level, type = type)
+    ci <- confint(boot_mod, level = level, type = type)
   } else {
-    H2.boot <- bootstrap_asreml(model,
+    boot_mod <- bootstrap_asreml(model,
       FUN = Fun_use, nsim = B, seed = seed,
-      use.u = resample_u, ...
+      use.u = !resample_u, ...
     )
-    ci <- confint(H2.boot, level = level, type = type)
+    ci <- confint(boot_mod, level = level, type = type)
     ci <- matrix(ci,
                  nrow = length(method),
                  dimnames = list(method, colnames(ci))
           )
   }
+  attr(ci, "boot_mod") <- boot_mod
   ci
 }
 
@@ -146,7 +158,7 @@ bootstrap_asreml <- function(model,
   response <- all.vars(fixed_formula)[resp_idx]
 
   # Get the linear predictor of fixed effect.
-  if (use.u) {
+  if (!use.u) {
     yhat <- get_fixed_fit_asreml(model)
     V <- tryCatch(
       asremlPlus::estimateV.asreml(model, which.matrix = "V"),
@@ -161,7 +173,7 @@ bootstrap_asreml <- function(model,
     }
   }
 
-  if (!use.u) {
+  if (use.u) {
     yhat <- model$linear.predictors
     V <- asremlPlus::estimateV.asreml(model, which.matrix = "R")
   }
