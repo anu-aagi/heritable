@@ -3,6 +3,8 @@ test_that("OAKEY heritability estimation works", {
   skip_on_cran()
   skip_on_ci()
 
+  require(asreml)
+
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
   lettuce_asreml <- readRDS(test_path("fixtures/lettuce_asreml.rds"))
 

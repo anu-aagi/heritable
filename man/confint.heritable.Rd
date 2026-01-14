@@ -9,7 +9,7 @@
   parm = NULL,
   level = 0.95,
   B = 100,
-  random_effect = c("resample", "fix"),
+  random_effect = c("resample", "conditional"),
   type = c("basic", "norm", "perc"),
   return_model = TRUE,
   seed = NULL,
@@ -29,8 +29,11 @@ If missing, all parameters are considered.}
 
 \item{B}{Integer. Number of bootstrap replicates.}
 
-\item{random_effect}{Character. Indicate whether to resample random
-effect; one of \code{"resample"} or \code{"fix"}.}
+\item{random_effect}{Character. Strategy for handling random effects.
+\describe{
+\item{\code{"resample"}}{Resample random effects to propagate uncertainty.}
+\item{\code{"conditional"}}{Condition on estimated random effects.}
+}}
 
 \item{type}{Character. Bootstrap interval type; one of \code{"basic"},
 \code{"norm"}, or \code{"perc"}.}

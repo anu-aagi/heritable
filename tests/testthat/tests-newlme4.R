@@ -1,3 +1,7 @@
+
+test_that("Confint works",{
+  skip()
+
 devtools::document()
 require(stringr)
 lettuce_subset <- lettuce_phenotypes |>
@@ -76,3 +80,4 @@ H2(lettuce_lme4, target = "gen") # Correct
 # formula <- y ~ x * z * w + (1|x) + (1|z)
 # grep("x",deparse1(formula))
 # stringr::str_extract_all(deparse1(formula), "(?<=\\()[^|()]+\\|[^|()]+(?=\\))")
+})

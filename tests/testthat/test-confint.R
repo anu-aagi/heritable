@@ -25,7 +25,7 @@ lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_values_lme4 <- H2(lettuce_lme4, "gen", c("Standard")) # H2
 
 ci_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1)
-ci_fix_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1, random_effect = "fix")
+ci_fix_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1, random_effect = "conditional")
 
 # attr(ci_lme4 , "boot_mod") %>% boot::boot.ci(type = "basic")
 # hist(attr(ci_lme4 , "boot_mod")$t)
@@ -45,7 +45,7 @@ lettuce_asreml <- asreml(
 H2_values_asreml <- H2(lettuce_asreml, "gen", c("Standard")) # H2
 
 ci_asreml <- confint(H2_values_asreml, B = 1000, seed = 1)
-ci_fix_asreml <- confint(H2_values_asreml, B = 1000, seed = 1, random_effect = "fix")
+ci_fix_asreml <- confint(H2_values_asreml, B = 1000, seed = 1, random_effect = "conditional")
 # attr(ci_asreml, "boot_mod") %>% boot::boot.ci(type = "basic")
 # hist(attr(ci_asreml , "boot_mod")$t)
 

@@ -13,8 +13,11 @@
 #' If missing, all parameters are considered.
 #' @param level Confidence level.
 #' @param B Integer. Number of bootstrap replicates.
-#' @param random_effect Character. Indicate whether to resample random
-#' effect; one of `"resample"` or `"fix"`.
+#' @param random_effect Character. Strategy for handling random effects.
+#'   \describe{
+#'     \item{`"resample"`}{Resample random effects to propagate uncertainty.}
+#'     \item{`"conditional"`}{Condition on estimated random effects.}
+#'   }
 #' @param type Character. Bootstrap interval type; one of `"basic"`,
 #' `"norm"`, or `"perc"`.
 #' @param return_model Logical. Whether to return to the `boot` object.
@@ -45,7 +48,7 @@ confint.heritable <- function(object,
                               parm = NULL,
                               level = 0.95,
                               B = 100,
-                              random_effect = c("resample", "fix"),
+                              random_effect = c("resample", "conditional"),
                               type = c("basic", "norm", "perc"),
                               return_model = TRUE,
                               seed = NULL,
@@ -56,7 +59,7 @@ confint.heritable <- function(object,
   type <- match.arg(type)
   random_effect <- match.arg(random_effect)
 
-  if(random_effect == "fix"){
+  if(random_effect == "conditional"){
     resample_u <- FALSE
   } else {
     resample_u <- TRUE
