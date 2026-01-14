@@ -193,7 +193,7 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
   # check whether there is only a single RE
   if (check_single_random_effect(trms)) {
     # Fit a lm instead
-    fixed_formula <- lme4::nobars(formula(model))
+    fixed_formula <- reformulas::nobars(formula(model))
     fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
     # Pull out data
     model_data <- model@frame %||% model.frame(model)

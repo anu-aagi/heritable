@@ -94,7 +94,7 @@ h2.default <- function(
 #'
 #' See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
 #' @usage
-#' h2_Oakey(model, target, options)
+#' h2_Oakey(model, target, source, options)
 #' H2_Oakey(model, target, options)
 #' @returns Numeric
 #' @references
@@ -163,6 +163,8 @@ h2_Delta.default <- function(model,
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
+  if(check_GRM_exists(model, target, source)){
+
   H2D_ij <- h2_Delta_pairwise(model, target, type = type)
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
@@ -170,7 +172,7 @@ h2_Delta.default <- function(model,
          "arithmetic" = mean(delta_values),
          "harmonic" = length(delta_values) / sum(1 / delta_values)
   )
-
+}
 
 }
 
@@ -203,7 +205,7 @@ h2_Delta.default <- function(model,
 #' @returns Named list, with each element containing a named numeric vector
 #' @noRd
 
-h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
+h2_Delta_by_genotype <- function(model, target, source, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_by_genotype")
 }
 

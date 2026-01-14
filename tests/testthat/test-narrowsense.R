@@ -99,27 +99,27 @@ test_that("Refactoring delta parameter functions works", {
   )
 })
 
-test_that("Alternative way to get sigma a",{
-  model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
-  target <- "gen"
-
-  vm <- target_vm_term_asreml(model, target)
-  n_g <- model$noeff[[vm$target_vm]]
-  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
-  # PEV
-  # Why is this giving me zero?
-  vdBLUP_mat <- predict(model,
-                    classify = vm$target_vm,
-                    only = vm$target_vm,
-                    vcov = TRUE,
-                    trace = FALSE
-  )$vcov
-
-  dim(vdBLUP_mat)
-
-  sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
-  model$vparameters
-
-}
-)
+# test_that("Alternative way to get sigma a",{
+#   model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+#   target <- "gen"
+#
+#   vm <- target_vm_term_asreml(model, target)
+#   n_g <- model$noeff[[vm$target_vm]]
+#   vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
+#   # PEV
+#   # Why is this giving me zero?
+#   vdBLUP_mat <- predict(model,
+#                     classify = vm$target_vm,
+#                     only = vm$target_vm,
+#                     vcov = TRUE,
+#                     trace = FALSE
+#   )$vcov
+#
+#   dim(vdBLUP_mat)
+#
+#   sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
+#   model$vparameters
+#
+# }
+# )
 

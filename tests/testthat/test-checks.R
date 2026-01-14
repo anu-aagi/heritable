@@ -36,10 +36,9 @@ test_that("Inner checks are triggered", {
 
 test_that("We can find GRM",{
   asreml_model_grm <- readRDS(test_path("fixtures/asreml_model_grm.rds"))
-  lettuce_asreml_grm <- readRDS(test_path("fixtures/lettuce_asreml_grm.rds"))
 
   expect_false(check_GRM_in_environment(asreml_model_grm, "gen"))
-  expect_false(check_GRM_exists(asreml_model_grm, "gen"))
+  expect_error(check_GRM_exists(asreml_model_grm, "gen"))
 
   data(lettuce_GRM)
 

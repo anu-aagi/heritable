@@ -42,22 +42,22 @@ h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL)
 
   if(check_GRM_exists(model, target, source)){
     vm <- target_vm_term_asreml(model, target)
-  n_g <- model$noeff[[vm$target_vm]]
-  Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
-  vcov_g <- predict(model,
-    classify = target,
-    only = target,
-    vcov = TRUE,
-    trace = FALSE
-  )$vcov
+    n_g <- model$noeff[[vm$target_vm]]
+    Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
+    vcov_g <- predict(model,
+                      classify = target,
+                      only = target,
+                      vcov = TRUE,
+                      trace = FALSE
+    )$vcov
 
 
-  H2_Oakey_parameters(Gg_inv, vcov_g)
+    H2_Oakey_parameters(Gg_inv, vcov_g)
   }
 }
 
 #'@export
-h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
+h2_Delta_pairwise.asreml <- function(model, target = NULL, source, type = NULL, options = NULL) {
   initial_checks(model, target, options)
 
   if(check_GRM_exists(model, target, source)){

@@ -2,6 +2,7 @@
 % Please edit documentation in R/narrow-sense.R
 \name{h2}
 \alias{h2}
+\alias{H2}
 \title{Calculate broad-sense or narrow sense heritability from model object}
 \usage{
 h2(model, target, method = c("Oakey", "Delta"), options)
@@ -13,6 +14,8 @@ H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{method}{Character vector of name of method to calculate heritability. See details.}
+
+\item{source}{The known inverse or relationship matrix used in \code{model} fitted using \code{asreml::vm()}}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 }
