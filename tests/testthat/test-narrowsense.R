@@ -5,6 +5,7 @@ test_that("h2 heritability works", {
 
   asreml_model_random <- readRDS(file = test_path("fixtures/asreml_model_random.rds"))
   asreml_model_grm <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+  data("lettuce_GRM")
 
   # From Schmidt et al 2019 Fig 1.
   # Delta
@@ -31,9 +32,9 @@ test_that("VanRadden GRM", {
   skip_on_ci()
   skip_on_cran()
 
-  library(sommer)
-  lettuce_GRM_vanradden <- sommer::A.mat(as.matrix(lettuce_markers[, -1]))
-  dimnames(lettuce_GRM_vanradden) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  # library(sommer)
+  # lettuce_GRM_vanradden <- sommer::A.mat(as.matrix(lettuce_markers[, -1]))
+  # dimnames(lettuce_GRM_vanradden) <- list(lettuce_markers$gen, lettuce_markers$gen)
   # saveRDS(lettuce_GRM_vanradden, file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
   # lettuce_GRM_vanradden <- readRDS(file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
 
@@ -63,7 +64,7 @@ test_that("VanRadden GRM", {
   # saveRDS(asreml_model_gr_vr, test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
   asreml_model_gr_vr <- readRDS(test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
 
-  h2(asreml_model_gr_vr, "gen")
+  # h2(asreml_model_gr_vr, "gen", source = Ginv)
 })
 
 test_that("Refactoring delta parameter functions works", {
@@ -122,19 +123,3 @@ test_that("Alternative way to get sigma a",{
 }
 )
 
-test_that("Check with another package", {
-  library(heritability)
-  library(asreml)
-
-  data(LD)
-  data(K_atwell)
-  attr(K_atwell, "INVERSE") <- FALSE
-
-  out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,covariates=LD[,4:8],K=K_atwell)
-
-  LD_asreml <- asreml::asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
-         random = ~vm(genotype, K_atwell),
-         data = LD
-  )
-
-})

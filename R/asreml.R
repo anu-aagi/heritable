@@ -40,9 +40,8 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL) {
   initial_checks(model, target, options)
 
-
-
-  vm <- target_vm_term_asreml(model, target)
+  if(check_GRM_exists(model, target, source)){
+    vm <- target_vm_term_asreml(model, target)
   n_g <- model$noeff[[vm$target_vm]]
   Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
   vcov_g <- predict(model,
@@ -54,11 +53,14 @@ h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL)
 
 
   H2_Oakey_parameters(Gg_inv, vcov_g)
+  }
 }
 
 #'@export
 h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
   initial_checks(model, target, options)
+
+  if(check_GRM_exists(model, target, source)){
 
   vm <- target_vm_term_asreml(model, target)
   n_g <- model$noeff[[vm$target_vm]]
@@ -77,6 +79,7 @@ h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
     genotype_names <- gpred$pvals[[target]] # list of genotype names
     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
     h2_Delta_BLUE_parameters(Gg, Vd_g)
+  }
   }
 }
 
