@@ -7,8 +7,9 @@
 #' @param model Model object of class `lmerMod/merMod` or `asreml`
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
+#' @param source The known inverse or relationship matrix used in `model` fitted using `asreml::vm()`
 #' @param options NULL by default, for internal checking of model object before calculations
-# @aliases H2
+#' @aliases H2
 #' @usage
 #' h2(model, target, method = c("Oakey", "Delta"), options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
@@ -37,26 +38,24 @@
 #' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 #' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
-#' @noRd
-#' @keywords internal
-
-h2 <- function(model,
-               target,
-               method = c("Oakey", "Delta"),
-               options = NULL) {
+#' @export
+h2 <- function(model, target, method = c("Oakey", "Delta"), source, options) {
   UseMethod("h2")
 }
 
-#' @keywords internal
 #' @noRd
+#' @export
 h2.default <- function(
     model,
     target,
     method = c("Oakey", "Delta"),
-    option = NULL) {
+    source = NULL,
+    ...) {
   method <- match.arg(method, several.ok = TRUE)
 
   initial_checks(model, target, options = option)
+
+  check_GRM_exists(model, target, source)
 
   h2_values <- sapply(method, function(m) {
     switch(m,
@@ -84,8 +83,8 @@ h2.default <- function(
 #' @description
 #' Compute heritability for genotype means using the variance–covariance matrix of the genotype BLUPs
 #' as described by Oakey et al. (2006).
-# @inheritParams h2
-# @aliases H2_Oakey
+#' @inheritParams h2
+#' @aliases H2_Oakey
 #' @details
 #' \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
 #' where:
@@ -96,14 +95,13 @@ h2.default <- function(
 #'
 #' See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
 #' @usage
-#' h2_Oakey(model, target, options)
+#' h2_Oakey(model, target, source, options)
 #' H2_Oakey(model, target, options)
 #' @returns Numeric
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
-#' @keywords internal
 #' @noRd
-h2_Oakey <- function(model, target, options) {
+h2_Oakey <- function(model, target, source, options) {
   UseMethod("h2_Oakey")
 }
 
@@ -113,8 +111,8 @@ h2_Oakey <- function(model, target, options) {
 #' calculates heritability using "entry-differences". Entry here is
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `h2/H2_Delta` and it's variants
-# @inheritParams h2
-# @aliases H2_Delta
+#' @inheritParams h2
+#' @aliases H2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
 #' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
@@ -146,24 +144,27 @@ h2_Oakey <- function(model, target, options) {
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @noRd
-#' @keywords internal
 h2_Delta <- function(model,
                      target,
+                     source,
                      type = c("BLUP", "BLUE"),
                      aggregate = c("arithmetic", "harmonic"),
                      options) {
   UseMethod("h2_Delta")
 }
 
-#' @keywords internal
 #' @noRd
+#' @export
 h2_Delta.default <- function(model,
                              target = NULL,
+                             source = NULL,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
                              options = NULL) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
+
+  if(check_GRM_exists(model, target, source)){
 
   H2D_ij <- h2_Delta_pairwise(model, target, type = type)
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
@@ -172,7 +173,7 @@ h2_Delta.default <- function(model,
          "arithmetic" = mean(delta_values),
          "harmonic" = length(delta_values) / sum(1 / delta_values)
   )
-
+}
 
 }
 
@@ -204,15 +205,16 @@ h2_Delta.default <- function(model,
 #' @seealso [`h2_Delta()`], [`H2_Delta()`], [`h2_Delta_pairwise()`], [`H2_Delta_pairwise()`]
 #' @returns Named list, with each element containing a named numeric vector
 #' @noRd
-#' @keywords internal
-h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
+
+h2_Delta_by_genotype <- function(model, target, source, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_by_genotype")
 }
 
-#' @keywords internal
 #' @noRd
+#' @export
 h2_Delta_by_genotype.default <- function(model,
                                          target = NULL,
+                                         source,
                                          type = c("BLUP", "BLUE"),
                                          options = NULL) {
   type <- match.arg(type)
@@ -246,7 +248,7 @@ h2_Delta_by_genotype.default <- function(model,
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta()`], [`H2_Delta()`]
 #' @noRd
-#' @keywords internal
-h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
+
+h2_Delta_pairwise <- function(model, target, source, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")
 }

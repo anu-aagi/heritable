@@ -6,72 +6,82 @@ get_vc_g_asreml <- function(model, target) {
   model$vparameters[[target]] * model$sigma2
 }
 
-# h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
-#
-#   initial_checks(model, target, options)
-#
-#   # Check if target is random or fixed
-#   if (!check_target_random(model, target)) {
-#     return(NA)
-#   }
-#
-#   vm <- target_vm_term_asreml(model, target)
-#
-#   n_g <-  model$noeff[[vm$target_vm]]
-#   vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
-#
-#
-#   vdBLUP_mat <- predict(model,
-#                                        classify = target,
-#                                        only = target,
-#                                        sed = TRUE,
-#                                        trace = FALSE,
-#   )$sed^2
-#
-#   vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
-#
-#   H2_Cullis_parameters(vd_BLUP_avg, vc_g)
-# }
+#' @noRd
+#' @keywords internal
+#'@export
+h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
-# h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
-#   initial_checks(model, target, options)
-#
-#   vm <- target_vm_term_asreml(model, target)
-#   n_g <- model$noeff[[vm$target_vm]]
-#   Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
-#   vcov_g <- predict(model,
-#     classify = target,
-#     only = target,
-#     vcov = TRUE,
-#     trace = FALSE
-#   )$vcov
-#
-#
-#   H2_Oakey_parameters(Gg_inv, vcov_g)
-# }
+  initial_checks(model, target, options)
 
-# h2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
-#   initial_checks(model, target, options)
-#
-#   vm <- target_vm_term_asreml(model, target)
-#   n_g <- model$noeff[[vm$target_vm]]
-#   Gg <- model$vparameters[[vm$target_vm]] * model$sigma2 * solve(vm$GRMinv)
-#
-#   if (type == "BLUP") {
-#     gpred <- predict(model, classify = target, sed = TRUE, trace = FALSE)
-#     Vd_g <- gpred$sed^2 # Variance of difference
-#     genotype_names <- gpred$pvals[[target]] # list of genotype names
-#     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-#     h2_Delta_parameters(Gg, Vd_g, type = type)
-#   } else if (type == "BLUE") {
-#     model_fix <- fit_counterpart_model.asreml(model, target)
-#     gpred <- predict(model_fix, classify = target, sed = TRUE, trace = FALSE)
-#     Vd_g <- gpred$sed^2 # Variance of difference
-#     genotype_names <- gpred$pvals[[target]] # list of genotype names
-#     dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-#     h2_Delta_parameters(Gg, Vd_g, type = type)
-#   }
-# }
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  vm <- target_vm_term_asreml(model, target)
+
+  n_g <-  model$noeff[[vm$target_vm]]
+  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
+
+
+  vdBLUP_mat <- predict(model,
+                                       classify = target,
+                                       only = target,
+                                       sed = TRUE,
+                                       trace = FALSE,
+  )$sed^2
+
+  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
+
+  H2_Cullis_parameters(vd_BLUP_avg, vc_g)
+}
+
+#'@export
+h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL) {
+  initial_checks(model, target, options)
+
+  if(check_GRM_exists(model, target, source)){
+    vm <- target_vm_term_asreml(model, target)
+    n_g <- model$noeff[[vm$target_vm]]
+    Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
+    vcov_g <- predict(model,
+                      classify = target,
+                      only = target,
+                      vcov = TRUE,
+                      trace = FALSE
+    )$vcov
+
+
+    H2_Oakey_parameters(Gg_inv, vcov_g)
+  }
+}
+
+#'@export
+h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type = NULL, options = NULL) {
+  initial_checks(model, target, options)
+
+  if(check_GRM_exists(model, target, source)){
+
+  vm <- target_vm_term_asreml(model, target)
+  n_g <- model$noeff[[vm$target_vm]]
+  Gg <- model$vparameters[[vm$target_vm]] * model$sigma2 * solve(vm$GRMinv)
+
+  if (type == "BLUP") {
+    gpred <- predict(model, classify = target, sed = TRUE, trace = FALSE)
+    Vd_g <- gpred$sed^2 # Variance of difference
+    genotype_names <- gpred$pvals[[target]] # list of genotype names
+    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+    h2_Delta_BLUP_parameters(Gg, Vd_g)
+  } else if (type == "BLUE") {
+    model_fix <- fit_counterpart_model.asreml(model, target)
+    gpred <- predict(model_fix, classify = target, sed = TRUE, trace = FALSE)
+    Vd_g <- gpred$sed^2 # Variance of difference
+    genotype_names <- gpred$pvals[[target]] # list of genotype names
+    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
+    h2_Delta_BLUE_parameters(Gg, Vd_g)
+  }
+  }
+}
 
 #' Calculate Cullis's heritability from asreml model
 #' @export

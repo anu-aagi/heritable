@@ -19,6 +19,7 @@ Imports:
     emmeans,
     Matrix,
     methods,
+    reformulas,
     stringr,
     vctrs
 Suggests: 
