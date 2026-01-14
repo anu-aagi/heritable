@@ -1,5 +1,4 @@
 # Setup
-# devtools::document()
 # install.packages("C:/Users/yidid/Downloads/asreml_4.2.0.392.zip", repos = NULL, type = "win.binary")
 # library(asreml)
 # asreml.license.activate()

@@ -2,7 +2,6 @@
 test_that("Confint works",{
   skip()
 
-devtools::document()
 require(stringr)
 lettuce_subset <- lettuce_phenotypes |>
   dplyr::filter(loc == "L2")
