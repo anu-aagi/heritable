@@ -8,10 +8,9 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test
 coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
+[![CRAN status](https://www.r-pkg.org/badges/version/heritable)](https://CRAN.R-project.org/package=heritable)
 <!-- badges: end -->
 
 `heritable` is to be the one-stop shop for heritability calculations in
