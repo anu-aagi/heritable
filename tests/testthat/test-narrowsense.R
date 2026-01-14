@@ -49,18 +49,19 @@ test_that("VanRadden GRM", {
   dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
   attr(Ginv, "INVERSE") <- TRUE
 
-  # Crashes on Fonti's MBP
-  asreml_model_gr_vr <- asreml::asreml(y ~ rep,
-                                       random = ~ vm(gen, Ginv),
-                                       data = lettuce_phenotypes |>
-                                         subset(loc == "L2")
-  )
-
-  matrixcalc::is.singular.matrix(Ginv)
-  det(Ginv)
-  qr(Ginv)$rank < ncol(Ginv)
-
-  saveRDS(asreml_model_gr_vr, test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
+  # # Crashes on Fonti's MBP
+  # asreml_model_gr_vr <- asreml::asreml(y ~ rep,
+  #                                      random = ~ vm(gen, Ginv),
+  #                                      data = lettuce_phenotypes |>
+  #                                        subset(loc == "L2")
+  # )
+  #
+  # matrixcalc::is.singular.matrix(Ginv)
+  # det(Ginv)
+  # qr(Ginv)$rank < ncol(Ginv)
+  #
+  # saveRDS(asreml_model_gr_vr, test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
+  asreml_model_gr_vr <- readRDS(test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
 
   h2(asreml_model_gr_vr, "gen")
 })
@@ -107,15 +108,33 @@ test_that("Alternative way to get sigma a",{
   # PEV
   # Why is this giving me zero?
   vdBLUP_mat <- predict(model,
-                    classify = target,
-                    only = target,
+                    classify = vm$target_vm,
+                    only = vm$target_vm,
                     vcov = TRUE,
                     trace = FALSE
-  )$sed^2
+  )$vcov
 
   dim(vdBLUP_mat)
 
-  sigma_a_fernando_gonzales <- vc_g + ( diag(vdBLUP_mat) / n)
+  sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
+  model$vparameters
 
 }
 )
+
+test_that("Check with another package", {
+  library(heritability)
+  library(asreml)
+
+  data(LD)
+  data(K_atwell)
+  attr(K_atwell, "INVERSE") <- FALSE
+
+  out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,covariates=LD[,4:8],K=K_atwell)
+
+  LD_asreml <- asreml::asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
+         random = ~vm(genotype, K_atwell),
+         data = LD
+  )
+
+})

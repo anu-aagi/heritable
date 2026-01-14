@@ -108,11 +108,11 @@ target_vm_term_asreml <- function(model, target) {
       GRM_source <- get(name_GRM, envir = env)
       if (is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
         GRMinv <- solve(sp2Matrix(GRM_source))
-      } else {
-        GRMinv <- solve(GRM_source)
       }
       if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
         GRMinv <- GRM_source
+      } else {
+        GRMinv <- solve(GRM_source)
       }
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")

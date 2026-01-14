@@ -44,8 +44,8 @@ h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
   n_g <- model$noeff[[vm$target_vm]]
   Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
   vcov_g <- predict(model,
-    classify = target,
-    only = target,
+    classify = vm$target_vm,
+    only = vm$target_vm,
     vcov = TRUE,
     trace = FALSE
   )$vcov
