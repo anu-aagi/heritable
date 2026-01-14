@@ -123,3 +123,25 @@ test_that("Refactoring delta parameter functions works", {
 # }
 # )
 
+test_that("Try another package",{
+  install.packages("heritabilty")
+  library(heritability)
+
+  data(LD)
+  data(K_atwell)
+  ?K_atwell
+
+  # Heritability estimation for all observations:
+  out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,
+                  covariates=LD[,4:8],K=K_atwell)
+
+  out$h2
+
+  LD_fit <- asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
+         random = ~vm(genotype, K_atwell),
+         data = LD)
+
+
+
+})
+
