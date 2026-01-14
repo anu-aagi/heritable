@@ -55,9 +55,10 @@
 #' }
 #' @export
 H2 <- function(model,
-               target = NULL,
+               target,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-               options = NULL) {
+               options = NULL
+               ) {
   UseMethod("H2")
 }
 
@@ -65,13 +66,13 @@ H2 <- function(model,
 #' @noRd
 #' @export
 H2.default <- function(model,
-                       target = NULL,
+                       target,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       options
+                       options = NULL
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = NULL)
+  initial_checks(model, target, options = options)
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
@@ -89,7 +90,8 @@ H2.default <- function(model,
   H2_values <- stats::setNames(H2_values, method)
   structure(H2_values,
     class = c("heritable", class(H2_values)),
-    model = model, target = target
+    model = model, target = target,
+    type = "broad_sense"
   )
 }
 

@@ -47,13 +47,13 @@ h2 <- function(model, target, method = c("Oakey", "Delta"), source, options) {
 #' @export
 h2.default <- function(
     model,
-    target = NULL,
+    target,
     method = c("Oakey", "Delta"),
     source = NULL,
     ...) {
   method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = NULL)
+  initial_checks(model, target, options = option)
 
   check_GRM_exists(model, target, source)
 
@@ -74,7 +74,8 @@ h2.default <- function(
   h2_values <- stats::setNames(h2_values, method)
   structure(h2_values,
             class = c("heritable", class(h2_values)),
-            model = model, target = target
+            model = model, target = target,
+            type = "narrow_sense"
   )
 }
 

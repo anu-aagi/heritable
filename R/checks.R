@@ -31,7 +31,7 @@ initial_checks <- function(model, target, options) {
       cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
     }
 
-    if (options$target_once %||% TRUE) {
+    if (options$target_once %||% FALSE) {
       # Check if target only appears exactly once in the model
       check_target_appears_once(model, target)
     }
