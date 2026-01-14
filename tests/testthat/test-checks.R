@@ -40,11 +40,9 @@ test_that("We can find GRM",{
   expect_false(check_GRM_in_environment(asreml_model_grm, "gen"))
   expect_error(check_GRM_exists(asreml_model_grm, "gen"))
 
-  data(lettuce_GRM)
+  data("lettuce_GRM")
 
+  expect_true(check_GRM_exists(asreml_model_grm, "gen", source = lettuce_GRM))
   expect_true(check_GRM_in_environment(asreml_model_grm, "gen"))
   expect_true(check_GRM_exists(asreml_model_grm, "gen"))
-
-  rm(lettuce_GRM)
-  expect_true(check_GRM_exists(asreml_model_grm, "gen", lettuce_GRM))
 })

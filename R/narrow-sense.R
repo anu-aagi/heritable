@@ -156,7 +156,7 @@ h2_Delta <- function(model,
 #' @export
 h2_Delta.default <- function(model,
                              target = NULL,
-                             source,
+                             source = NULL,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
                              options = NULL) {

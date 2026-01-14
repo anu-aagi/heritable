@@ -57,7 +57,7 @@ h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL)
 }
 
 #'@export
-h2_Delta_pairwise.asreml <- function(model, target = NULL, source, type = NULL, options = NULL) {
+h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type = NULL, options = NULL) {
   initial_checks(model, target, options)
 
   if(check_GRM_exists(model, target, source)){
