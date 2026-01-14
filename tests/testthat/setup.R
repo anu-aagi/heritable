@@ -43,10 +43,10 @@
 # saveRDS(asremL_model_g_by_e, file = test_path("fixtures/asreml_model_g_by_e.rds"))
 #
 # # Narrow sense
-asreml_model_grm <- asreml::asreml(y ~ rep,
-                        random=~ vm(gen, lettuce_GRM),
-                        data = lettuce_phenotypes |>
-                          subset(loc == "L2"))
+# asreml_model_grm <- asreml::asreml(y ~ rep,
+#                         random=~ vm(gen, lettuce_GRM),
+#                         data = lettuce_phenotypes |>
+#                           subset(loc == "L2"))
 #
 # saveRDS(asreml_model_grm, file = test_path("fixtures/asreml_model_grm.rds"))
 #

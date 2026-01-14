@@ -7,6 +7,7 @@
 #' @param model Model object of class `lmerMod/merMod` or `asreml`
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
+#' @param source The known inverse or relationship matrix used in `model` fitted using `asreml::vm()`
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @aliases H2
 #' @usage
@@ -38,7 +39,7 @@
 #' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
 #' @export
-h2 <- function(model, target, method = c("Oakey", "Delta"), options) {
+h2 <- function(model, target, method = c("Oakey", "Delta"), source, options) {
   UseMethod("h2")
 }
 
@@ -48,10 +49,13 @@ h2.default <- function(
     model,
     target = NULL,
     method = c("Oakey", "Delta"),
+    source = NULL,
     ...) {
   method <- match.arg(method, several.ok = TRUE)
 
   initial_checks(model, target, options = NULL)
+
+  check_GRM_exists(model, target, source)
 
   h2_values <- sapply(method, function(m) {
     switch(m,
@@ -96,7 +100,7 @@ h2.default <- function(
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #' @noRd
-h2_Oakey <- function(model, target, options) {
+h2_Oakey <- function(model, target, source, options) {
   UseMethod("h2_Oakey")
 }
 
@@ -141,6 +145,7 @@ h2_Oakey <- function(model, target, options) {
 #' @noRd
 h2_Delta <- function(model,
                      target,
+                     source,
                      type = c("BLUP", "BLUE"),
                      aggregate = c("arithmetic", "harmonic"),
                      options) {
@@ -151,6 +156,7 @@ h2_Delta <- function(model,
 #' @export
 h2_Delta.default <- function(model,
                              target = NULL,
+                             source,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
                              options = NULL) {
@@ -205,6 +211,7 @@ h2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), option
 #' @export
 h2_Delta_by_genotype.default <- function(model,
                                          target = NULL,
+                                         source,
                                          type = c("BLUP", "BLUE"),
                                          options = NULL) {
   type <- match.arg(type)
@@ -239,6 +246,6 @@ h2_Delta_by_genotype.default <- function(model,
 #' @seealso [`h2_Delta_by_genotype()`], [`H2_Delta_by_genotype()`], [`h2_Delta()`], [`H2_Delta()`]
 #' @noRd
 
-h2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
+h2_Delta_pairwise <- function(model, target, source, type = c("BLUE", "BLUP"), options) {
   UseMethod("h2_Delta_pairwise")
 }

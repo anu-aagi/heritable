@@ -37,15 +37,17 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 }
 
 #'@export
-h2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
+h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL) {
   initial_checks(model, target, options)
+
+
 
   vm <- target_vm_term_asreml(model, target)
   n_g <- model$noeff[[vm$target_vm]]
   Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
   vcov_g <- predict(model,
-    classify = vm$target_vm,
-    only = vm$target_vm,
+    classify = target,
+    only = target,
     vcov = TRUE,
     trace = FALSE
   )$vcov

@@ -146,3 +146,36 @@ check_single_random_effect <- function(terms) {
     FALSE
   }
 }
+
+# Helper function to check if GRM exists in environment
+#' @keywords internal
+check_GRM_in_environment <- function(model, target) {
+  vpars <- names(model$vparameters)
+  env <- attr(model$formulae$random, ".Environment")
+  w <- grepl(paste0("^vm\\(", target), vpars)
+  if (sum(w) == 1) {
+    target_vm <- vpars[w]
+    name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+    if (exists(name_GRM, envir = env, inherits = FALSE)) {
+      return(TRUE)
+    }
+  }
+  FALSE
+}
+
+#' Check if GRM is supplied if not search environment
+#' @keywords internal
+check_GRM_exists <- function(model, target, source = NULL){
+  # Is source supplied?
+  if(!is.null(source)){
+    TRUE
+  } else if (check_GRM_in_environment(model, target)) {
+    # Is it in the environment?
+    TRUE
+  } else {
+    # Source doesn't exist and not supplied
+    cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
+  }
+}
+
+
