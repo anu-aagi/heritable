@@ -4,45 +4,51 @@
 #' Computes a confidence interval for a heritability estimate using parametric
 #' bootstrap of the underlying mixed model.
 #'
-#' @param heritable
-#' A heritability object returned by \code{heritable::H2()} (broad-sense) or
-#' \code{heritable::h2()} (narrow-sense). The object must store the fitted model
+#' @param object
+#' A heritability object returned by [heritable::H2()] (broad-sense) or
+#' [heritable::h2()] (narrow-sense). The object must store the fitted model
 #' as an attribute.
-#' @param B Integer. Number of bootstrap replicates.
-#' @param seed Optional random seed.
-#' @param random_effect Character. Indicate whether to resample random
-#' effect; one of \code{"resample"} or \code{"fix"}.
+#' @param parm a specification of which parameters are to be given confidence intervals,
+#' either a vector of numbers or a vector of names.
+#' If missing, all parameters are considered.
 #' @param level Confidence level.
-#' @param type Character. Bootstrap interval type; one of \code{"basic"},
-#' \code{"norm"}, or \code{"perc"}.
-#' @param return_model Logical. Whether to return to the \code{boot} object.
+#' @param B Integer. Number of bootstrap replicates.
+#' @param random_effect Character. Indicate whether to resample random
+#' effect; one of `"resample"` or `"fix"`.
+#' @param type Character. Bootstrap interval type; one of `"basic"`,
+#' `"norm"`, or `"perc"`.
+#' @param return_model Logical. Whether to return to the `boot` object.
+#' @param seed Optional random seed.
 #' @param ... Additional arguments passed to the bootstrap routine.
 #'
 #' @return
-#' A confidence interval object as returned by \code{confint()}.
+#' A matrix of confidence intervals.
 #'
 #' @examples
-#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-#' lettuce_asreml <- asreml(
-#'   fixed = y ~ rep * pseudo_var1,
-#'   random = ~gen,
-#'   sparse = ~pseudo_var2,
-#'   data = lettuce_subset,
-#'   trace = FALSE
-#' )
+#' \dontrun{
+#'   lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#'   lettuce_asreml <- asreml(
+#'     fixed = y ~ rep * pseudo_var1,
+#'     random = ~gen,
+#'     sparse = ~pseudo_var2,
+#'     data = lettuce_subset,
+#'     trace = FALSE
+#'   )
 #'
-#' my_H2 <- H2(lettuce_asreml, "gen", c("Cullis", "Standard"))
+#'   my_H2 <- H2(lettuce_asreml, "gen", c("Cullis", "Standard"))
 #'
-#' confint(my_H2)
+#'   confint(my_H2)
+#' }
 #'
 #' @export
-confint.heritable <- function(heritable,
-                              B = 100,
-                              seed = NULL,
-                              random_effect = c("resample", "fix"),
+confint.heritable <- function(object,
+                              parm = NULL,
                               level = 0.95,
+                              B = 100,
+                              random_effect = c("resample", "fix"),
                               type = c("basic", "norm", "perc"),
                               return_model = TRUE,
+                              seed = NULL,
                               ...) {
   # basic: bias corrected percentile interval
   # norm: bias corrected normal interval
@@ -56,10 +62,11 @@ confint.heritable <- function(heritable,
     resample_u <- TRUE
   }
 
-  method <- names(heritable)
-  target <- attr(heritable, "target")
-  model <- attr(heritable, "model") # Get the model
-  h2.type <- attr(heritable, "type")  # Get the heritability type
+  if(is.null(parm)) parm <- seq_along(object)
+  method <- names(object[parm])
+  target <- attr(object, "target")
+  model <- attr(object, "model") # Get the model
+  h2.type <- attr(object, "type")  # Get the heritability type
 
   if (h2.type == "broad_sense") {
     Fun_use <- function(x) {
@@ -105,6 +112,7 @@ confint.heritable <- function(heritable,
 #' @param use.u A logical indicating whether to resample random effects, or only
 #' resample residuals.
 #' @param seed Optional integer seed for reproducibility.
+#' @param ... Additional arguments passed to [boot::boot()].
 #'
 #' @return A `boot` object.
 #'
@@ -117,22 +125,24 @@ confint.heritable <- function(heritable,
 #' - Returning a `boot` object.
 #'
 #' @examples
-#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-#' lettuce_asreml <- asreml(
-#'   fixed = y ~ rep * pseudo_var1,
-#'   random = ~gen,
-#'   sparse = ~pseudo_var2,
-#'   data = lettuce_subset,
-#'   trace = FALSE
-#' )
+#' \dontrun{
+#'   lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#'   lettuce_asreml <- asreml(
+#'     fixed = y ~ rep * pseudo_var1,
+#'     random = ~gen,
+#'     sparse = ~pseudo_var2,
+#'     data = lettuce_subset,
+#'     trace = FALSE
+#'   )
 #'
-#' b <- bootstrap_asreml(
-#'   lettuce_asreml,
-#'   R = 200,
-#'   statistic = function(fit) coef(fit)$fixed["(Intercept)", "effect"],
-#'   seed = 1
-#' )
-#' boot::boot.ci(b, type = "perc")
+#'   b <- bootstrap_asreml(
+#'     lettuce_asreml,
+#'     R = 200,
+#'     statistic = function(fit) coef(fit)$fixed["(Intercept)", "effect"],
+#'     seed = 1
+#'   )
+#'   boot::boot.ci(b, type = "perc")
+#'  }
 #' @export
 bootstrap_asreml <- function(model,
                              FUN,
@@ -181,17 +191,11 @@ bootstrap_asreml <- function(model,
   # Get V and Cholesky factor L such that L %*% z ~ N(0, V)
   # Use Matrix chol: returns upper triangular U with U' U = V
   # So L = t(U) gives L L' = V
-  L <- Matrix::chol(V) %>% t()
+  L <- Matrix::chol(V) |> t()
 
   # Bootstrap data
   boot_data <- mf
   boot_data[[".yhat"]] <- yhat
-
-  # Call modified to use the boot "data" argument
-  call_asreml <- deparse1(model$call) %>%
-    paste0("asreml::", .) %>%
-    str2lang()
-  call_asreml <- rlang::call_modify(call_asreml, data = quote(data))
 
   # generator: simulate response into correct column name
   generate_data <- function(data, mle) {

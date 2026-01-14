@@ -18,6 +18,8 @@ bootstrap_asreml(model, FUN, nsim = 1, use.u = FALSE, seed = NULL, ...)
 resample residuals.}
 
 \item{seed}{Optional integer seed for reproducibility.}
+
+\item{...}{Additional arguments passed to \code{\link[boot:boot]{boot::boot()}}.}
 }
 \value{
 A \code{boot} object.
@@ -37,20 +39,22 @@ Fits parametric bootstrap replicates for an \code{asreml} model by:
 }
 }
 \examples{
-lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-lettuce_asreml <- asreml(
-  fixed = y ~ rep * pseudo_var1,
-  random = ~gen,
-  sparse = ~pseudo_var2,
-  data = lettuce_subset,
-  trace = FALSE
-)
+\dontrun{
+  lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep * pseudo_var1,
+    random = ~gen,
+    sparse = ~pseudo_var2,
+    data = lettuce_subset,
+    trace = FALSE
+  )
 
-b <- bootstrap_asreml(
-  lettuce_asreml,
-  R = 200,
-  statistic = function(fit) coef(fit)$fixed["(Intercept)", "effect"],
-  seed = 1
-)
-boot::boot.ci(b, type = "perc")
+  b <- bootstrap_asreml(
+    lettuce_asreml,
+    R = 200,
+    statistic = function(fit) coef(fit)$fixed["(Intercept)", "effect"],
+    seed = 1
+  )
+  boot::boot.ci(b, type = "perc")
+ }
 }
