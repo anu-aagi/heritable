@@ -23,11 +23,16 @@ pull_terms.asreml <- function(model) {
 pull_terms.lmerMod <- function(model) {
   model_formula <- formula(model)
   term_labels <- attr(terms(model_formula), "term.labels")
-
-  ran_trms <- names(lme4::ranef(model))
   ran_trms_formula <-
-    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|[^|()]+(?=\\))")[[1]]
+    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
   fixed_trms <- setdiff(term_labels, ran_trms_formula)
+  ran_trms <- lapply(ran_trms_formula, function(frm){
+    frm <- stringr::str_split(frm, "\\|")[[1]] |> tail(n=1)
+    as.formula(
+      paste0("~", frm)
+    ) |> terms() |> attr("term.labels")
+  })
+  ran_trms <- do.call(c, ran_trms)
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -191,6 +196,7 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 fit_counterpart_model.lmerMod <- function(model, target = NULL) {
   # get the terms from model object
   trms <- pull_terms.lmerMod(model)
+  trms <- lapply(trms, unique)
 
   # check whether there is only a single RE
   if (check_single_random_effect(trms)) {
@@ -203,7 +209,15 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
   } else if (length(trms$random) > 1) {
     # If target is in random effects
     if (target %in% trms$random) {
-      refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
+      ran_frms <- lme4::findbars(formula(model))
+      contains_target <- sapply(ran_frms, function(frm){
+          frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> tail(n=1)
+        }) == target
+      target_ran_frms <- sapply(ran_frms[contains_target], function(frm){
+          paste0("(", deparse1(frm), ")")
+        })
+      target_ran_frms <- paste(target_ran_frms, collapse = "-")
+      refit_model <- update(model, as.formula(paste(". ~ . - ", target_ran_frms, " + ", target)))
       check_model_convergence(refit_model)
     } else if (target %in% trms$fixed) { # If target is in fixed effects
       refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
