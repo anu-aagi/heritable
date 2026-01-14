@@ -173,7 +173,7 @@ lettuce_lme4@flist
 # with target as grouping factors.
 lettuce_lme4 <- lme4::lmer(y ~ rep + ( pseudo_var || gen) + (1|pseudo_var), data = lettuce_subset)
 ran_frms <- reformulas::findbars(formula(lettuce_lme4))
-use <- lme4::findbars(formula(lettuce_lme4)) %>%
+use <- reformulas::findbars(formula(lettuce_lme4)) %>%
   sapply(., function(frm){
     frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> tail(n=1)
   }) == "gen"
