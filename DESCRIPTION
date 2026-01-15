@@ -17,6 +17,7 @@ Imports:
     boot,
     cli,
     emmeans,
+    MASS,
     Matrix,
     methods,
     reformulas,
