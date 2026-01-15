@@ -150,5 +150,6 @@ test_that("Try another package", {
 
 
   h2(LD_fit, "genotype", source = G_inv) # error
+  h2_Delta(LD_fit, "genotype")
 
 })
