@@ -118,6 +118,7 @@ target_vm_term_asreml <- function(model, target) {
     if (exists(name_GRM, envir = env, inherits = FALSE)) {
       GRM_source <- get(name_GRM, envir = env)
       if (is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
+        #TODO: Change in future because GRM_source could be singular
         GRMinv <- solve(sp2Matrix(GRM_source))
       }
       if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
@@ -128,8 +129,12 @@ target_vm_term_asreml <- function(model, target) {
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
     }
+    # Assign names
+    dimnames(GRMinv) <- dimnames(GRM_source)
+
     return(list(
       target_vm = vpars[w],
+      GRM_source = GRM_source,
       GRMinv = GRMinv
     ))
   } else {

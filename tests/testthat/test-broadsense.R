@@ -109,4 +109,8 @@ test_that("asreml methods work", {
   expect_equal(H2_Standard.asreml(asreml_model_random, target = "gen"), 0.8400648, tolerance = 1e-5)
 })
 
+test_that("What happens when user fits a fixed genotype model", {
+  asreml_model_fixed <- readRDS(test_path("fixtures/asreml_model_fixed.rds"))
+  expect_error(H2(asreml_model_fixed, "gen"))
 
+})

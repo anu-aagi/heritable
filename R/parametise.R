@@ -62,11 +62,11 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' this heritability measure.
 #'
 #' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
-#' @param C_gg Prediction error variance matrix associated with the genotype effects.
+#' @param C22_g Prediction error variance matrix associated with the genotype effects.
 #' @return Numeric value
 #' @examples
 #' Gg_inv = diag(1/0.15, 3, 3)
-#' C_gg <- matrix(
+#' C22_g <- matrix(
 #'   c(
 #'     0.08, 0.01, 0.00,
 #'     0.01, 0.07, 0.01,
@@ -74,18 +74,15 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #'   ),
 #'   nrow = 3, byrow = TRUE
 #' )
-#' H2_Oakey_parameters(Gg_inv, C_gg)
+#' H2_Oakey_parameters(Gg_inv, C22_g)
 #' @export
-H2_Oakey_parameters <- function(Gg_inv, C_gg) {
-   # n_g <- nrow(Gg_inv)
-   # svds <- svd(Gg_inv)
-   # Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
-   # M <- diag(n_g) - (Gg_inv_sqrt %*% C_gg %*% Gg_inv_sqrt)
-
+H2_Oakey_parameters <- function(Gg_inv, C22_g) {
    n_g <- nrow(Gg_inv)
-   M <- diag(n_g) - (Gg_inv %*% C_gg)
+   svds <- svd(Gg_inv)
+   Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
+   M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
 
-   eM <- eigen(M)
+   eM <- eigen(M, symmetric = TRUE)
    thres <- 1e-5
    H2_Oakey <- mean(eM$values[eM$values > thres])
    return(H2_Oakey)

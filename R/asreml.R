@@ -50,6 +50,14 @@ h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL)
                       trace = FALSE
     )$vcov
 
+    names_clean <- stringr::str_remove(
+      rownames(model$coefficients$random),
+      "vm\\(.+\\)_"
+    )
+
+    dimnames(vcov_g) <- list(names_clean, names_clean)
+
+    vcov_g <- vcov_g[rownames(Gg_inv),colnames(Gg_inv)]
 
     H2_Oakey_parameters(Gg_inv, vcov_g)
   }
