@@ -11,7 +11,7 @@
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @aliases H2
 #' @usage
-#' h2(model, target, method = c("Oakey", "Delta"), options)
+#' h2(model, target, method = c("Oakey", "Delta"), source, options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
 #' @returns A named numeric vector, length matching number of methods supplied
 #' @details
@@ -50,12 +50,13 @@ h2.default <- function(
     target,
     method = c("Oakey", "Delta"),
     source = NULL,
+    options = NULL,
     ...) {
   method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = option)
+  initial_checks(model, target, options = options)
 
-  check_GRM_exists(model, target, source)
+  check_GRM_exists(model, target, source = source)
 
   h2_values <- sapply(method, function(m) {
     switch(m,

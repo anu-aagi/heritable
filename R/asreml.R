@@ -7,8 +7,7 @@ get_vc_g_asreml <- function(model, target) {
 }
 
 #' @noRd
-#' @keywords internal
-#'@export
+#' @export
 h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)

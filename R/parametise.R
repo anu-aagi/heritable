@@ -77,10 +77,14 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' H2_Oakey_parameters(Gg_inv, C_gg)
 #' @export
 H2_Oakey_parameters <- function(Gg_inv, C_gg) {
+   # n_g <- nrow(Gg_inv)
+   # svds <- svd(Gg_inv)
+   # Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
+   # M <- diag(n_g) - (Gg_inv_sqrt %*% C_gg %*% Gg_inv_sqrt)
+
    n_g <- nrow(Gg_inv)
-   svds <- svd(Gg_inv)
-   Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
-   M <- diag(n_g) - (Gg_inv_sqrt %*% C_gg %*% Gg_inv_sqrt)
+   M <- diag(n_g) - (Gg_inv %*% C_gg)
+
    eM <- eigen(M)
    thres <- 1e-5
    H2_Oakey <- mean(eM$values[eM$values > thres])
@@ -117,7 +121,7 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' Calculate heritability of pairwise differences using variance parameters
 #' @description Compute broad-sense heritability of differences
 #' using the variance of differences between two BLUPs/BLUEs
-#' @aliases h2_Delta_parameters 
+#' @aliases h2_Delta_parameters
 #' @usage
 #' h2_Delta_parameters(G_g, vd_matrix, type)
 #'

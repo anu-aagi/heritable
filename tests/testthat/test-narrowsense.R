@@ -10,11 +10,11 @@ test_that("h2 heritability works", {
   # From Schmidt et al 2019 Fig 1.
   # Delta
   expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUP"), 0.871, tolerance = 1e-3)
-  #TODO: h2 BLUE values not matching
+  # TODO: h2 BLUE values not matching
   expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUE"), 0.818, tolerance = 1e-3)
 
   # Oakey
-  #TODO: h2 Oakey values not matching
+  # TODO: h2 Oakey values not matching
   expect_equal(h2_Oakey(asreml_model_grm, target = "gen"), 0.586, tolerance = 1e-3)
 
   # Structural checks
@@ -38,7 +38,7 @@ test_that("VanRadden GRM", {
   # saveRDS(lettuce_GRM_vanradden, file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
   # lettuce_GRM_vanradden <- readRDS(file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
 
-  #Hand calculate vanRadden
+  # Hand calculate vanRadden
   M <- as.matrix(lettuce_markers[, -1] + 1)
   N <- nrow(M)
   pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)
@@ -68,12 +68,16 @@ test_that("VanRadden GRM", {
 })
 
 test_that("Refactoring delta parameter functions works", {
-  G_g <- matrix(c(0.5, 0.2, 0.2,
-                  0.2, 0.6, 0.3,
-                  0.2, 0.3, 0.7), nrow = 3, byrow = TRUE)
-  vd_matrix <- matrix(c(0.1, 0.15, 0.2,
-                        0.15, 0.12, 0.18,
-                        0.2, 0.18, 0.14), nrow = 3, byrow = TRUE)
+  G_g <- matrix(c(
+    0.5, 0.2, 0.2,
+    0.2, 0.6, 0.3,
+    0.2, 0.3, 0.7
+  ), nrow = 3, byrow = TRUE)
+  vd_matrix <- matrix(c(
+    0.1, 0.15, 0.2,
+    0.15, 0.12, 0.18,
+    0.2, 0.18, 0.14
+  ), nrow = 3, byrow = TRUE)
 
   expect_equal(
     h2_Delta_BLUP_parameters(G_g, vd_matrix),
@@ -86,7 +90,7 @@ test_that("Refactoring delta parameter functions works", {
   )
 
   vc_g <- 0.01
-  vd_matrix <- matrix(c(NA,0.2,0.2,NA),2,2)
+  vd_matrix <- matrix(c(NA, 0.2, 0.2, NA), 2, 2)
 
   expect_equal(
     H2_Delta_BLUE_parameters(vc_g, vd_matrix),
@@ -123,25 +127,28 @@ test_that("Refactoring delta parameter functions works", {
 # }
 # )
 
-test_that("Try another package",{
-  install.packages("heritabilty")
+test_that("Try another package", {
+  # install.packages("heritabilty")
   library(heritability)
-
+  #
   data(LD)
   data(K_atwell)
-  ?K_atwell
+  # ?K_atwell
+  #
+  # # Heritability estimation for all observations:
+  # out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,
+  #                 covariates=LD[,4:8],K=K_atwell)
+  #
+  # out$h2
 
-  # Heritability estimation for all observations:
-  out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,
-                  covariates=LD[,4:8],K=K_atwell)
-
-  out$h2
+  G_inv <- MASS::ginv(K_atwell)
+  dimnames(G_inv) <- dimnames(K_atwell)
 
   LD_fit <- asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
-         random = ~vm(genotype, K_atwell),
+         random = ~vm(genotype, G_inv, singG = "PSD"),
          data = LD)
 
 
+  h2(LD_fit, "genotype", source = G_inv) # error
 
 })
-

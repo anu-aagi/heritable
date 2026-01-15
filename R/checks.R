@@ -155,7 +155,11 @@ check_GRM_in_environment <- function(model, target) {
   w <- grepl(paste0("^vm\\(", target), vpars)
   if (sum(w) == 1) {
     target_vm <- vpars[w]
-    name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+    #name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+    name_GRM <- stringr::str_match(
+      vpars[w],
+      paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
+    )[,2]
     if (exists(name_GRM, envir = env, inherits = FALSE)) {
       return(TRUE)
     }
