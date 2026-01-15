@@ -27,6 +27,9 @@ initial_checks <- function(model, target, options) {
     # Check if target appears in the model
     check_target_exists(model, target)
 
+    # Check if G x E is fitted
+    check_G_by_E_exists(model, target)
+
     if (check_target_both(model, target)) {
       cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
     }
@@ -181,5 +184,40 @@ check_GRM_exists <- function(model, target, source = NULL){
     cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
   }
 }
+
+#' Check if G X E is fitted
+#' @keywords internal
+#' @noRd
+check_G_by_E_exists.asreml <- function(model, target){
+  nms <- names(model$vparameters)
+  pattern <- paste0("(^|:)", target, "($|:)")
+
+  if(sum(grepl(pattern, nms)) > 1){
+    cli::cli_abort("G x E models are currently not supported")
+  } else {
+    FALSE
+  }
+}
+
+#' @keywords internal
+#' @noRd
+check_G_by_E_exists.lmerMod <- function(model, target) {
+  bars <- reformulas::findbars(formula(model))
+  groups <- vapply(bars, function(b) paste(deparse(b[[3]]), collapse = ""), "")
+  pattern <- paste0("(^|:)", target, "($|:)")
+
+    if(sum(grepl(pattern, groups)) > 1){
+      cli::cli_abort("G x E models are currently not supported")
+    }
+}
+
+#' @keywords internal
+#' @noRd
+check_G_by_E_exists <- function(model, target) {
+  UseMethod("check_G_by_E_exists")
+}
+.S3method("check_G_by_E_exists", "asreml", check_G_by_E_exists.asreml)
+.S3method("check_G_by_E_exists", "lmerMod", check_G_by_E_exists.lmerMod)
+
 
 

@@ -97,3 +97,15 @@
 # confint_lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 #
 # saveRDS(confint_lettuce_lme4, file = test_path("fixtures/confint_lettuce_lme4.rds"))
+#
+# lettuce_subset <- lettuce_phenotypes |>
+#   subset(loc == "L2")
+#
+# lettuce_asreml <- asreml(
+#   fixed = y ~ rep,
+#   random = ~ gen,
+#   data = lettuce_subset,
+#   trace = FALSE
+# )
+#
+# saveRDS(lettuce_asreml, test_path("fixtures/lettuce_asreml.rds")

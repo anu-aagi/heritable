@@ -4,12 +4,12 @@
 \alias{H2_Oakey_parameters}
 \title{Calculate Oakey's heritability using variance parameters}
 \usage{
-H2_Oakey_parameters(Gg_inv, C_gg)
+H2_Oakey_parameters(Gg_inv, C22_g)
 }
 \arguments{
 \item{Gg_inv}{The inverse of the genotypic variance-covariance matrix.}
 
-\item{C_gg}{Prediction error variance matrix associated with the genotype effects.}
+\item{C22_g}{Prediction error variance matrix associated with the genotype effects.}
 }
 \value{
 Numeric value
@@ -20,7 +20,7 @@ this heritability measure.
 }
 \examples{
 Gg_inv = diag(1/0.15, 3, 3)
-C_gg <- matrix(
+C22_g <- matrix(
   c(
     0.08, 0.01, 0.00,
     0.01, 0.07, 0.01,
@@ -28,5 +28,5 @@ C_gg <- matrix(
   ),
   nrow = 3, byrow = TRUE
 )
-H2_Oakey_parameters(Gg_inv, C_gg)
+H2_Oakey_parameters(Gg_inv, C22_g)
 }

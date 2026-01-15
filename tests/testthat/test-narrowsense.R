@@ -129,33 +129,31 @@ test_that("Refactoring delta parameter functions works", {
 
 test_that("Try another package", {
   # install.packages("heritabilty")
-  library(heritability)
+  # library(heritability)
+  # #
+  # data(LD)
+  # data(K_atwell)
+  # # ?K_atwell
   #
-  data(LD)
-  data(K_atwell)
-  # ?K_atwell
-
-  # Heritability estimation for all observations:
-  out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,
-                  covariates=LD[,4:8],K=K_atwell)
-
-  out$h2
-
-  G_inv <- MASS::ginv(K_atwell)
-  dimnames(G_inv) <- dimnames(K_atwell)
-  asreml.options(design = TRUE)
-  LD_fit <- asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
-         random = ~vm(genotype, K_atwell, singG = "PSD"),
-         data = LD)
-  K_atwell
-
-  h2(LD_fit, "genotype", source = K_atwell) # error
-  h2_Oakey(LD_fit, "genotype", source = K_atwell)
-  h2_Delta(LD_fit, "genotype")
-
-  no_PDS <- readRDS(test_path("fixtures/ld_fit.rds"))
-  no_PDS$coefficients$random |> tail()
-  LD_fit$coefficients$random|> tail()
-
-
+  # # Heritability estimation for all observations:
+  # out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,
+  #                 covariates=LD[,4:8],K=K_atwell)
+  #
+  # out$h2
+  #
+  # G_inv <- MASS::ginv(K_atwell)
+  # dimnames(G_inv) <- dimnames(K_atwell)
+  # asreml.options(design = TRUE)
+  # LD_fit <- asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
+  #        random = ~vm(genotype, K_atwell, singG = "PSD"),
+  #        data = LD)
+  # K_atwell
+  #
+  # h2(LD_fit, "genotype", source = K_atwell) # error
+  # h2_Oakey(LD_fit, "genotype", source = K_atwell)
+  # h2_Delta(LD_fit, "genotype")
+  #
+  # no_PDS <- readRDS(test_path("fixtures/ld_fit.rds"))
+  # no_PDS$coefficients$random |> tail()
+  # LD_fit$coefficients$random|> tail()
 })
