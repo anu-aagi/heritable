@@ -103,57 +103,132 @@ test_that("Refactoring delta parameter functions works", {
   )
 })
 
-# test_that("Alternative way to get sigma a",{
-#   model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
-#   target <- "gen"
-#
-#   vm <- target_vm_term_asreml(model, target)
-#   n_g <- model$noeff[[vm$target_vm]]
-#   vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
-#   # PEV
-#   # Why is this giving me zero?
-#   vdBLUP_mat <- predict(model,
-#                     classify = vm$target_vm,
-#                     only = vm$target_vm,
-#                     vcov = TRUE,
-#                     trace = FALSE
-#   )$vcov
-#
-#   dim(vdBLUP_mat)
-#
-#   sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
-#   model$vparameters
-#
-# }
-# )
+test_that("Alternative way to get sigma a",{
+  model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+  target <- "gen"
 
-test_that("Try another package", {
-  # install.packages("heritabilty")
-  # library(heritability)
-  # #
-  # data(LD)
-  # data(K_atwell)
-  # # ?K_atwell
-  #
-  # # Heritability estimation for all observations:
-  # out <- marker_h2(data.vector=LD$LD,geno.vector=LD$genotype,
-  #                 covariates=LD[,4:8],K=K_atwell)
-  #
-  # out$h2
-  #
-  # G_inv <- MASS::ginv(K_atwell)
-  # dimnames(G_inv) <- dimnames(K_atwell)
-  # asreml.options(design = TRUE)
-  # LD_fit <- asreml(LD ~ rep1 + rep2 + rep3 + rep4 + rep5,
-  #        random = ~vm(genotype, K_atwell, singG = "PSD"),
-  #        data = LD)
-  # K_atwell
-  #
-  # h2(LD_fit, "genotype", source = K_atwell) # error
-  # h2_Oakey(LD_fit, "genotype", source = K_atwell)
-  # h2_Delta(LD_fit, "genotype")
-  #
-  # no_PDS <- readRDS(test_path("fixtures/ld_fit.rds"))
-  # no_PDS$coefficients$random |> tail()
-  # LD_fit$coefficients$random|> tail()
+  vm <- target_vm_term_asreml(model, target)
+  n_g <- model$noeff[[vm$target_vm]]
+  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
+  # PEV
+  # Why is this giving me zero?
+  vdBLUP_mat <- predict(model,
+                    classify = target,
+                    only = target,
+                    vcov = TRUE,
+                    trace = FALSE
+  )$vcov
+
+  dim(vdBLUP_mat)
+
+  sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
+  model$vparameters
+
+}
+)
+
+test_that("Try GPT simulation", {
+  oakey_true_from_matrices <- function(X, Z, G, sigma_g2, sigma_e2, tol = 1e-10) {
+    n <- ncol(Z)
+
+    # R^{-1} for iid residuals
+    Rinv <- diag(1 / sigma_e2, nrow(Z))
+
+    # (sigma_g2 * G)^{-1} using eigen (handles PSD)
+    eg <- eigen(G, symmetric = TRUE)
+    d <- eg$values
+    U <- eg$vectors
+    dinv <- ifelse(d > tol, 1 / d, 0)
+    Ginv <- U %*% diag(dinv) %*% t(U)
+    Ginv <- (Ginv + t(Ginv)) / 2
+
+    Ginvg <- (1 / sigma_g2) * Ginv
+
+    XtRinvX <- t(X) %*% Rinv %*% X
+    XtRinvZ <- t(X) %*% Rinv %*% Z
+    ZtRinvX <- t(Z) %*% Rinv %*% X
+    ZtRinvZ <- t(Z) %*% Rinv %*% Z
+
+    K <- rbind(
+      cbind(XtRinvX, XtRinvZ),
+      cbind(ZtRinvX, ZtRinvZ + Ginvg)
+    )
+
+    Kinv <- MASS::ginv(K)
+    p <- ncol(X)
+    Cuu <- Kinv[(p + 1):(p + n), (p + 1):(p + n)]
+    Cuu <- (Cuu + t(Cuu)) / 2  # symmetrize
+
+    # average PEV of pairwise differences
+    # mean over i<j of (Cii + Cjj - 2Cij)
+    diagC <- diag(Cuu)
+    # Efficient mean pairwise difference variance:
+    # mean_{i<j}(Cii + Cjj - 2Cij)
+    nG <- length(diagC)
+    sumCiiCjj <- (nG - 1) * sum(diagC) * 2  # sum over ordered pairs i!=j of (Cii + Cjj)
+    sumOff <- sum(Cuu) - sum(diagC)         # sum_{i!=j} Cij / 2? careful: Cuu includes both
+    # Let's do it directly robustly:
+    idx <- which(upper.tri(Cuu))
+    pev_diff_bar <- mean(diagC[row(Cuu)[idx]] + diagC[col(Cuu)[idx]] - 2 * Cuu[idx])
+
+    H2 <- 1 - pev_diff_bar / (2 * sigma_g2)
+
+    list(H2 = H2, pev = Cuu, pev_diff_bar = pev_diff_bar)
+  }
+
+
+  simulate_grm_data <- function(n_gen = 50, n_markers = 300, n_rep = 3,
+                                sigma_g2 = 1.0, sigma_e2 = 1.0, seed = 1) {
+    set.seed(seed)
+
+    # Marker-derived GRM (simple)
+    M <- matrix(rbinom(n_gen * n_markers, 2, 0.5), n_gen, n_markers)
+    M <- scale(M, center = TRUE, scale = TRUE)
+    G <- tcrossprod(M) / n_markers
+    G <- (G + t(G)) / 2
+
+    # Design: n_rep obs per genotype
+    N <- n_gen * n_rep
+    geno <- factor(rep(seq_len(n_gen), each = n_rep))
+
+    Z <- model.matrix(~ 0 + geno)   # N x n_gen
+    X <- X <- matrix(1, nrow = nrow(Z), ncol = 1) # intercept only
+
+    # Simulate u ~ N(0, sigma_g2 * G)
+    eg <- eigen(G, symmetric = TRUE)
+    u <- eg$vectors %*% diag(sqrt(pmax(eg$values, 0))) %*% rnorm(n_gen)
+    u <- as.numeric(u) * sqrt(sigma_g2)
+
+    e <- rnorm(N, sd = sqrt(sigma_e2))
+    y <- drop(Z %*% u) + rnorm(nrow(Z), sd = sqrt(sigma_e2))
+
+
+    # browser()
+    dat <- data.frame(y = y, genotype = factor(paste0("geno",geno)))
+    list(dat = dat, G = G, X = X, Z = Z,
+         sigma_g2 = sigma_g2, sigma_e2 = sigma_e2)
+  }
+
+
+  sim <- simulate_grm_data()
+
+  truth <- oakey_true_from_matrices(sim$X, sim$Z, sim$G, sim$sigma_g2, sim$sigma_e2)
+  truth$H2
+
+  G_inv <- MASS::ginv(sim$G)
+  dimnames(G_inv) <- list(dimnames(sim$Z)[[2]], dimnames(sim$Z)[[2]])
+
+  model <- asreml(y ~ 1,
+                  random = ~ vm(genotype, G_inv, singG="PSD"),
+                  data = sim$dat,
+                  ai.sing = TRUE)
+
+
+  # Compare:
+  c(true = truth$H2, estimated = h2_Oakey(model, "genotype"))
+
+  G_inv <- MASS::ginv(sim$G)
+  Gg_inv_true <- (1/sim$sigma_g2) * G_inv
+
+  H2_eig_true <- H2_Oakey_parameters(Gg_inv_true, truth$pev)
 })

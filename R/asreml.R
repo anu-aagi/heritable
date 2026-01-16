@@ -24,10 +24,10 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
 
   vdBLUP_mat <- predict(model,
-                                       classify = target,
-                                       only = target,
-                                       sed = TRUE,
-                                       trace = FALSE,
+                        classify = target,
+                        only = target,
+                        sed = TRUE,
+                        trace = FALSE,
   )$sed^2
 
   vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
