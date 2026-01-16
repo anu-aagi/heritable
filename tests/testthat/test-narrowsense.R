@@ -192,7 +192,7 @@ test_that("Try GPT simulation", {
     geno <- factor(rep(seq_len(n_gen), each = n_rep))
 
     Z <- model.matrix(~ 0 + geno)   # N x n_gen
-    X <- X <- matrix(1, nrow = nrow(Z), ncol = 1) # intercept only
+    X < matrix(1, nrow = nrow(Z), ncol = 1) # intercept only
 
     # Simulate u ~ N(0, sigma_g2 * G)
     eg <- eigen(G, symmetric = TRUE)
@@ -203,7 +203,7 @@ test_that("Try GPT simulation", {
     y <- drop(Z %*% u) + rnorm(nrow(Z), sd = sqrt(sigma_e2))
 
 
-    # browser()
+    browser()
     dat <- data.frame(y = y, genotype = factor(paste0("geno",geno)))
     list(dat = dat, G = G, X = X, Z = Z,
          sigma_g2 = sigma_g2, sigma_e2 = sigma_e2)
@@ -220,15 +220,43 @@ test_that("Try GPT simulation", {
 
   model <- asreml(y ~ 1,
                   random = ~ vm(genotype, G_inv, singG="PSD"),
-                  data = sim$dat,
-                  ai.sing = TRUE)
+                  data = sim$dat)
 
 
   # Compare:
   c(true = truth$H2, estimated = h2_Oakey(model, "genotype"))
 
-  G_inv <- MASS::ginv(sim$G)
-  Gg_inv_true <- (1/sim$sigma_g2) * G_inv
+  Gg_inv_true <- (1/sim$sigma_g2 * sim$sigma_e2) * G_inv
 
   H2_eig_true <- H2_Oakey_parameters(Gg_inv_true, truth$pev)
+
+  # Substitute truth from simulation and see if h2 can recover from model
+  model_plugged_in <- model
+  model_plugged_in$G.param$`vm(genotype, G_inv, singG = "PSD")`$variance$initial <- sim$sigma_g2
+  model_plugged_in$R.param$units$variance$initial  <- sim$sigma_e2
+
+  asreml.options(fixgammas = TRUE)
+  model_plugged_in <- update(model_plugged_in)     # refit, but keep variance parameters fixed
+  asreml.options(fixgammas = FALSE)  # turn it back off afterwards
+
+  c(true = truth$H2,
+    fixedVC = h2_Oakey(model_plugged_in, "genotype"))
+
+
+  Gg_inv <- (1 / get_vc_g_asreml(model_plugged_in, target_vm_term_asreml(model_plugged_in, "genotype")$target_vm)) * G_inv
+  C22_g <- predict(model_plugged_in,
+                        classify = "genotype",
+                        only = "genotype",
+                        vcov = TRUE,
+                        trace = FALSE
+  )$vcov
+
+  names_clean <- stringr::str_remove(
+    rownames(model_plugged_in$coefficients$random),
+    "vm\\(.+\\)_"
+  )
+
+  dimnames(C22_g) <- list(names_clean, names_clean)
+
+  H2_Oakey_parameters(Gg_inv,   C22_g[rownames(Gg_inv), colnames(Gg_inv)])
 })
