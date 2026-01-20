@@ -204,7 +204,7 @@ bootstrap_asreml <- function(model,
   generate_data <- function(data, mle) {
     out <- data
     N <- nrow(out)
-    eps <- as.numeric(L %*% rnorm(N))
+    eps <- as.numeric(L %*% stats::rnorm(N))
     out[[response]] <- out[[".yhat"]] + eps
     out
   }

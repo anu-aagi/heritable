@@ -103,29 +103,29 @@ test_that("Refactoring delta parameter functions works", {
   )
 })
 
-test_that("Alternative way to get sigma a",{
-  model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
-  target <- "gen"
-
-  vm <- target_vm_term_asreml(model, target)
-  n_g <- model$noeff[[vm$target_vm]]
-  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
-  # PEV
-  # Why is this giving me zero?
-  vdBLUP_mat <- predict(model,
-                    classify = target,
-                    only = target,
-                    vcov = TRUE,
-                    trace = FALSE
-  )$vcov
-
-  dim(vdBLUP_mat)
-
-  sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
-  model$vparameters
-
-}
-)
+# test_that("Alternative way to get sigma a",{
+#   model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+#   target <- "gen"
+#
+#   vm <- target_vm_term_asreml(model, target)
+#   n_g <- model$noeff[[vm$target_vm]]
+#   vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
+#   # PEV
+#   # Why is this giving me zero?
+#   vdBLUP_mat <- predict(model,
+#                     classify = target,
+#                     only = target,
+#                     vcov = TRUE,
+#                     trace = FALSE
+#   )$vcov
+#
+#   dim(vdBLUP_mat)
+#
+#   sigma_a_fernando_gonzales <- vc_g + (sum(diag(as.matrix(vdBLUP_mat))) / n_g)
+#   model$vparameters
+#
+# }
+# )
 
 test_that("Try GPT simulation", {
   oakey_true_from_matrices <- function(X, Z, G, sigma_g2, sigma_e2, tol = 1e-10) {
@@ -192,7 +192,7 @@ test_that("Try GPT simulation", {
     geno <- factor(rep(seq_len(n_gen), each = n_rep))
 
     Z <- model.matrix(~ 0 + geno)   # N x n_gen
-    X < matrix(1, nrow = nrow(Z), ncol = 1) # intercept only
+    X <- matrix(1, nrow = nrow(Z), ncol = 1) # intercept only
 
     # Simulate u ~ N(0, sigma_g2 * G)
     eg <- eigen(G, symmetric = TRUE)
@@ -203,7 +203,6 @@ test_that("Try GPT simulation", {
     y <- drop(Z %*% u) + rnorm(nrow(Z), sd = sqrt(sigma_e2))
 
 
-    browser()
     dat <- data.frame(y = y, genotype = factor(paste0("geno",geno)))
     list(dat = dat, G = G, X = X, Z = Z,
          sigma_g2 = sigma_g2, sigma_e2 = sigma_e2)
@@ -218,7 +217,7 @@ test_that("Try GPT simulation", {
   G_inv <- MASS::ginv(sim$G)
   dimnames(G_inv) <- list(dimnames(sim$Z)[[2]], dimnames(sim$Z)[[2]])
 
-  model <- asreml(y ~ 1,
+  model <- asreml::asreml(y ~ 1,
                   random = ~ vm(genotype, G_inv, singG="PSD"),
                   data = sim$dat)
 
