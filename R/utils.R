@@ -27,7 +27,7 @@ pull_terms.lmerMod <- function(model) {
     stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
   fixed_trms <- setdiff(term_labels, ran_trms_formula)
   ran_trms <- lapply(ran_trms_formula, function(frm){
-    frm <- stringr::str_split(frm, "\\|")[[1]] |> tail(n=1)
+    frm <- stringr::str_split(frm, "\\|")[[1]] |> utils::tail(n=1)
     as.formula(
       paste0("~", frm)
     ) |> terms() |> attr("term.labels")
@@ -220,7 +220,7 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
     if (target %in% trms$random) {
       ran_frms <- reformulas::findbars(formula(model))
       contains_target <- sapply(ran_frms, function(frm){
-          frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> tail(n=1)
+          frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> utils::tail(n=1)
         }) == target
       target_ran_frms <- sapply(ran_frms[contains_target], function(frm){
           paste0("(", deparse1(frm), ")")
