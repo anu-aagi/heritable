@@ -206,32 +206,34 @@ fit_counterpart_model.lmerMod <- function(model, target = NULL) {
   # get the terms from model object
   trms <- pull_terms.lmerMod(model)
   trms <- lapply(trms, unique)
+  fixed_trms <- trms$fixed
+  ran_trms <- trms$random
 
-  # check whether there is only a single RE
-  if (check_single_random_effect(trms)) {
-    # Fit a lm instead
-    fixed_formula <- reformulas::nobars(formula(model))
-    fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
-    # Pull out data
-    model_data <- model@frame %||% model.frame(model)
-    refit_model <- lm(fixed_formula, data = model_data)
-  } else if (length(trms$random) > 1) {
-    # If target is in random effects
-    if (target %in% trms$random) {
+  # If target is in random effects
+  if(target %in% ran_trms){
+    # check whether there is only a single RE
+    if(length(ran_trms) == 1){
+      # Fit a lm instead
+      fixed_formula <- reformulas::nobars(formula(model))
+      fixed_formula <- update(fixed_formula, paste(". ~ . +", ran_trms))
+      # Pull out data
+      model_data <- model@frame %||% model.frame(model)
+      refit_model <- lm(fixed_formula, data = model_data)
+    } else {
       ran_frms <- reformulas::findbars(formula(model))
       contains_target <- sapply(ran_frms, function(frm){
           frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> utils::tail(n=1)
         }) == target
       target_ran_frms <- sapply(ran_frms[contains_target], function(frm){
-          paste0("(", deparse1(frm), ")")
-        })
+        paste0("(", deparse1(frm), ")")
+      })
       target_ran_frms <- paste(target_ran_frms, collapse = "-")
       refit_model <- update(model, as.formula(paste(". ~ . - ", target_ran_frms, " + ", target)))
       check_model_convergence(refit_model)
-    } else if (target %in% trms$fixed) { # If target is in fixed effects
-      refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
-      check_model_convergence(refit_model)
     }
+  } else if (target %in% fixed_trms) { # If target is in fixed effects
+    refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
+    check_model_convergence(refit_model)
   } else {
     cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
   }
@@ -335,3 +337,61 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
   }
   return(A)
 }
+
+#' @noRd
+#' @keywords internal
+#' @importFrom Matrix Diagonal Matrix t diag
+var_diff <- function(V) {
+  d <- diag(V)
+  delta <- - 2 * V
+  delta <- delta + d
+  delta <- sweep(delta, 1, d, "+")
+  delta
+}
+
+
+#' @noRd
+#' @keywords internal
+var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
+  t <- Matrix::t
+  X <- lme4::getME(model, "X")
+  Z <- lme4::getME(model, "Z")
+
+  sigma2 <- sigma(model)^2
+  Lambda <- lme4::getME(model, "Lambda")
+  G <- tcrossprod(Lambda) * sigma2
+  dimnames(G) <- list(colnames(Z), colnames(Z))
+
+  gnames <- colnames(Z)
+  gnames_level <- levels(model@flist[[target]])
+  g <- gnames %in% gnames_level
+  m <- Matrix::sparse.model.matrix(~ 0 + factor(gnames, levels = gnames_level))
+  G_g <- crossprod(m,G[g, g, drop=FALSE]) %*% m
+  dimnames(G_g) <- list(gnames_level, gnames_level)
+  n_g <- length(gnames_level)
+
+  if(calc_C22){
+    R <- diag(nrow(X)) * sigma2
+    V <- R + Z %*% G %*% t(Z)
+    Vinv <- solve(V)
+    P <- Vinv - Vinv %*% X %*% solve(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+    C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+    dimnames(C22) <- list(colnames(Z), colnames(Z))
+    C22_g <- crossprod(m, C22[g, g, drop=FALSE]) %*% m
+    dimnames(C22_g) <- list(gnames_level, gnames_level)
+  } else {
+    C22_g <- NULL
+  }
+
+  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames_level)
+}
+
+# To Do, asreml
+
+#' @keywords internal
+#' @noRd
+var_comp <- function(model, target, calc_C22 = TRUE) {
+  UseMethod("var_comp")
+}
+.S3method("var_comp", "lmerMod", var_comp.lmerMod)
+
