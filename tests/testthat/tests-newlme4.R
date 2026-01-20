@@ -3,6 +3,8 @@ test_that("Confint works",{
   skip()
 
 require(stringr)
+require(asreml)
+devtools::document()
 lettuce_subset <- lettuce_phenotypes |>
   dplyr::filter(loc == "L2")
 N <- nrow(lettuce_subset)
@@ -107,8 +109,8 @@ H2(lettuce_lme4, target = "gen")
 
 
 # 01-13
-# To Do: debug, error message when genotype factor has interaction effects.
-# To Do: warning message for (f | gen).
+# To Do: debug, error message when genotype factor has interaction effects. (Done)
+# To Do: warning message for (f | gen) (Done).
 # To Do: identify interaction terms with genotype factor.
 # To Do: modify the standard method in presense of interaction terms.
 
@@ -182,6 +184,123 @@ ran_frms <- ran_frms[use] %>%
     paste0("(", deparse1(frm), ")")
   })
 fit_counterpart_model.lmerMod(lettuce_lme4, "gen")
+
+# 01-19
+# Check simple model fit for borad sense heritability.
+lettuce_lme4 <-  lme4::lmer(y ~ rep + ( 1 | gen * pseudo_var ), data = lettuce_subset)
+pull_terms(lettuce_lme4)
+check_model_specification(lettuce_lme4, "gen", "broad_sense")
+
+lettuce_lme4 <-  lme4::lmer(y ~ rep + ( pseudo_var | gen  ), data = lettuce_subset)
+check_model_specification(lettuce_lme4, "gen", "broad_sense")
+
+lettuce_lme4 <-  lme4::lmer(y ~ rep + ( 1 | gen  ) + (0+ pseudo_var | gen  ), data = lettuce_subset)
+check_model_specification(lettuce_lme4, "gen", "broad_sense")
+geno_components_from_lme4(lettuce_lme4, "gen")
+H2(lettuce_lme4, target = "gen")
+
+# 01-19 Renaming, standardise
+H2_Standard(lettuce_lme4, target = "gen")
+
+H2_Cullis.old <- function(model, target = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  g <- var_comp(model, target)
+  s2_g <- mean(Matrix::diag(g$G_g))
+
+  P_mu <- Matrix::Diagonal(n = g$n_g, x = g$n_g) - 1
+  vdBLUP_sum <- sum(Matrix::diag(P_mu %*% g$C22_g))
+  vdBLUP_avg <- vdBLUP_sum * (2 / (g$n_g * (g$n_g - 1)))
+
+  return(H2_Cullis_parameters(vdBLUP_avg, s2_g))
+}
+H2_Cullis.new <- function(model, target = NULL, options = NULL) {
+
+  initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  g <- var_comp(model, target)
+  s2_g <- mean(Matrix::diag(g$G_g))
+  n <- g$n_g
+  C22_g <- g$C22_g
+
+  # This is equivalent to delta <- var_diff(C22_g); delta_avg = mean(delta[lower.tri(delta)])
+  delta_avg <-  (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
+
+  return(H2_Cullis_parameters(delta_avg, s2_g))
+}
+H2_Cullis.old(lettuce_lme4, target = "gen")
+H2_Cullis.new(lettuce_lme4, target = "gen")
+H2_Cullis(lettuce_lme4, target = "gen")
+initial_checks(lettuce_lme4, target = "gen", NULL)
+
+H2_Oakey(lettuce_lme4, target = "gen")
+
+H2_Piepho(lettuce_lme4, target = "gen")
+
+H2_Delta(lettuce_lme4, target = "gen")
+
+H2_Delta_BLUE_pairwise.old <- function(
+    model,
+    target = NULL,
+    options = NULL
+) {
+  initial_checks(model, target, options)
+
+  conterpart <- fit_counterpart_model(model, target)
+
+  # Extract vc_g and vc_e
+  g <- var_comp(model, target, calc_C22 = FALSE)
+  s2_g <- mean(diag(g$G_g))
+
+  # Calculate mean variance of a difference between genotypes
+  frm <-  as.formula(paste("pairwise ~", target))
+  EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
+  EMM_fit <- data.frame(EMM_fit)  # Get variance
+  EMM_fit$var <- EMM_fit$SE^2
+
+  # Take pairwise differences and turn into variance-covariance matrix
+  gnames <- g$gnames
+  n_g <- g$n_g
+
+  # Start with empty variance matrix for differences
+  delta <- matrix(0, nrow = n_g, ncol = n_g)
+  dimnames(delta) <- list(gnames, gnames)
+
+  # Fill in the pairwise variances from deltas
+  for (i in 1:nrow(EMM_fit)) {
+    # Extract genotype names from contrast column
+    pair <- strsplit(as.character(EMM_fit$contrast[i]), " - ")[[1]]
+    g1 <- pair[1]
+    g2 <- pair[2]
+
+    # Variance of difference: Var(g1 - g2) = Var(g1) + Var(g2) - 2*Cov(g1, g2)
+    # Get covariance between g1 and g2 (0 by default, but can be specified)
+    delta[g1, g2] <- EMM_fit$var[i]
+    delta[g2, g1] <- EMM_fit$var[i] # symmetric
+  }
+
+  # H2 Delta BLUE
+  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(s2_g, delta)
+
+  return(H2_Delta_BLUE)
+}
+
+H2_Delta_BLUE_pairwise.old(lettuce_lme4, target = "gen")
+
+
+lettuce_lme4 <-  lme4::lmer(y ~ rep + ( 1 | gen ), data = lettuce_subset)
+H2(lettuce_lme4, "gen")
 
 
 # lme4::ranef(lettuce_lme4)

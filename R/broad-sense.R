@@ -74,6 +74,9 @@ H2.default <- function(model,
 
   initial_checks(model, target, options = options)
 
+  # Check correct model specification.
+  check_model_specification(model, target, "broad-sense")
+
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
     switch(m,

@@ -27,24 +27,18 @@ initial_checks <- function(model, target, options) {
     # Check if target appears in the model
     check_target_exists(model, target)
 
+    # Check if the target is specified as both fixed and random
+    check_target_both(model, target)
+
     # Check if G x E is fitted
-    check_G_by_E_exists(model, target)
-
-    if (check_target_both(model, target)) {
-      cli::cli_abort("The target {.var {target}} is fitted as both fixed and random effect")
+    if (options$check_gxe %||% FALSE){
+      check_G_by_E_exists(model, target)
     }
 
-    if (options$target_once %||% FALSE) {
-      # Check if target only appears exactly once in the model
-      check_target_appears_once(model, target)
-    }
-
-    # Check if target is random or fixed
-    if (!check_target_random(model, target)) {
-      cli::cli_abort("Heritability can only be calculated if {.value target} is a random effect.")
-    }
   }
 }
+
+########################### Check all ##############################
 
 # Check if model converged
 #' @keywords internal
@@ -96,35 +90,6 @@ check_target_exists <- function(model, target) {
   }
 }
 
-check_target_appears_once <- function(model, target) {
-  model_terms <- pull_terms_without_specials(model)
-  form <- as.formula(paste("~", paste(
-    c(
-      model_terms$fixed,
-      model_terms$random
-    ),
-    collapse = " + "
-  )))
-  form <- update(form, paste0("~ . - ", target))
-  fcts <- rownames(attr(terms(form), "factors"))
-  if (target %in% fcts) {
-    cli::cli_abort(
-      "The specified target {.code {target}} is found in multiple terms. Please specify only once."
-    )
-  }
-}
-
-# Check if target is in fixed or random
-#' @keywords internal
-check_target_random <- function(model, target) {
-  model_terms <- pull_terms_without_specials(model)
-  if (target %in% model_terms$random) {
-    TRUE
-  } else {
-    FALSE
-  }
-}
-
 # Check if target is in both fixed and random
 #' @keywords internal
 check_target_both <- function(model, target) {
@@ -134,20 +99,51 @@ check_target_both <- function(model, target) {
     any(grepl(target, model_terms$fixed, fixed = TRUE)) &&
       any(grepl(target, model_terms$random, fixed = TRUE))
   ) {
-    TRUE
-  } else {
-    FALSE
+    cli::cli_abort("The target {.code {target}} is fitted as both fixed and random effect")
   }
 }
 
-# Check length of random effects
+#' Check if G X E is fitted
 #' @keywords internal
-check_single_random_effect <- function(terms) {
-  if (length(terms$random) == 1) { #
-    TRUE
-  } else {
-    FALSE
+#' @noRd
+check_G_by_E_exists.asreml <- function(model, target){
+  ran_trms <- pull_terms_without_specials(model)$random
+  pattern <- paste0("(^|:)", target, "($|:)")
+
+  if(sum(grepl(pattern, ran_trms)) > 1){
+    cli::cli_abort("G x E models are currently not supported")
   }
+}
+
+#' @keywords internal
+#' @noRd
+check_G_by_E_exists.lmerMod <- function(model, target) {
+  ran_trms <- pull_terms_without_specials(model)$random
+  pattern <- paste0("(^|:)", target, "($|:)")
+
+  if(sum(grepl(pattern, ran_trms)) > 1){
+    cli::cli_abort("G x E models are currently not supported")
+  }
+}
+
+#' @keywords internal
+#' @noRd
+check_G_by_E_exists <- function(model, target) {
+  UseMethod("check_G_by_E_exists")
+}
+.S3method("check_G_by_E_exists", "asreml", check_G_by_E_exists.asreml)
+.S3method("check_G_by_E_exists", "lmerMod", check_G_by_E_exists.lmerMod)
+
+########################### Method specific check ##############################
+# Check if target is in fixed or random
+#' @keywords internal
+check_target_random <- function(model, target) {
+  model_terms <- pull_terms_without_specials(model)
+  if (!target %in% model_terms$random) {
+    cli::cli_warn("Heritability can only be calculated if the target {.code {target}} is a random effect.")
+    return(FALSE)
+  }
+  TRUE
 }
 
 # Helper function to check if GRM exists in environment
@@ -185,39 +181,55 @@ check_GRM_exists <- function(model, target, source = NULL){
   }
 }
 
-#' Check if G X E is fitted
+#' Check target term specification for borad-sense heritability
+#' For lme4, target as a random effect can only be specified once as (1|target)
+#' For asreml, target as a random effect can only be specified once as target
 #' @keywords internal
 #' @noRd
-check_G_by_E_exists.asreml <- function(model, target){
-  nms <- names(model$vparameters)
-  pattern <- paste0("(^|:)", target, "($|:)")
+check_model_specification.asreml <- function(model, target, type){
+  ran_trms <- pull_terms_without_specials(model)$random
+  ran_trms_with_special <- pull_terms(model)$random
+  if(target %in% ran_trms){
+    if(type == "broad_sense"){
+      if(sum(ran_trms == target)!=1){
+        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified once.Heritability calculation can be misleading.")
+      }
 
-  if(sum(grepl(pattern, nms)) > 1){
-    cli::cli_abort("G x E models are currently not supported")
-  } else {
-    FALSE
+      simple_model <- any(ran_trms_with_special == target)
+      if(!simple_model){
+        cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code ({target})}. Heritability calculation can be misleading.")
+      }
+    }
   }
 }
 
 #' @keywords internal
 #' @noRd
-check_G_by_E_exists.lmerMod <- function(model, target) {
-  bars <- reformulas::findbars(formula(model))
-  groups <- vapply(bars, function(b) paste(deparse(b[[3]]), collapse = ""), "")
-  pattern <- paste0("(^|:)", target, "($|:)")
+check_model_specification.lmerMod <- function(model, target, type){
+  ran_trms <- pull_terms_without_specials(model)$random
 
-    if(sum(grepl(pattern, groups)) > 1){
-      cli::cli_abort("G x E models are currently not supported")
+  if(target %in% ran_trms){
+    if(type == "broad_sense"){
+      if(sum(ran_trms == target)!=1){
+        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified only once. Heritability calculation can be misleading.")
+      }
+
+      simple_model <- any(sapply(reformulas::findbars(formula(model)),
+                                 function(frm) frm == paste0("1 | ",target)
+      )
+      )
+      if(!simple_model){
+        cli::cli_warn("The target {.code {target}} should be modelled as a random intercept: {.code (1 | {target})}. Heritability calculation can be misleading.")
+      }
     }
+  }
+
 }
 
 #' @keywords internal
 #' @noRd
-check_G_by_E_exists <- function(model, target) {
-  UseMethod("check_G_by_E_exists")
+check_model_specification <- function(model, target, type) {
+  UseMethod("check_model_specification")
 }
-.S3method("check_G_by_E_exists", "asreml", check_G_by_E_exists.asreml)
-.S3method("check_G_by_E_exists", "lmerMod", check_G_by_E_exists.lmerMod)
-
-
-
+.S3method("check_model_specification", "asreml", check_model_specification.asreml)
+.S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
