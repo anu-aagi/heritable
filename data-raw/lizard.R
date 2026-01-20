@@ -7,18 +7,14 @@ library(tidyverse)
 library(snpReady)
 
 growth_data <- read.csv("data-raw/lizard-data/Ldeli_quangen_growth.csv", stringsAsFactors = F)
-str(growth_data)
 
 lizard_phenotypes <- read_csv("data-raw/lizard-data/Ldeli_quangen_growth_DA.csv")
-dim(lizard_phenotypes)
-names(lizard_phenotypes)
 
 lizard_phenotypes <- lizard_phenotypes |>
   select(liz_id, treatment, dam_id, sire_id, mass, lnMass, days_since_hatch, z_days_since_hatch, z_days_since_hatch_I2)
 
 lizard_markers <- read_csv("data-raw/lizard-data/LD_SNP_high.csv") |>
     rename(genotype = ...1)
-dim(lizard_markers)
 
 growth_f1_ids <- unique(growth_data$F1_Genotype)
 
@@ -28,7 +24,6 @@ key <- growth_data |>
   rename(genotype = F1_Genotype)
 
 markers_f1 <- lizard_markers[lizard_markers$genotype %in% growth_f1_ids ,]
-dim(markers_f1)
 
 # Left join liz_id
 markers_f1 <- left_join(markers_f1, key) |>
@@ -50,7 +45,10 @@ lizard_snpready <- snpReady::raw.data(data = hq_snps, call.rate = 0.60, maf = 0.
 
 dim(lizard_snpready$M.clean)
 rownames(lizard_snpready$M.clean)
-lizard_markers <- lizard_snpready$M.clean
+lizard_markers <- as_tibble(lizard_snpready$M.clean)
+lizard_markers$gen <- rownames(lizard_snpready$M.clean)
+lizard_markers <- lizard_markers |>
+  relocate(gen, 1)
 
 # G matrix
 lizard_GRM <- snpReady::G.matrix(M=lizard_markers, format = "wide",
