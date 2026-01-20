@@ -1,4 +1,4 @@
-#' Phenotypic of 89 lettuce varieties
+#' Phenotypic data of 89 lettuce varieties
 #' @usage lettuce_phenotypes
 #' @description
 #' 89 lettuce varieties tested at three environments, each laid out as a
@@ -43,3 +43,6 @@
 #' @references Hayes, R. J., Galeano, C. H., Luo, Y., Antonise, R., & Simko, I. (2014). Inheritance of Decay of Fresh-cut Lettuce in a Recombinant Inbred Line Population from ‘Salinas 88’ × ‘La Brillante’. Journal of the American Society for Horticultural Science, 139(4), 388–398. \doi{doi:10.21273/JASHS.139.4.388}
 "lettuce_markers"
 "lettuce_GRM"
+
+#' Phenotypic data of Australian lizards
+
