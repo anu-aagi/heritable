@@ -50,17 +50,24 @@
 #' Phenotypic data of Australian lizards
 #' @usage lizard_phenotypes
 #' @description
-#'
-#'
+#' Phenotypic data for Australian lizards (_L. delicata_). Lizard eggs were
+#' incubated at two different incubation treatment temperatures. Lizards were
+#' weighed to investigate differences in growth between treatments.
 #'
 #'
 #' @format ## `lizard_phenotypes`
-#' A data frame with  rows and  columns:
+#' A data frame with 3928 rows and 9 columns:
 #'
-#' - ``
-#' - ``
-#' - ``
-#' - ``
+#' - `liz_id` individual identifier, equivalent to `gen` in `lizard_markers`
+#' - `treatment` temperature (degrees celcius) at which lizard eggs were incubated
+#' - `dam_id` dam identifier
+#' - `sire_id` sire identifer
+#' - `mass` mass of lizard in
+#' - `ln_mass` natural log `mass`
+#' - `days_since_hatch` days since hatching (age)
+#' - `z_days_since_hatch` scaled and centered `days_since_hatch` see ?scale()
+#' - `z_days_since_hatch_i2` squared `z_days_since_hatch` see Kar et al 2024 to see details on their analysis
+#'
 #' @references Kar, F., Nakagawa, S. and Noble, D.W.A. (2024) “Heritability and developmental plasticity of growth in an oviparous lizard,” Heredity, 132(2), pp. 67–76. Available at: https://doi.org/10.1038/s41437-023-00660-3.
 #' @source [https://osf.io/hjkxd/?view_only=12a6b6010567474fac9fecd54472aa3d](https://osf.io/hjkxd/?view_only=12a6b6010567474fac9fecd54472aa3d)
 "lizard_phenotypes"
@@ -72,11 +79,13 @@
 #' @format ## `lizard_markers`
 #' A data frame with 261 rows and 8438 columns:
 #'
-#' -
-#' -
-#'
+#' - `gen` individual identifier, equivalent to `liz_id` in `lizard_phenotypes`
+#' - 8437 genetic markers scored as 0, 2, 1 (see Details)
 #'
 #' @format ## `lizard_GRM`
+#'  A matrix array with 261 rows and 261 columns where each row/column represents
+#' a genotype
+#'
 #' @details See `?snpReady::G.matrix` for how GRM was computed.
 #' The biallelic marker \eqn{M_iw} for the ith genotype and the \eqn{w}th marker with
 #'  alleles \eqn{A_1} (i.e. the reference allele) and \eqn{A_2} was coded as:

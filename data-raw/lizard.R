@@ -1,9 +1,9 @@
 library(tidyverse)
+library(janitor)
 
 # install.packages("BiocManager")
 # BiocManager::install("impute")
 # remotes::install_github("italo-granato/snpReady")
-
 library(snpReady)
 
 growth_data <- read.csv("data-raw/lizard-data/Ldeli_quangen_growth.csv", stringsAsFactors = F)
@@ -11,18 +11,21 @@ growth_data <- read.csv("data-raw/lizard-data/Ldeli_quangen_growth.csv", strings
 lizard_phenotypes <- read_csv("data-raw/lizard-data/Ldeli_quangen_growth_DA.csv")
 
 lizard_phenotypes <- lizard_phenotypes |>
-  select(liz_id, treatment, dam_id, sire_id, mass, lnMass, days_since_hatch, z_days_since_hatch, z_days_since_hatch_I2)
+  select(liz_id, treatment, dam_id, sire_id, mass, lnMass, days_since_hatch, z_days_since_hatch, z_days_since_hatch_I2) |>
+  clean_names()
 
 lizard_markers <- read_csv("data-raw/lizard-data/LD_SNP_high.csv") |>
     rename(genotype = ...1)
 
 growth_f1_ids <- unique(growth_data$F1_Genotype)
 
+# Identifying key to match sample name and lizard/genotype
 key <- growth_data |>
   select(liz_id, F1_Genotype) |>
   distinct() |>
   rename(genotype = F1_Genotype)
 
+# Subset to genotypes in study
 markers_f1 <- lizard_markers[lizard_markers$genotype %in% growth_f1_ids ,]
 
 # Left join liz_id
@@ -51,8 +54,10 @@ lizard_markers <- lizard_markers |>
   relocate(gen, 1)
 
 # G matrix
-lizard_GRM <- snpReady::G.matrix(M=lizard_markers, format = "wide",
-                        method = "VanRaden",  plot = TRUE)
+lizard_GRM <- snpReady::G.matrix(M = lizard_markers[-1], format = "wide",
+                        method = "VanRaden",  plot = FALSE)$Ga
+
+dimnames(lizard_GRM) <- list(rownames(lizard_snpready$M.clean), rownames(lizard_snpready$M.clean))
 
 usethis::use_data(lizard_phenotypes, overwrite = TRUE)
 usethis::use_data(lizard_markers, overwrite = TRUE)
