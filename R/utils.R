@@ -26,7 +26,9 @@ pull_terms.lmerMod <- function(model) {
   ran_trms_formula <-
     stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
   fixed_trms <- setdiff(term_labels, ran_trms_formula)
-  ran_trms <- names(lme4::getME(model, "cnms"))
+  ran_trms <- sapply(
+    reformulas::findbars(model_formula), deparse
+  )
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -42,6 +44,12 @@ pull_terms <- function(model) {
 #' @keywords internal
 pull_terms_without_specials.lmerMod <- function(model) {
   model_terms <- pull_terms(model)
+  model_terms$random <- sapply(
+    model_terms$random,
+    function(frm){
+      str_extract(frm, "(?<=\\|\\ ).+")
+    }
+  ) |> unname()
   model_terms
 }
 
@@ -198,7 +206,7 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target = NULL) {
   # get the terms from model object
-  trms <- pull_terms.lmerMod(model)
+  trms <- pull_terms_without_specials(model)
   trms <- lapply(trms, unique)
   fixed_trms <- trms$fixed
   ran_trms <- trms$random
@@ -346,8 +354,7 @@ var_diff <- function(V) {
 
 #' @noRd
 #' @keywords internal
-var_comp.lmerMod <- function(model, target, calc_C22 = TRUE, calc_G_gxe = FALSE) {
-  t <- Matrix::t
+var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -356,13 +363,20 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE, calc_G_gxe = FALSE)
   G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
-  gnames <- colnames(Z)
-  gnames_level <- levels(model@flist[[target]])
-  g <- gnames %in% gnames_level
-  m <- Matrix::sparse.model.matrix(~ 0 + factor(gnames, levels = gnames_level))
+  # Get BLUP weight
+  mapper <- map_target_terms(model, "target")
+  g <- mapper$idx
+  m <- mapper$m
+  intercept <- mapper$intercept
+  if(sum(intercept) != 0){
+    g <- g[intercept]
+    m <- m[intercept, , drop=FALSE]
+  }
+
+  gnames <- levels(model@flist[[target]])
   G_g <- crossprod(m,G[g, g, drop=FALSE]) %*% m
-  dimnames(G_g) <- list(gnames_level, gnames_level)
-  n_g <- length(gnames_level)
+  dimnames(G_g) <- list(gnames, gnames)
+  n_g <- length(gnames)
 
   if(calc_C22){
     R <- diag(nrow(X)) * sigma2
@@ -372,12 +386,12 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE, calc_G_gxe = FALSE)
     C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
     dimnames(C22) <- list(colnames(Z), colnames(Z))
     C22_g <- crossprod(m, C22[g, g, drop=FALSE]) %*% m
-    dimnames(C22_g) <- list(gnames_level, gnames_level)
+    dimnames(C22_g) <- list(gnames, gnames)
   } else {
     C22_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames_level)
+  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames)
 }
 
 # To Do, asreml
@@ -389,3 +403,89 @@ var_comp <- function(model, target, calc_C22 = TRUE) {
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
 
+#' @noRd
+#' @keywords internal
+#' @importFrom Matrix colMeans
+map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
+  model <- lettuce_lme4
+  target <- "gen"
+  mmlist   <- lme4::getME(model, "mmList")
+  grp_list <- lme4::getME(model, "flist")
+  grp_names <- names(lme4::getME(model, "cnms"))
+  Z <- lme4::getME(model, "Z")
+  Gp <- lme4::getME(model, "Gp")
+
+  pattern <- paste0("(^|:)", target, "(:|$)")
+  matched_grp <- which(grepl(pattern, grp_names))
+  idx <- do.call(c,
+                 lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
+  )
+  terms <- colnames(Z[,idx])
+  target_grp <- levels(grp_list[[target]])
+  n_tg <- length(target_grp)
+
+
+  w_list <- c()
+  m_list <- list()
+  intercept_idx <- c()
+
+  for(g in matched_grp){
+    mm <- Matrix::Matrix(mmlist[[g]])
+    grp <- levels(grp_list[[grp_names[g]]])
+
+    n <- nrow(mm)
+    p <- ncol(mm)
+    q <- length(grp)
+
+    # Get weighting matrix
+    if(grp_names[g] != target){
+      target_order <- which(str_split(grp_names[g], ":", simplify = TRUE) == target)
+      grp_no_target <- str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
+      grp_no_target <- apply(grp_no_target, 1, function(g) paste0(g, collapse = ":"))
+      w <- as.numeric((table(grp_no_target)/q)[grp_no_target])
+
+      # Get intercept terms
+      intercept_idx <- c(intercept_idx, rep(0, p*q))
+    } else {
+      w <- rep(1, p*q)
+
+      # Get intercept terms
+      pi <- which("(Intercept)" %in% colnames(mm))
+      z <- rep(0, p*q)
+      if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
+      intercept_idx <- c(intercept_idx, z)
+    }
+    # BLUP weight
+    w <- w * rep(colMeans(mm), q)
+    m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
+
+    # BLUP weight matrix
+    colnames(m) <- target_grp
+    names(w) <- rownames(m) <- rep(grp, each = p)
+    for(tg in target_grp){
+      pattern <- paste0("(^|:)", tg, "(:|$)")
+      m[grepl(pattern, names(w)),tg] <- 1
+    }
+    m <- m * w
+    m_list[[g]] <- m
+    w_list[[g]] <- w
+  }
+
+  m <- do.call(rbind, m_list)
+  w <- do.call(c, w_list)
+
+  intercept <- intercept_idx==1
+  list(m = m,
+       w = w,
+       idx = setNames(idx, terms),
+       intercept = setNames(intercept, terms))
+}
+
+# To Do, asreml
+
+#' @keywords internal
+#' @noRd
+map_target_terms <- function(model, target, reconstruct = FALSE) {
+  UseMethod("map_target_terms")
+}
+.S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)

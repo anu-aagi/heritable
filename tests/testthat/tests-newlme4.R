@@ -199,6 +199,7 @@ lettuce_lme4 <-  lme4::lmer(y ~ rep + ( 1 | gen  ) + (0+ pseudo_var | gen  ), da
 check_model_specification(lettuce_lme4, "gen", "broad_sense")
 geno_components_from_lme4(lettuce_lme4, "gen")
 H2(lettuce_lme4, target = "gen")
+pull_terms_without_specials(lettuce_lme4)
 
 # 01-19 Renaming, standardise
 H2_Standard(lettuce_lme4, target = "gen")
@@ -318,69 +319,19 @@ dimnames(G) <- list(colnames(Z), colnames(Z))
 
 # 01-20 Try get all terms associated with gen, and then extract each of the component
 lettuce_lme4 <-  lme4::lmer(y ~  (pseudo_var | gen ) + (1|pseudo_var), data = lettuce_subset)
-lettuce_lme4 <-  lme4::lmer(y ~  (1 | gen *  gen) + (1|pseudo_var), data = lettuce_subset)
+lettuce_lme4 <-  lme4::lmer(y ~  (pseudo_var | pseudo_var * gen ) + (1|pseudo_var), data = lettuce_subset)
 lettuce_lme4 <-  lme4::lmer(y ~  rep* pseudo_var2 + (1 | gen) + (1|pseudo_var), data = lettuce_subset)
 lettuce_lme4 <-  lme4::lmer(y ~  (pseudo_var | gen ) + (1| gen), data = lettuce_subset)
+lettuce_lme4 <-  lme4::lmer(y ~  rep + ( 0 + pseudo_var | gen ) + (1| gen), data = lettuce_subset)
+lettuce_lme4 <-  lme4::lmer(y ~  rep + (1| gen), data = lettuce_subset)
+lettuce_lme4 <-  lme4::lmer(y ~  rep + (1| gen) + (1|pseudo_var), data = lettuce_subset)
 
 # Get variance componenets
-reconstruct_Z <- function(model, target){
-  model <- lettuce_lme4
-  target <- "gen"
-  mmlist   <- lme4::getME(model, "mmList")
-  grp_list <- lme4::getME(model, "flist")
-  grp_names <- names(lme4::getME(model, "cnms"))
-  Z <- lme4::getME(model, "Z")
-  Gp <- lme4::getME(model, "Gp")
+maps <- map_target_terms(lettuce_lme4, "gen", reconstruct = FALSE)
+H2(lettuce_lme4, "gen")
+colnames(lme4::getME(lettuce_lme4, "Z")[,maps$idx]) ==
+  names(maps$w)#Equal
 
-  pattern <- paste0(":?", target, ":?")
-  matched_grp <- which(grepl(pattern, grp_names))
-  idx <- do.call(c,
-                        lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
-  )
-  terms <- colnames(Z[,idx])
-  target_grp <- levels(grp_list[[target]])
-
-  term2grp <- Matrix(0, nrow = length(terms),
-                       ncol = length(target_grp),
-                       dimnames = list(terms, target_grp))
-
-  for(g in target_grp){
-    pattern <- paste0(":?", g, ":?")
-    term2grp[grepl(pattern, terms),g] <- 1
-  }
-
-  Z_list <- list()
-  refactor_list <- list()
-
-  for(g in matched_grp){
-    mm <- Matrix::Matrix(mmlist[[g]])
-    grp <- grp_list[[grp_names[g]]]
-    levs <- levels(grp)
-
-    n <- nrow(mm)
-    p <- ncol(mm)
-    q <- length(levs)
-    x <- as.numeric(mm)#rep(apply(mm, 2, mean), each = n)
-    i <- rep(seq_len(n), p)
-    j <- p*as.numeric(grp)
-    j <- sapply((p-1):0, function(pi) j-pi)
-
-    Z_list[[g]] <- sparseMatrix(
-      i = i,
-      j = j,
-      x = x
-    )
-  }
-  Z_reconstruct <- do.call(cbind, Z_list)
-  list(Z = Z_reconstruct, idx= setNames(idx, terms), term2grp = term2grp)
-}
-Z <- reconstruct_Z(lettuce_lme4, "gen")
-max(Z$Z - lme4::getME(lettuce_lme4, "Z")[,Z$idx])  #Equal
-
-
-
-
-max(Z_reconstruct - Z[, target_idx] )
 # lme4::ranef(lettuce_lme4)
 # lme4::VarCorr(lettuce_lme4)
 # lme4::ngrps(lettuce_lme4)
