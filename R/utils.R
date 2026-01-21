@@ -47,7 +47,7 @@ pull_terms_without_specials.lmerMod <- function(model) {
   model_terms$random <- sapply(
     model_terms$random,
     function(frm){
-      str_extract(frm, "(?<=\\|\\ ).+")
+      stringr::str_extract(frm, "(?<=\\|\\ ).+")
     }
   ) |> unname()
   model_terms
@@ -364,7 +364,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
   # Get BLUP weight
-  mapper <- map_target_terms(model, "target")
+  mapper <- map_target_terms(model, target)
   g <- mapper$idx
   m <- mapper$m
   intercept <- mapper$intercept
@@ -407,8 +407,6 @@ var_comp <- function(model, target, calc_C22 = TRUE) {
 #' @keywords internal
 #' @importFrom Matrix colMeans
 map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
-  model <- lettuce_lme4
-  target <- "gen"
   mmlist   <- lme4::getME(model, "mmList")
   grp_list <- lme4::getME(model, "flist")
   grp_names <- names(lme4::getME(model, "cnms"))
@@ -425,7 +423,7 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
   n_tg <- length(target_grp)
 
 
-  w_list <- c()
+  w_list <- list()
   m_list <- list()
   intercept_idx <- c()
 
@@ -439,8 +437,8 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
 
     # Get weighting matrix
     if(grp_names[g] != target){
-      target_order <- which(str_split(grp_names[g], ":", simplify = TRUE) == target)
-      grp_no_target <- str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
+      target_order <- which(stringr::str_split(grp_names[g], ":", simplify = TRUE) == target)
+      grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
       grp_no_target <- apply(grp_no_target, 1, function(g) paste0(g, collapse = ":"))
       w <- as.numeric((table(grp_no_target)/q)[grp_no_target])
 

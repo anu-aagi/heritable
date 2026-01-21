@@ -332,6 +332,12 @@ H2(lettuce_lme4, "gen")
 colnames(lme4::getME(lettuce_lme4, "Z")[,maps$idx]) ==
   names(maps$w)#Equal
 
+
+maps <- map_target_terms(lmer_model_random, "gen", reconstruct = FALSE)
+H2(lmer_model_random, "gen")
+var_comp(lmer_model_random, "gen")
+
+
 # lme4::ranef(lettuce_lme4)
 # lme4::VarCorr(lettuce_lme4)
 # lme4::ngrps(lettuce_lme4)
