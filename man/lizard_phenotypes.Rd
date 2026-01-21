@@ -9,7 +9,7 @@
 
 A data frame with 3928 rows and 9 columns:
 \itemize{
-\item \code{liz_id} individual identifier, equivalent to \code{gen} in \code{lizard_markers}
+\item \code{liz_id} individual identifier, equivalent to \code{gen} in \code{lizard_markers} 261 individuals
 \item \code{treatment} temperature (degrees celcius) at which lizard eggs were incubated
 \item \code{dam_id} dam identifier
 \item \code{sire_id} sire identifer

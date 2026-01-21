@@ -26,13 +26,7 @@ pull_terms.lmerMod <- function(model) {
   ran_trms_formula <-
     stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
   fixed_trms <- setdiff(term_labels, ran_trms_formula)
-  ran_trms <- lapply(ran_trms_formula, function(frm){
-    frm <- stringr::str_split(frm, "\\|")[[1]] |> utils::tail(n=1)
-    as.formula(
-      paste0("~", frm)
-    ) |> terms() |> attr("term.labels")
-  })
-  ran_trms <- do.call(c, ran_trms)
+  ran_trms <- names(lme4::getME(model, "cnms"))
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -352,7 +346,7 @@ var_diff <- function(V) {
 
 #' @noRd
 #' @keywords internal
-var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
+var_comp.lmerMod <- function(model, target, calc_C22 = TRUE, calc_G_gxe = FALSE) {
   t <- Matrix::t
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
