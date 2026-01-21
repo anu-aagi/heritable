@@ -58,7 +58,7 @@
 #' @format ## `lizard_phenotypes`
 #' A data frame with 3928 rows and 9 columns:
 #'
-#' - `liz_id` individual identifier, equivalent to `gen` in `lizard_markers`
+#' - `liz_id` individual identifier, equivalent to `gen` in `lizard_markers` 261 individuals
 #' - `treatment` temperature (degrees celcius) at which lizard eggs were incubated
 #' - `dam_id` dam identifier
 #' - `sire_id` sire identifer
