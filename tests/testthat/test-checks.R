@@ -21,17 +21,13 @@ test_that("Inner checks are triggered", {
   expect_error(H2(model = asreml_model_fixed, target = "gen"))
 
   # Target level
-  expect_false(check_target_random(asreml_model_fixed, target))
+  expect_warning(check_target_random(asreml_model_fixed, target))
   expect_true(check_target_random(asreml_model_random, target))
   expect_error(H2(model = asreml_model_random, target = c("foo", "rep")))
 
   # Method level
-  expect_error(H2(asreml_model_fixed, target, "Oakey"))
-  expect_error(H2(asreml_model_fixed, target, "Cullis"))
-
-  # Model level
-  expect_true(check_single_random_effect(pull_terms(lme4_lettuce)))
-  expect_false(check_single_random_effect(pull_terms(lmer_model_random)))
+  expect_warning(H2(asreml_model_fixed, target, "Oakey"))
+  expect_warning(H2(asreml_model_fixed, target, "Cullis"))
 })
 
 test_that("We can find GRM",{

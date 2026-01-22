@@ -6,8 +6,6 @@ library(janitor)
 # remotes::install_github("italo-granato/snpReady")
 library(snpReady)
 
-growth_data <- read.csv("data-raw/lizard-data/Ldeli_quangen_growth.csv", stringsAsFactors = F)
-
 lizard_phenotypes <- read_csv("data-raw/lizard-data/Ldeli_quangen_growth_DA.csv")
 
 # Identifying key to match sample name and lizard/genotype

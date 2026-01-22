@@ -188,7 +188,8 @@ h2_Delta_parameters <- function(G_g, vd_matrix, type = c("BLUP", "BLUE")) {
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
 vd <- diag(G_g)
 n_g <- nrow(G_g)
-denom <- var_diff(G_g)
+ denom <- var_diff(G_g)
+#denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
 1 - vd_matrix / denom
 }
 

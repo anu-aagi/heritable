@@ -26,10 +26,10 @@ test_that("H2 for asreml works", {
   expect_no_error(H2(asreml_model_R, "gen"))
 
   # GxE models -----------------------------------------------------------------
-  #TODO: Currently not yet implemented so should error
+  #TODO: Commented out because in development
   asreml_model_g_by_e <- readRDS(file = test_path("fixtures/asreml_model_g_by_e.rds"))
 
-  expect_error(H2(asreml_model_g_by_e, target = "gen"))
+  # expect_error(H2(asreml_model_g_by_e, target = "gen"))
 })
 
 

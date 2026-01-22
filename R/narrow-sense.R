@@ -11,7 +11,7 @@
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @aliases H2
 #' @usage
-#' h2(model, target, method = c("Oakey", "Delta"), source, options)
+# h2(model, target, method = c("Oakey", "Delta"), source, options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
 #' @returns A named numeric vector, length matching number of methods supplied
 #' @details
@@ -48,7 +48,7 @@ h2 <- function(model, target, method = c("Oakey", "Delta"), source, options) {
 h2.default <- function(
     model,
     target,
-    method = c("Oakey", "Delta"),
+    method = c("Delta"),
     source = NULL,
     options = NULL,
     ...) {
@@ -61,7 +61,7 @@ h2.default <- function(
   h2_values <- sapply(method, function(m) {
     switch(m,
            # Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
-           Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
+           # Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
            # Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
            Delta = h2_Delta(model, target, options = list(check = FALSE)),
            # Standard = h2_Standard(model, target, options = list(check = FALSE)),
@@ -102,6 +102,7 @@ h2.default <- function(
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #' @noRd
+#' @keywords internal
 h2_Oakey <- function(model, target, source, options) {
   UseMethod("h2_Oakey")
 }

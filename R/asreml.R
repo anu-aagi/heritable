@@ -7,7 +7,7 @@ get_vc_g_asreml <- function(model, target) {
 }
 
 #' @noRd
-#' @export
+#' @keywords internal
 h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 
   initial_checks(model, target, options)
@@ -35,7 +35,7 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 }
 
-#'@export
+#' @keywords internal
 h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -108,6 +108,11 @@ h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type =
 #' }
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
 
   # Get genotype variance
   vc_g <- get_vc_g_asreml(model, target)
