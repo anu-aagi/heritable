@@ -128,52 +128,41 @@ test_that("Refactoring delta parameter functions works", {
 # )
 
 test_that("Try GPT simulation", {
-  oakey_true_from_matrices <- function(X, Z, G, sigma_g2, sigma_e2, tol = 1e-10) {
-    n <- ncol(Z)
+  oakey_true_from_matrices_eigen <- function(X, Z, G_marker, sigma_g2, sigma_e2,
+                                             tol_eig = 1e-8, tol_G = 1e-10) {
+    n <- nrow(Z)
+    m <- ncol(Z)
 
-    # R^{-1} for iid residuals
-    Rinv <- diag(1 / sigma_e2, nrow(Z))
+    # Genetic covariance for g: G = sigma_g2 * G_marker
+    G <- sigma_g2 * G_marker
+    G <- (G + t(G))/2
 
-    # (sigma_g2 * G)^{-1} using eigen (handles PSD)
+    # V = R + Z G Z'
+    V <- diag(sigma_e2, n) + Z %*% G %*% t(Z)
+    Vinv <- solve(V)
+
+    # Pv = Vinv - Vinv X (X' Vinv X)^-1 X' Vinv
+    XtVinvX <- t(X) %*% Vinv %*% X
+    XtVinvX_inv <- solve(XtVinvX)
+    Pv <- Vinv - Vinv %*% X %*% XtVinvX_inv %*% t(X) %*% Vinv
+    Pv <- (Pv + t(Pv))/2
+
+    # Build symmetric similar matrix S = G^{1/2} Z' Pv Z G^{1/2}
     eg <- eigen(G, symmetric = TRUE)
-    d <- eg$values
+    d <- pmax(eg$values, 0)
     U <- eg$vectors
-    dinv <- ifelse(d > tol, 1 / d, 0)
-    Ginv <- U %*% diag(dinv) %*% t(U)
-    Ginv <- (Ginv + t(Ginv)) / 2
+    Ghalf <- U %*% diag(sqrt(d)) %*% t(U)
 
-    Ginvg <- (1 / sigma_g2) * Ginv
+    S <- Ghalf %*% (t(Z) %*% Pv %*% Z) %*% Ghalf
+    S <- (S + t(S))/2
 
-    XtRinvX <- t(X) %*% Rinv %*% X
-    XtRinvZ <- t(X) %*% Rinv %*% Z
-    ZtRinvX <- t(Z) %*% Rinv %*% X
-    ZtRinvZ <- t(Z) %*% Rinv %*% Z
+    lam <- eigen(S, symmetric = TRUE, only.values = TRUE)$values
 
-    K <- rbind(
-      cbind(XtRinvX, XtRinvZ),
-      cbind(ZtRinvX, ZtRinvZ + Ginvg)
-    )
+    # Oakey: drop (near) zero eigenvalues and average remaining
+    lam_pos <- lam[lam > tol_eig]
+    H2 <- mean(lam_pos)
 
-    Kinv <- MASS::ginv(K)
-    p <- ncol(X)
-    Cuu <- Kinv[(p + 1):(p + n), (p + 1):(p + n)]
-    Cuu <- (Cuu + t(Cuu)) / 2  # symmetrize
-
-    # average PEV of pairwise differences
-    # mean over i<j of (Cii + Cjj - 2Cij)
-    diagC <- diag(Cuu)
-    # Efficient mean pairwise difference variance:
-    # mean_{i<j}(Cii + Cjj - 2Cij)
-    nG <- length(diagC)
-    sumCiiCjj <- (nG - 1) * sum(diagC) * 2  # sum over ordered pairs i!=j of (Cii + Cjj)
-    sumOff <- sum(Cuu) - sum(diagC)         # sum_{i!=j} Cij / 2? careful: Cuu includes both
-    # Let's do it directly robustly:
-    idx <- which(upper.tri(Cuu))
-    pev_diff_bar <- mean(diagC[row(Cuu)[idx]] + diagC[col(Cuu)[idx]] - 2 * Cuu[idx])
-
-    H2 <- 1 - pev_diff_bar / (2 * sigma_g2)
-
-    list(H2 = H2, pev = Cuu, pev_diff_bar = pev_diff_bar)
+    list(H2 = H2, eigenvalues = lam, kept = lam_pos)
   }
 
 
@@ -211,7 +200,7 @@ test_that("Try GPT simulation", {
 
   sim <- simulate_grm_data()
 
-  truth <- oakey_true_from_matrices(sim$X, sim$Z, sim$G, sim$sigma_g2, sim$sigma_e2)
+  truth <- oakey_true_from_matrices_eigen(sim$X, sim$Z, sim$G, sim$sigma_g2, sim$sigma_e2)
   truth$H2
 
   G_inv <- MASS::ginv(sim$G)
@@ -224,10 +213,10 @@ test_that("Try GPT simulation", {
 
   # Compare:
   c(true = truth$H2, estimated = h2_Oakey(model, "genotype"))
+  #  true estimated
+  # 0.7248769 0.6755711
 
   Gg_inv_true <- (1/sim$sigma_g2 * sim$sigma_e2) * G_inv
-
-  H2_eig_true <- H2_Oakey_parameters(Gg_inv_true, truth$pev)
 
   # Substitute truth from simulation and see if h2 can recover from model
   model_plugged_in <- model
@@ -240,22 +229,7 @@ test_that("Try GPT simulation", {
 
   c(true = truth$H2,
     fixedVC = h2_Oakey(model_plugged_in, "genotype"))
+  # true   fixedVC
+  # 0.7248769 0.2702343
 
-
-  Gg_inv <- (1 / get_vc_g_asreml(model_plugged_in, target_vm_term_asreml(model_plugged_in, "genotype")$target_vm)) * G_inv
-  C22_g <- predict(model_plugged_in,
-                        classify = "genotype",
-                        only = "genotype",
-                        vcov = TRUE,
-                        trace = FALSE
-  )$vcov
-
-  names_clean <- stringr::str_remove(
-    rownames(model_plugged_in$coefficients$random),
-    "vm\\(.+\\)_"
-  )
-
-  dimnames(C22_g) <- list(names_clean, names_clean)
-
-  H2_Oakey_parameters(Gg_inv,   C22_g[rownames(Gg_inv), colnames(Gg_inv)])
 })
