@@ -327,15 +327,49 @@ lettuce_lme4 <-  lme4::lmer(y ~  rep + (1| gen), data = lettuce_subset)
 lettuce_lme4 <-  lme4::lmer(y ~  rep + (1| gen) + (1|pseudo_var), data = lettuce_subset)
 
 # Get variance componenets
-maps <- map_target_terms(lettuce_lme4, "gen", reconstruct = FALSE)
+maps <- map_target_terms(lettuce_lme4, "gen")
 H2(lettuce_lme4, "gen")
 colnames(lme4::getME(lettuce_lme4, "Z")[,maps$idx]) ==
   names(maps$w)#Equal
 
 
-maps <- map_target_terms(lmer_model_random, "gen", reconstruct = FALSE)
+maps <- map_target_terms(lmer_model_random, "gen")
 H2(lmer_model_random, "gen")
 var_comp(lmer_model_random, "gen")
+
+# 01-21， try get stratified heritability
+lettuce_lme4 <-  lme4::lmer(y ~  rep + ( loc | gen ) + (1| gen), data = lettuce_phenotypes)
+# gnames<- levels(lettuce_phenotypes$gen)
+# n_g <- nlevels(lettuce_phenotypes$gen)
+# new_dat <- lettuce_phenotypes[1,c("loc","rep")]
+# new_dat <- rep(new_dat, n_g) %>% dplyr::mutate(gen = gnames)
+# new_Z <- lme4::mkNewReTrms(
+#   object = lettuce_lme4,
+#   newdata = new_dat[,1:2],
+#   re.form = NULL,
+#   allow.new.levels = TRUE
+# )$Z
+# new_Z[maps$idx,] * maps$m
+#
+# lettuce_lme4
+#
+# pull_terms_without_specials(lettuce_lme4)
+# reformulas::findbars(formula(lettuce_lme4))
+lme4::getME(lettuce_lme4, "Z") %>% colnames()
+maps <- map_target_terms(lettuce_lme4, "gen")
+H2(lettuce_lme4, "gen")
+build_new_Z(lettuce_lme4, "gen", new_dat = c("loc" = "L1", "rep" = "R1"))
+var_comp(lettuce_lme4, "gen", marginal = FALSE)
+var_comp(lettuce_lme4, "gen", marginal = FALSE, stratification = c("loc" = "L1", "rep" = "R1"))
+
+
+H2_Cullis.lmerMod(lettuce_lme4, "gen", marginal = TRUE)
+H2_Cullis.lmerMod(lettuce_lme4, "gen", marginal = FALSE)
+H2_Cullis.lmerMod(lettuce_lme4, "gen", marginal = TRUE, stratification = c("loc" = "L1", "rep" = "R1"))
+H2_Cullis.lmerMod(lettuce_lme4, "gen", marginal = FALSE, stratification = c("loc" = "L1", "rep" = "R1"))
+
+H2_Cullis.lmerMod(lettuce_lme4, "gen", marginal = FALSE, stratification = c("loc" = "L2", "rep" = "R1"))
+H2_Cullis.lmerMod(lettuce_lme4, "gen", marginal = FALSE, stratification = c("loc" = "L3", "rep" = "R1"))
 
 
 # lme4::ranef(lettuce_lme4)

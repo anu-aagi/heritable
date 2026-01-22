@@ -354,7 +354,8 @@ var_diff <- function(V) {
 
 #' @noRd
 #' @keywords internal
-var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
+var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
+                             marginal = TRUE, stratification = NULL) {
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -364,13 +365,18 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
   # Get BLUP weight
-  mapper <- map_target_terms(model, target)
+  mapper <- map_target_terms(model, target, marginal)
   g <- mapper$idx
-  m <- mapper$m
-  intercept <- mapper$intercept
-  if(sum(intercept) != 0){
-    g <- g[intercept]
-    m <- m[intercept, , drop=FALSE]
+
+  if(is.null(stratification)){
+    m <- mapper$m
+    intercept <- mapper$intercept
+    if(sum(intercept) != 0 && !marginal){
+      g <- g[intercept]
+      m <- m[intercept, , drop=FALSE]
+    }
+  } else {
+    m <- build_new_Z(model, target, stratification)
   }
 
   gnames <- levels(model@flist[[target]])
@@ -398,7 +404,8 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
 
 #' @keywords internal
 #' @noRd
-var_comp <- function(model, target, calc_C22 = TRUE) {
+var_comp <- function(model, target, calc_C22 = TRUE,
+                     marginal = TRUE, stratification = NULL) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
@@ -406,7 +413,7 @@ var_comp <- function(model, target, calc_C22 = TRUE) {
 #' @noRd
 #' @keywords internal
 #' @importFrom Matrix colMeans
-map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
+map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   mmlist   <- lme4::getME(model, "mmList")
   grp_list <- lme4::getME(model, "flist")
   grp_names <- names(lme4::getME(model, "cnms"))
@@ -455,6 +462,7 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
     }
     # BLUP weight
     w <- w * rep(colMeans(mm), q)
+    if(!marginal) w <- rep(1, p * q)
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
 
     # BLUP weight matrix
@@ -483,7 +491,38 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
 
 #' @keywords internal
 #' @noRd
-map_target_terms <- function(model, target, reconstruct = FALSE) {
+map_target_terms <- function(model, target, marginal = TRUE) {
   UseMethod("map_target_terms")
 }
 .S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)
+
+
+#' @keywords internal
+#' @noRd
+build_new_Z.lmerMod <- function(model, target, new_dat){
+  trms <- names(new_dat)
+  g <- lme4::getME(model,"flist")[[target]]
+  gnames <- levels(g)
+  n_g <- nlevels(g)
+  new_dat <- matrix(rep(new_dat, n_g), ncol = n_g) |> t() |>
+    data.frame()
+  colnames(new_dat) <- trms
+  new_dat[[target]] <- gnames
+
+  lme4::mkNewReTrms(
+    object = model,
+    newdata = new_dat,
+    re.form = NULL,
+    allow.new.levels = TRUE
+  )$Z
+}
+
+# To Do, asreml
+
+#' @keywords internal
+#' @noRd
+build_new_Z <- function(model, target, new_dat) {
+  UseMethod("build_new_Z")
+}
+.S3method("build_new_Z", "lmerMod", build_new_Z.lmerMod)
+

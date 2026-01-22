@@ -1,10 +1,11 @@
 #' @noRd
 #' @export
-H2_Standard.lmerMod <- function(model, target = NULL, options = NULL) {
-
+H2_Standard.lmerMod <- function(model, target = NULL,
+                                marginal = TRUE, stratification = NULL,
+                                options = NULL) {
   initial_checks(model, target, options)
 
-  if(options$check %||% TRUE){
+  if (options$check %||% TRUE) {
     # Check correct model specification.
     check_model_specification(model, target, "broad_sense")
   }
@@ -15,7 +16,7 @@ H2_Standard.lmerMod <- function(model, target = NULL, options = NULL) {
   }
 
   # Get genotype variance
-  G_g <- var_comp(model, target, calc_C22 = FALSE)$G_g
+  G_g <- var_comp(model, target, calc_C22 = FALSE, marginal, stratification)$G_g
   s2_g <- mean(diag(G_g))
 
   # Get residual variance
@@ -30,11 +31,12 @@ H2_Standard.lmerMod <- function(model, target = NULL, options = NULL) {
 
 #' @noRd
 #' @export
-H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
-
+H2_Cullis.lmerMod <- function(model, target = NULL,
+                              marginal = TRUE, stratification = NULL,
+                              options = NULL) {
   initial_checks(model, target, options)
 
-  if(options$check %||% TRUE){
+  if (options$check %||% TRUE) {
     # Check correct model specification.
     check_model_specification(model, target, "broad_sense")
   }
@@ -44,24 +46,25 @@ H2_Cullis.lmerMod <- function(model, target = NULL, options = NULL) {
     return(NA)
   }
 
-  g <- var_comp(model, target)
+  g <- var_comp(model, target, calc_C22 = TRUE, marginal, stratification)
   s2_g <- mean(diag(g$G_g))
   n <- g$n_g
   C22_g <- g$C22_g
 
   # This is equivalent to delta <- var_diff(C22_g); delta_avg = mean(delta[lower.tri(delta)])
-  delta_avg <-  (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
+  delta_avg <- (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
 
   return(H2_Cullis_parameters(delta_avg, s2_g))
 }
 
 #' @noRd
 #' @export
-H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
-
+H2_Oakey.lmerMod <- function(model, target = NULL,
+                             marginal = TRUE, stratification = NULL,
+                             options = NULL) {
   initial_checks(model, target, options)
 
-  if(options$check %||% TRUE){
+  if (options$check %||% TRUE) {
     # Check correct model specification.
     check_model_specification(model, target, "broad_sense")
   }
@@ -70,7 +73,7 @@ H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
   if (!check_target_random(model, target)) {
     return(NA)
   }
-  g <- var_comp(model, target)
+  g <- var_comp(model, target, calc_C22 = TRUE, marginal, stratification)
   G_g_inv <- Matrix::chol2inv(chol(g$G_g))
 
   return(H2_Oakey_parameters(G_g_inv, g$C22_g))
@@ -78,11 +81,12 @@ H2_Oakey.lmerMod <- function(model, target = NULL, options = NULL) {
 
 #' @noRd
 #' @export
-H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
-
+H2_Piepho.lmerMod <- function(model, target = NULL,
+                              marginal = TRUE, stratification = NULL,
+                              options = NULL) {
   initial_checks(model, target, options)
 
-  if(options$check %||% TRUE){
+  if (options$check %||% TRUE) {
     # Check correct model specification.
     check_model_specification(model, target, "broad_sense")
   }
@@ -90,13 +94,13 @@ H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
   conterpart <- fit_counterpart_model(model, target)
 
   # Get genotype variance
-  G_g <- var_comp(model, target, calc_C22 = FALSE)$G_g
+  G_g <- var_comp(model, target, calc_C22 = FALSE, marginal, stratification)$G_g
   s2_g <- mean(diag(G_g))
 
   # Get mean variance of a difference between genotypes
-  frm <-  as.formula(paste("pairwise ~", target))
+  frm <- as.formula(paste("pairwise ~", target))
   EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
-  delta_avg <- mean(data.frame(EMM_fit)$SE^2)  # Get variance
+  delta_avg <- mean(data.frame(EMM_fit)$SE^2) # Get variance
 
   # s2_g / (s2_g + delta_avg / 2)
   H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
@@ -106,20 +110,21 @@ H2_Piepho.lmerMod <- function(model, target = NULL, options = NULL) {
 
 #' @noRd
 #' @export
-H2_Delta_pairwise.lmerMod <- function(model, target = NULL, type = NULL, options = NULL) {
-
+H2_Delta_pairwise.lmerMod <- function(model, target = NULL, type = NULL,
+                                      marginal = TRUE, stratification = NULL,
+                                      options = NULL) {
   initial_checks(model, target, options)
 
-  if(options$check %||% TRUE){
+  if (options$check %||% TRUE) {
     # Check correct model specification.
     check_model_specification(model, target, "broad_sense")
   }
 
   # Check if target is random or fixed
-  if(type == "BLUE") {
-    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options)
-  } else if(type == "BLUP") {
-    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options)
+  if (type == "BLUE") {
+    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, marginal, stratification, options)
+  } else if (type == "BLUP") {
+    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, marginal, stratification, options)
   }
 
   return(H2_Delta)
@@ -127,22 +132,24 @@ H2_Delta_pairwise.lmerMod <- function(model, target = NULL, type = NULL, options
 
 #' @keywords internal
 H2_Delta_BLUE_pairwise.lmerMod <- function(
-    model,
-    target = NULL,
-    options = NULL
+  model,
+  target = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  options = NULL
 ) {
   initial_checks(model, target, options)
 
   conterpart <- fit_counterpart_model(model, target)
 
   # Extract vc_g and vc_e
-  g <- var_comp(model, target, calc_C22 = FALSE)
+  g <- var_comp(model, target, calc_C22 = FALSE, marginal, stratification)
   s2_g <- mean(diag(g$G_g))
 
   # Calculate mean variance of a difference between genotypes
-  frm <-  as.formula(paste("pairwise ~", target))
+  frm <- as.formula(paste("pairwise ~", target))
   EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
-  EMM_fit <- data.frame(EMM_fit)  # Get variance
+  EMM_fit <- data.frame(EMM_fit) # Get variance
   EMM_fit$var <- EMM_fit$SE^2
 
   # Take pairwise differences and turn into variance-covariance matrix
@@ -171,11 +178,12 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(
 }
 
 #' @keywords internal
-H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL) {
-
+H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL,
+                                           marginal = TRUE, stratification = NULL,
+                                           options = NULL) {
   initial_checks(model, target, options)
 
-  g <- var_comp(model, target)
+  g <- var_comp(model, target, calc_C22 = TRUE, marginal, stratification)
   s2_g <- mean(diag(g$G_g))
   C22_g <- g$C22_g
 
@@ -191,7 +199,3 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model, target = NULL, options = NULL)
 
   H2_Delta_BLUP
 }
-
-
-
-
