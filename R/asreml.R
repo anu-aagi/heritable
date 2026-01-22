@@ -109,6 +109,11 @@ h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type =
 H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   initial_checks(model, target, options)
 
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
   # Get genotype variance
   vc_g <- get_vc_g_asreml(model, target)
 
