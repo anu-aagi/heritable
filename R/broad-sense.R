@@ -89,7 +89,8 @@ H2.default <- function(model,
   H2_values <- stats::setNames(H2_values, method)
   structure(H2_values,
     class = c("heritable", class(H2_values)),
-    model = model, target = target
+    model = model, target = target,
+    type = "broad_sense"
   )
 }
 

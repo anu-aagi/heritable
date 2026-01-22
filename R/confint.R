@@ -251,7 +251,6 @@ bootstrap_asreml <- function(model,
 #'
 #' Random effects (BLUPs) are not included.
 #'
-#' @export
 get_fixed_fit_asreml <- function(model) {
   if (!inherits(model, "asreml")) {
     stop("`model` must be an `asreml` object.")
