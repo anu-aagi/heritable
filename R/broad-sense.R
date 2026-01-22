@@ -8,9 +8,9 @@
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param options NULL by default, for internal checking of model object before calculations
-#' @aliases h2
+#' @aliases H2
 #' @usage
-#' h2(model, target, method = c("Oakey", "Delta"), options)
+# h2(model, target, method = c("Oakey", "Delta"), options)
 #' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
 #' @returns A named numeric vector, length matching number of methods supplied
 #' @details
@@ -55,10 +55,9 @@
 #' }
 #' @export
 H2 <- function(model,
-               target,
+               target = NULL,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-               options = NULL
-               ) {
+               options = NULL) {
   UseMethod("H2")
 }
 
@@ -66,16 +65,13 @@ H2 <- function(model,
 #' @noRd
 #' @export
 H2.default <- function(model,
-                       target,
+                       target = NULL,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       options = NULL
+                       options
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
-  initial_checks(model, target, options = options)
-
-  # Check correct model specification.
-  check_model_specification(model, target, "broad-sense")
+  initial_checks(model, target, options = NULL)
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
@@ -93,8 +89,7 @@ H2.default <- function(model,
   H2_values <- stats::setNames(H2_values, method)
   structure(H2_values,
     class = c("heritable", class(H2_values)),
-    model = model, target = target,
-    type = "broad_sense"
+    model = model, target = target
   )
 }
 

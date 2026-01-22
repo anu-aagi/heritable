@@ -7,12 +7,12 @@ test_that("OAKEY heritability estimation works", {
   lettuce_asreml <- readRDS(test_path("fixtures/lettuce_asreml.rds"))
 
   # Method implemented by ET as per Oakey et al. 2006
-  H2_Oakey(asreml_model_random, target = "gen")
+  H2_Oakey(asreml_model_random, target = "gen") 
 
   # Method implemented by YD as per Schmid et al. 2009
   H2_Oakey_YD <- function(model, target) {
   n_g <- model$noeff[[target]]
-  vc_g <- get_vc_g_asreml(model, target)
+  vc_g <- heritable:::get_vc_g_asreml(model, target)
   vcov_g <- predict(model,
     classify = target,
     only = target,
@@ -33,6 +33,13 @@ test_that("OAKEY heritability estimation works", {
   expect_equal(
     H2_Oakey(asreml_model_random, target = "gen"),
     H2_Oakey_YD(asreml_model_random, target = "gen"),
+    tolerance = 1e-5
+  )
+
+  # lettuce model
+  expect_equal(
+    H2_Oakey(lettuce_asreml, target = "gen"), 
+    H2_Oakey_YD(lettuce_asreml, target = "gen"),
     tolerance = 1e-5
   )
 })
