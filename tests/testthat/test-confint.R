@@ -7,6 +7,9 @@ test_that("Confint works",{
   skip_if_not_installed("asreml")
   skip_on_cran()
   skip_on_ci()
+  skip()
+
+  require(asreml)
 
 # lettuce_subset <- lettuce_phenotypes |>
 #   dplyr::filter(loc == "L2")

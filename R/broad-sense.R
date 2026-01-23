@@ -57,7 +57,8 @@
 H2 <- function(model,
                target,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-               options = NULL
+               options,
+               ...
                ) {
   UseMethod("H2")
 }
@@ -68,7 +69,8 @@ H2 <- function(model,
 H2.default <- function(model,
                        target,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       options = NULL
+                       options = NULL,
+                       ...
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
@@ -80,11 +82,11 @@ H2.default <- function(model,
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
     switch(m,
-      Cullis = H2_Cullis(model, target, options = list(check = FALSE)),
-      Oakey = H2_Oakey(model, target, options = list(check = FALSE)),
-      Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
-      Delta = H2_Delta(model, target, options = list(check = FALSE)),
-      Standard = H2_Standard(model, target, options = list(check = FALSE)),
+      Cullis = H2_Cullis(model, target, options = list(check = FALSE), ...),
+      Oakey = H2_Oakey(model, target, options = list(check = FALSE), ...),
+      Piepho = H2_Piepho(model, target, options = list(check = FALSE), ...),
+      Delta = H2_Delta(model, target, options = list(check = FALSE), ...),
+      Standard = H2_Standard(model, target, options = list(check = FALSE), ...),
       cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
     )
   })
@@ -131,7 +133,10 @@ H2.default <- function(model,
 #'
 #' H2_Standard(lettuce_asreml, target = "gen")
 #' }
-H2_Standard <- function(model, target, options) {
+H2_Standard <- function(model,
+                        target,
+                        options,
+                        ...) {
   UseMethod("H2_Standard")
 }
 
@@ -168,7 +173,10 @@ H2_Standard <- function(model, target, options) {
 #' H2_Cullis(lettuce_asreml, target = "gen")
 #' }
 
-H2_Cullis <- function(model, target, options) {
+H2_Cullis <- function(model,
+                      target,
+                      options,
+                      ...) {
   UseMethod("H2_Cullis")
 }
 
@@ -211,7 +219,7 @@ H2_Cullis <- function(model, target, options) {
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #' @export
-H2_Oakey <- function(model, target, options) {
+H2_Oakey <- function(model, target, options, ...) {
   UseMethod("H2_Oakey")
 }
 
@@ -248,7 +256,10 @@ H2_Oakey <- function(model, target, options) {
 #'
 #' H2_Piepho(lettuce_asreml, target = "gen")
 #' }
-H2_Piepho <- function(model, target, options) {
+H2_Piepho <- function(model,
+                      target,
+                      options,
+                      ...) {
   UseMethod("H2_Piepho")
 }
 
@@ -313,7 +324,8 @@ H2_Delta <- function(
     target,
     type = c("BLUP", "BLUE"),
     aggregate = c("arithmetic", "harmonic"),
-    options) {
+    options,
+    ...) {
   UseMethod("H2_Delta")
 }
 
@@ -323,11 +335,12 @@ H2_Delta.default <- function(model,
                              target = NULL,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
-                             options = NULL) {
+                             options = NULL,
+                             ...) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
-  H2D_ij <- H2_Delta_pairwise(model, target, type = type)
+  H2D_ij <- H2_Delta_pairwise(model, target, type = type, ...)
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,
@@ -380,7 +393,11 @@ H2_Delta.default <- function(model,
 #'
 #' H2_Delta_by_genotype(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-H2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
+H2_Delta_by_genotype <- function(model,
+                                 target,
+                                 type = c("BLUE", "BLUP"),
+                                 options,
+                                 ...) {
   UseMethod("H2_Delta_by_genotype")
 }
 
@@ -389,7 +406,8 @@ H2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), option
 H2_Delta_by_genotype.default <- function(model,
                                          target = NULL,
                                          type = NULL,
-                                         options = NULL) {
+                                         options = NULL,
+                                         ...) {
   H2D_ij <- H2_Delta_pairwise(model, target, type, options)
 
   H2D_i <- as.matrix(H2D_ij) |>
@@ -435,7 +453,11 @@ H2_Delta_by_genotype.default <- function(model,
 #'
 #' H2_Delta_pairwise(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-H2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
+H2_Delta_pairwise <- function(model,
+                              target,
+                              type = c("BLUE", "BLUP"),
+                              options,
+                              ...) {
   UseMethod("H2_Delta_pairwise")
 }
 

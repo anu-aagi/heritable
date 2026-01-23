@@ -44,7 +44,6 @@ h2 <- function(model, target, method = c("Oakey", "Delta"), source, options) {
 }
 
 #' @noRd
-#' @export
 h2.default <- function(
     model,
     target,
@@ -213,7 +212,6 @@ h2_Delta_by_genotype <- function(model, target, source, type = c("BLUE", "BLUP")
 }
 
 #' @noRd
-#' @export
 h2_Delta_by_genotype.default <- function(model,
                                          target = NULL,
                                          source,
