@@ -146,13 +146,14 @@ H2_Piepho.lmerMod <- function(model,
 #' @export
 H2_Delta_pairwise.lmerMod <- function(model,
                                       target = NULL,
-                                      type = NULL,
+                                      type = c("BLUP", "BLUE"),
                                       options = NULL,
                                       marginal = TRUE,
                                       stratification = NULL,
                                       vc = NULL,
                                       ...) {
   initial_checks(model, target, options)
+  type <- match.arg(type)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.

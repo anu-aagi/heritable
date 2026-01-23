@@ -4,7 +4,7 @@
 \alias{H2_Delta_by_genotype}
 \title{Calculate heritability of differences for a given genotype from model object}
 \usage{
-H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options, ...)
+H2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options, ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}

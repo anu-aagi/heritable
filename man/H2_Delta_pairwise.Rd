@@ -4,7 +4,7 @@
 \alias{H2_Delta_pairwise}
 \title{Calculate pairwise heritability of differences between genotypes from model object}
 \usage{
-H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options, ...)
+H2_Delta_pairwise(model, target, type = c("BLUP", "BLUE"), options, ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}

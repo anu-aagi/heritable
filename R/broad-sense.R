@@ -83,7 +83,9 @@ H2.default <- function(model,
   initial_checks(model, target, options = options)
 
   # Check correct model specification.
-  check_model_specification(model, target, "broad-sense")
+  if(options$check %||% TRUE){
+    check_model_specification(model, target, "broad-sense")
+  }
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
@@ -349,7 +351,7 @@ H2_Delta.default <- function(model,
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
-  H2D_ij <- H2_Delta_pairwise(model, target, type = type, ...)
+  H2D_ij <- H2_Delta_pairwise(model, target, type = type, options = options, ...)
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,
@@ -365,8 +367,8 @@ H2_Delta.default <- function(model,
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `h2/H2_Delta_by_genotype` and it's variants
 #' @usage
-# h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
-#' H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options, ...)
+# h2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options)
+#' H2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options, ...)
 #' @inheritParams H2_Delta
 # @aliases H2_Delta_by_genotype
 #' @returns Numeric
@@ -404,7 +406,7 @@ H2_Delta.default <- function(model,
 #' }
 H2_Delta_by_genotype <- function(model,
                                  target,
-                                 type = c("BLUE", "BLUP"),
+                                 type = c("BLUP", "BLUE"),
                                  options = NULL,
                                  ...) {
   UseMethod("H2_Delta_by_genotype")
@@ -414,7 +416,7 @@ H2_Delta_by_genotype <- function(model,
 #' @export
 H2_Delta_by_genotype.default <- function(model,
                                          target,
-                                         type = c("BLUE", "BLUP"),
+                                         type = c("BLUP", "BLUE"),
                                          options = NULL,
                                          ...) {
   H2D_ij <- H2_Delta_pairwise(model, target, type, options, ...)
@@ -437,8 +439,8 @@ H2_Delta_by_genotype.default <- function(model,
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `h2/H2_Delta_pairwise` and it's variants
 #' @usage
-# h2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
-#' H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options, ...)
+# h2_Delta_pairwise(model, target, type = c("BLUP", "BLUE"), options)
+#' H2_Delta_pairwise(model, target, type = c("BLUP", "BLUE"), options, ...)
 #' @inheritParams H2_Delta
 # @aliases H2_Delta_pairwise
 #' @returns A `dspMatrix`
@@ -464,7 +466,7 @@ H2_Delta_by_genotype.default <- function(model,
 #' }
 H2_Delta_pairwise <- function(model,
                               target,
-                              type = c("BLUE", "BLUP"),
+                              type =  c("BLUP", "BLUE"),
                               options = NULL,
                               ...) {
   UseMethod("H2_Delta_pairwise")

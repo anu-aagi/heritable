@@ -9,8 +9,6 @@ test_that("Confint works",{
   skip_on_ci()
   skip()
 
-  require(asreml)
-
 # lettuce_subset <- lettuce_phenotypes |>
 #   dplyr::filter(loc == "L2")
 #
@@ -25,9 +23,9 @@ test_that("Confint works",{
 # )
 # boot::boot.ci(boot.obj, type = "basic")
 
-H2_values_lme4 <- H2(lettuce_lme4, "gen", c("Standard")) # H2
-ci_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1)
-ci_fix_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1, random_effect = "conditional")
+  H2_values_lme4 <- H2(lettuce_lme4, "gen", c("Standard")) # H2
+  ci_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1)
+  ci_fix_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1, random_effect = "conditional")
 
 # attr(ci_lme4 , "boot_mod") |> boot::boot.ci(type = "basic")
 # hist(attr(ci_lme4 , "boot_mod")$t)
@@ -42,25 +40,25 @@ ci_fix_lme4 <- confint(H2_values_lme4, B = 1000, seed = 1, random_effect = "cond
 #   trace = FALSE,
 # )
 
-lettuce_asreml <- readRDS(test_path("fixtures/confint_lettuce_asreml.rds"))
+  lettuce_asreml <- readRDS(test_path("fixtures/confint_lettuce_asreml.rds"))
 
 # get_fixed_fit_asreml(lettuce_asreml)
 # boot.obj <- bootstrap_asreml(lettuce_asreml, function(fit) fit$sigma2, nsim = 10, use.u = TRUE)
 
-H2_values_asreml <- H2(lettuce_asreml, "gen", c("Standard")) # H2
-ci_asreml <- confint(H2_values_asreml, B = 1000, seed = 1)
-ci_fix_asreml <- confint(H2_values_asreml, B = 1000, seed = 1, random_effect = "conditional")
+  H2_values_asreml <- H2(lettuce_asreml, "gen", c("Standard")) # H2
+  ci_asreml <- confint(H2_values_asreml, B = 1000, seed = 1)
+  ci_fix_asreml <- confint(H2_values_asreml, B = 1000, seed = 1, random_effect = "conditional")
 # attr(ci_asreml, "boot_mod") |> boot::boot.ci(type = "basic")
 # hist(attr(ci_asreml , "boot_mod")$t)
 
 # Compare results
-plot_df <- data.frame(lme4_resample =  attr(ci_lme4, "boot_mod")$t |> drop(),
-                      asreml_resample = attr(ci_asreml, "boot_mod")$t |> drop(),
-                      lme4_fix = attr(ci_fix_lme4, "boot_mod")$t |> drop(),
-                      asreml_fix = attr(ci_fix_asreml, "boot_mod")$t |> drop())
+  plot_df <- data.frame(lme4_resample =  attr(ci_lme4, "boot_mod")$t |> drop(),
+                        asreml_resample = attr(ci_asreml, "boot_mod")$t |> drop(),
+                        lme4_fix = attr(ci_fix_lme4, "boot_mod")$t |> drop(),
+                        asreml_fix = attr(ci_fix_asreml, "boot_mod")$t |> drop())
 
 
-expect_true(ks.test(plot_df$lme4_fix, plot_df$asreml_fix)$p.value > 0.05 & ks.test(plot_df$lme4_resample, plot_df$asreml_resample)$p.value > 0.05)
+  expect_true(ks.test(plot_df$lme4_fix, plot_df$asreml_fix)$p.value > 0.05 & ks.test(plot_df$lme4_resample, plot_df$asreml_resample)$p.value > 0.05)
 
 # plot_df <- reshape2::melt(plot_df)
 # library(ggplot2)

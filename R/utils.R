@@ -364,10 +364,10 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
-  # Get BLUP weight
   mapper <- map_target_terms(model, target, marginal)
   g <- mapper$idx
 
+  # Get BLUP weight
   if(is.null(stratification)){
     m <- mapper$m
     intercept <- mapper$intercept
@@ -376,7 +376,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
       m <- m[intercept, , drop=FALSE]
     }
   } else {
-    m <- build_new_Z(model, target, stratification)
+    m <- build_new_Z(model, target, stratification) |> t()
   }
 
   gnames <- levels(model@flist[[target]])
@@ -499,29 +499,94 @@ map_target_terms <- function(model, target, marginal = TRUE) {
 
 #' @keywords internal
 #' @noRd
-build_new_Z.lmerMod <- function(model, target, new_dat){
-  trms <- names(new_dat)
-  g <- lme4::getME(model,"flist")[[target]]
-  gnames <- levels(g)
-  n_g <- nlevels(g)
-  new_dat <- matrix(rep(new_dat, n_g), ncol = n_g) |> t() |>
-    data.frame()
-  colnames(new_dat) <- trms
-  new_dat[[target]] <- gnames
+build_new_Z.lmerMod <- function(model, target, new_data){
+  trms <- names(new_data)
+  mf   <- stats::model.frame(model)
 
-  lme4::mkNewReTrms(
-    object = model,
-    newdata = new_dat,
-    re.form = NULL,
-    allow.new.levels = TRUE
-  )$Z
+  for(trm in trms){
+    if (!trm %in% colnames(mf)){
+      cli::cli_abort("{.code {trm}} in {.code new_data} was not found in the model.")
+    }
+
+    if (is.factor(mf[[trm]]) && !new_data[trm] %in% levels(mf[[trm]])) {
+      cli::cli_abort("Unknow level in {.code {trm}} detected: {.code {new_data[trm]}}.")
+    }
+  }
+
+  # Target levels
+  g      <- mf[[target]]
+  gnames <- levels(g)
+  n_g    <- nlevels(g)
+
+  new_data <- matrix(rep(new_data, n_g), ncol = n_g) |> t() |> data.frame()
+  colnames(new_data) <- trms
+  new_data[[target]] <- gnames
+
+  # Add factor level and contrast
+  for (trm in trms) {
+    if (is.factor(mf[[trm]])) {
+      new_data[[trm]] <- factor(new_data[[trm]], levels = levels(mf[[trm]]))
+      stats::contrasts(new_data[[trm]]) <- stats::contrasts(mf[[trm]])
+    }
+  }
+
+  mmlist   <- lme4::getME(model, "mmList")
+  mm_names <- names(mmlist)
+  frm      <- stringr::str_extract(mm_names, "^.+(?=\\ \\|)")
+  frm      <- paste("~", frm)
+
+  grp_list  <- lme4::getME(model, "flist")
+  grp_names <- names(lme4::getME(model, "cnms"))
+
+  pattern     <- paste0("(^|:)", target, "(:|$)")
+  matched_grp <- which(grepl(pattern, grp_names))
+
+  # Split grouping-variable names per matched term, e.g. "gen:rep" -> c("gen","rep")
+  grp_names_split <- stringr::str_split(grp_names, ":")
+
+  Z_list <- list()
+
+  for (idx in seq_along(matched_grp)) {
+    g_idx <- matched_grp[idx]
+    term  <- grp_names[g_idx]
+
+    # Within-group design for this RE term (n x p)
+    mm <- stats::model.matrix(stats::as.formula(frm[g_idx]), new_data)
+    mm <- as(mm, "dgCMatrix")
+    grp <- levels(grp_list[[term]])
+
+    # New grouping labels
+    grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
+    j_grp   <- match(grp_new, grp)
+
+    n <- nrow(mm)
+    p <- ncol(mm)
+    q <- length(grp)
+
+    s <- Matrix::summary(mm)  # i, j, x (1-based)
+
+    # Keep only nonzero coming from rows whose group matches training levels
+    keep <- !is.na(j_grp[s$i])
+
+    s <- s[keep, , drop = FALSE]
+    j <- (j_grp[s$i] - 1L) * p + s$j
+
+    Z_list[[idx]] <- Matrix::sparseMatrix(
+      i    = s$i,
+      j    = j,
+      x    = s$x,
+      dims = c(n, q * p),
+      dimnames = list(gnames, rep(grp, each = p))
+    )
+  }
+  do.call(cbind, Z_list)
 }
 
 # To Do, asreml
 
 #' @keywords internal
 #' @noRd
-build_new_Z <- function(model, target, new_dat) {
+build_new_Z <- function(model, target, new_data) {
   UseMethod("build_new_Z")
 }
 .S3method("build_new_Z", "lmerMod", build_new_Z.lmerMod)
