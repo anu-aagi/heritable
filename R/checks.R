@@ -27,6 +27,13 @@ initial_checks <- function(model, target, options) {
     # Check if target appears in the model
     check_target_exists(model, target)
 
+    # Check if target is random
+    if(!check_target_random(model, target)){
+      cli::cli_abort(
+        "The target {.var {target}} is fitted as both fixed and random effect"
+      )
+    }
+
     # Check if the target is specified as both fixed and random
     check_target_both(model, target)
 
@@ -90,6 +97,18 @@ check_target_exists <- function(model, target) {
   }
 }
 
+# Check if target is in fixed or random
+#' @keywords internal
+check_target_random <- function(model, target) {
+  model_terms <- pull_terms_without_specials(model)
+  if (target %in% model_terms$random) {
+    TRUE
+  } else {
+    FALSE
+  }
+}
+
+
 # Check if target is in both fixed and random
 #' @keywords internal
 check_target_both <- function(model, target) {
@@ -135,17 +154,6 @@ check_G_by_E_exists <- function(model, target) {
 .S3method("check_G_by_E_exists", "lmerMod", check_G_by_E_exists.lmerMod)
 
 ########################### Method specific check ##############################
-# Check if target is in fixed or random
-#' @keywords internal
-check_target_random <- function(model, target) {
-  model_terms <- pull_terms_without_specials(model)
-  if (!target %in% model_terms$random) {
-    cli::cli_warn("Heritability can only be calculated if the target {.code {target}} is a random effect.")
-    return(FALSE)
-  }
-  TRUE
-}
-
 # Helper function to check if GRM exists in environment
 #' @keywords internal
 check_GRM_in_environment <- function(model, target) {

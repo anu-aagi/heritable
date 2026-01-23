@@ -12,7 +12,7 @@
 #' @aliases H2
 #' @usage
 # h2(model, target, method = c("Oakey", "Delta"), source, options)
-#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
+#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options, ...)
 #' @returns A named numeric vector, length matching number of methods supplied
 #' @details
 #'
@@ -38,8 +38,8 @@
 #' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 #' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
-#' @export
-h2 <- function(model, target, method = c("Oakey", "Delta"), source, options) {
+#' @noRd
+h2 <- function(model, target, method = c("Oakey", "Delta"), source, options, ...) {
   UseMethod("h2")
 }
 

@@ -86,13 +86,13 @@ confint.heritable <- function(object,
       FUN = Fun_use, nsim = B, seed = seed,
       use.u = !resample_u, ...
     )
-    ci <- confint(boot_mod, level = level, type = type)
+    ci <- stats::confint(boot_mod, level = level, type = type)
   } else {
     boot_mod <- bootstrap_asreml(model,
       FUN = Fun_use, nsim = B, seed = seed,
       use.u = !resample_u, ...
     )
-    ci <- confint(boot_mod, level = level, type = type)
+    ci <- stats::confint(boot_mod, level = level, type = type)
     ci <- matrix(ci,
                  nrow = length(method),
                  dimnames = list(method, colnames(ci))

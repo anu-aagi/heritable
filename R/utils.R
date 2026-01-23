@@ -359,7 +359,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
-  sigma2 <- sigma(model)^2
+  sigma2 <- stats::sigma(model)^2
   Lambda <- lme4::getME(model, "Lambda")
   G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))

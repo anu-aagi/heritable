@@ -4,11 +4,11 @@
 \alias{H2_Delta}
 \title{Calculate average heritability of differences between genotypes from model object}
 \usage{
-H2_Delta(model,
-         target,
+H2_Delta(model, target,
          type = c("BLUP", "BLUE"),
          aggregate = c("arithmetic", "harmonic"),
-         options
+         options,
+         ...
          )
 }
 \arguments{
@@ -21,6 +21,8 @@ H2_Delta(model,
 \item{aggregate}{character, when taking means in the calculation, should harmonic or arithmetic mean be used?}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+
+\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }
 \value{
 Numeric

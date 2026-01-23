@@ -4,14 +4,16 @@
 \alias{H2_Cullis}
 \title{Calculate Cullis' heritability from model object}
 \usage{
-H2_Cullis(model, target, options)
+H2_Cullis(model, target, options, ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{options}{NULL by default, for internal checking of model object before calculations}
+\item{options}{NULL by default, for internal checking of model object before calculations.}
+
+\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }
 \value{
 Numeric value

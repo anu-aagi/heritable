@@ -5,14 +5,16 @@
 \title{Calculate Piepho's heritability from model object
 Compute Piepho's heritability using variance differences between genotype BLUEs}
 \usage{
-H2_Piepho(model, target, options)
+H2_Piepho(model, target, options, ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{options}{NULL by default, for internal checking of model object before calculations}
+\item{options}{NULL by default, for internal checking of model object before calculations.}
+
+\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }
 \value{
 Numeric

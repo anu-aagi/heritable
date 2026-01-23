@@ -2,10 +2,11 @@
 #' @export
 H2_Standard.lmerMod <- function(model,
                                 target = NULL,
+                                options = NULL,
                                 marginal = TRUE,
                                 stratification = NULL,
                                 vc = NULL,
-                                options = NULL) {
+                                ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -40,10 +41,11 @@ H2_Standard.lmerMod <- function(model,
 #' @export
 H2_Cullis.lmerMod <- function(model,
                               target = NULL,
+                              options = NULL,
                               marginal = TRUE,
                               stratification = NULL,
                               vc = NULL,
-                              options = NULL) {
+                              ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -73,10 +75,11 @@ H2_Cullis.lmerMod <- function(model,
 #' @export
 H2_Oakey.lmerMod <- function(model,
                              target = NULL,
+                             options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
                              vc = NULL,
-                             options = NULL) {
+                             ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -101,15 +104,21 @@ H2_Oakey.lmerMod <- function(model,
 #' @export
 H2_Piepho.lmerMod <- function(model,
                               target = NULL,
+                              options = NULL,
                               marginal = TRUE,
                               stratification = NULL,
                               vc = NULL,
-                              options = NULL) {
+                              ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
     check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
   }
 
   conterpart <- fit_counterpart_model(model, target)
@@ -138,10 +147,11 @@ H2_Piepho.lmerMod <- function(model,
 H2_Delta_pairwise.lmerMod <- function(model,
                                       target = NULL,
                                       type = NULL,
+                                      options = NULL,
                                       marginal = TRUE,
                                       stratification = NULL,
                                       vc = NULL,
-                                      options = NULL) {
+                                      ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -150,12 +160,17 @@ H2_Delta_pairwise.lmerMod <- function(model,
   }
 
   # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Check if target is random or fixed
   if (type == "BLUE") {
-    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target,
-                                               marginal, stratification, vc, options)
+    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options,
+                                               marginal, stratification, vc)
   } else if (type == "BLUP") {
-    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target,
-                                               marginal, stratification, vc, options)
+    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options,
+                                               marginal, stratification, vc)
   }
 
   return(H2_Delta)
@@ -164,10 +179,10 @@ H2_Delta_pairwise.lmerMod <- function(model,
 #' @keywords internal
 H2_Delta_BLUE_pairwise.lmerMod <- function(model,
                                            target = NULL,
+                                           options = NULL,
                                            marginal = TRUE,
                                            stratification = NULL,
-                                           vc = NULL,
-                                           options = NULL) {
+                                           vc = NULL) {
   initial_checks(model, target, options)
 
   conterpart <- fit_counterpart_model(model, target)
@@ -212,10 +227,10 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
 #' @keywords internal
 H2_Delta_BLUP_pairwise.lmerMod <- function(model,
                                            target = NULL,
+                                           options = NULL,
                                            marginal = TRUE,
                                            stratification = NULL,
-                                           vc = NULL,
-                                           options = NULL) {
+                                           vc = NULL) {
   initial_checks(model, target, options)
 
   if(is.null(vc)){
