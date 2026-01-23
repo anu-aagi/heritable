@@ -166,7 +166,7 @@ target_vm_term_asreml <- function(model, target) {
 #' @importFrom stats as.formula update
 #' @keywords internal
 #' @noRd
-fit_counterpart_model.asreml <- function(model, target = NULL) {
+fit_counterpart_model.asreml <- function(model, target) {
   # get the terms from model object
   fixed_trms <- pull_terms.asreml(model)$fixed
   ran_trms_without_specials <- pull_terms_without_specials.asreml(model)$random
@@ -204,7 +204,7 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 
 #' @importFrom stats lm model.frame
 #' @keywords internal
-fit_counterpart_model.lmerMod <- function(model, target = NULL) {
+fit_counterpart_model.lmerMod <- function(model, target) {
   # get the terms from model object
   trms <- pull_terms_without_specials(model)
   trms <- lapply(trms, unique)

@@ -41,11 +41,14 @@ test_that("Check GRM specification", {
   )
 
 
-  model3 <- asreml::asreml(y ~ rep,
-                           random = ~ vm(gen, G, singG = "PSD"),
-                           data = lettuce_phenotypes |>
-                             subset(loc == "L2")
+  suppressWarnings(
+    model3 <- asreml::asreml(y ~ rep,
+                             random = ~ vm(gen, G, singG = "PSD"),
+                             data = lettuce_phenotypes |>
+                               subset(loc == "L2")
+    )
   )
+
   expect_equal(
     model1$sigma2,
     model2$sigma2,
