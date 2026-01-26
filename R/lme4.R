@@ -95,7 +95,7 @@ H2_Oakey.lmerMod <- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = TRUE, marginal, stratification)
   }
-  G_g_inv <- Matrix::chol2inv(chol(vc$G_g))
+  G_g_inv <- MASS::ginv(as.matrix(vc$G_g))
 
   return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
 }
