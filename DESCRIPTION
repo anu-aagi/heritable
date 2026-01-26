@@ -17,6 +17,7 @@ Imports:
     boot,
     cli,
     emmeans,
+    ggplot2,
     MASS,
     Matrix,
     methods,
@@ -26,15 +27,15 @@ Imports:
 Suggests: 
     testthat (>= 3.0.0),
     agridat,
+    dplyr,
+    here,
     knitr,
-    rmarkdown,
     lme4,
     pbkrtest,
-    dplyr,
-    ggplot2,
-    tidyr,
     purrr,
-    here
+    rmarkdown,
+    tidyr,
+    vdiffr
 SystemRequirements: 
     asreml (4.2.0)
 Config/testthat/edition: 3
