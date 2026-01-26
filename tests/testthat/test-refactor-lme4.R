@@ -3,71 +3,138 @@ test_that("Refactored lme4 works",{
   skip_if_not_installed("lme4")
   skip()
 
-  truth <- list()
+  # truth <- list()
+  # methods <- c("Cullis", "Oakey", "Delta", "Standard")
+  #
+  # # Model 1
+  # model1 <-  lme4::lmer(y ~  rep + (0+ loc | gen ) + (1| gen), data = lettuce_phenotypes)
+  # truth[["m1_marginal"]] <- H2(model1, "gen", methods,
+  #                              options = list(check = FALSE))
+  # truth[["m1_partial"]] <- H2(model1, "gen", methods,
+  #                             marginal = FALSE, options = list(check = FALSE))
+  # truth[["m1_stra_L1_R1"]] <- H2(model1, "gen", methods,
+  #                                    stratification = c("loc" = "L1", "rep" = "R1"),
+  #                                    options = list(check = FALSE))
+  # truth[["m1_stra_L2_R1"]] <- H2(model1, "gen", methods,
+  #                                    stratification = c("loc" = "L2", "rep" = "R2"),
+  #                                    options = list(check = FALSE))
+  #
+  # model2 <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+  # truth[["m2_marginal"]] <- H2(model2, "gen", methods,
+  #                              options = list(check = FALSE))
+  # truth[["m2_partial"]] <- H2(model2, "gen", methods,
+  #                             marginal = FALSE, options = list(check = FALSE))
+  # truth[["m2_stra_L1_R1"]] <- H2(model2, "gen", methods,
+  #                                stratification = c("loc" = "L1", "rep" = "R1"),
+  #                                options = list(check = FALSE))
+  # truth[["m2_stra_L2_R1"]] <- H2(model2, "gen", methods,
+  #                                stratification = c("loc" = "L2", "rep" = "R2"),
+  #                                options = list(check = FALSE))
+  #
+  # saveRDS(truth, test_path("fixtures/refactor_lme4_result.rds"))
+
+  truth <- readRDS(test_path("fixtures/refactor_lme4_result.rds"))
   methods <- c("Cullis", "Oakey", "Delta", "Standard")
 
-  # Model 1
+  # Test model 1, with unstructured environmental variance.
   model1 <-  lme4::lmer(y ~  rep + (0+ loc | gen ) + (1| gen), data = lettuce_phenotypes)
-  truth[["m1_marginal"]] <- H2(model1, "gen", methods,
-                               options = list(check = FALSE))
-  truth[["m1_partial"]] <- H2(model1, "gen", methods,
-                              marginal = FALSE, options = list(check = FALSE))
-  truth[["m1_stra_L1_R1"]] <- H2(model1, "gen", methods,
-                                     stratification = c("loc" = "L1", "rep" = "R1"),
-                                     options = list(check = FALSE))
-  truth[["m1_stra_L2_R1"]] <- H2(model1, "gen", methods,
-                                     stratification = c("loc" = "L2", "rep" = "R2"),
-                                     options = list(check = FALSE))
 
+  expect_all_true(
+    truth[["m1_marginal"]] == H2(model1, "gen", methods,
+                                 options = list(check = FALSE))
+  )
+
+  expect_all_true(
+    truth[["m1_partial"]] == H2(model1, "gen", methods,
+                                marginal = FALSE, options = list(check = FALSE))
+  )
+
+  expect_all_true(
+
+    truth[["m1_stra_L1_R1"]] == H2(model1, "gen", methods,
+                                       stratification = c("loc" = "L1", "rep" = "R1"),
+                                       options = list(check = FALSE))
+  )
+
+  expect_all_true(
+    truth[["m1_stra_L2_R1"]] == H2(model1, "gen", methods,
+                                       stratification = c("loc" = "L2", "rep" = "R2"),
+                                       options = list(check = FALSE))
+  )
+
+  # Test model 2, with simple environmental variance.
   model2 <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
-  truth[["m2_marginal"]] <- H2(model2, "gen", methods,
-                               options = list(check = FALSE))
-  truth[["m2_partial"]] <- H2(model2, "gen", methods,
-                              marginal = FALSE, options = list(check = FALSE))
-  truth[["m2_stra_L1_R1"]] <- H2(model2, "gen", methods,
-                                 stratification = c("loc" = "L1", "rep" = "R1"),
+
+  expect_all_true(
+    truth[["m2_marginal"]] == H2(model2, "gen", methods,
                                  options = list(check = FALSE))
-  truth[["m2_stra_L2_R1"]] <- H2(model2, "gen", methods,
-                                 stratification = c("loc" = "L2", "rep" = "R2"),
-                                 options = list(check = FALSE))
+  )
+
+  expect_all_true(
+    truth[["m2_partial"]] == H2(model2, "gen", methods,
+                                marginal = FALSE, options = list(check = FALSE))
+  )
+
+  expect_all_true(
+
+    truth[["m2_stra_L1_R1"]] == H2(model2, "gen", methods,
+                                   stratification = c("loc" = "L1", "rep" = "R1"),
+                                   options = list(check = FALSE))
+  )
+
+  expect_all_true(
+    truth[["m2_stra_L2_R1"]] == H2(model2, "gen", methods,
+                                   stratification = c("loc" = "L2", "rep" = "R2"),
+                                   options = list(check = FALSE))
+  )
 
 
+  # Test design matrix reconstruction
   target_trms <- map_target_terms(model1, "gen")$idx
 
   stra <- subset(model.frame(model1), loc == "L1" & rep == "R1")
-  max(lme4::getME(model1, "Z")[rownames(stra),target_trms]  -
-        build_new_Z(model1, "gen", new_data = c("loc" = "L1", "rep" = "R1"))[stra$gen,]
+  expect_equal(
+    max(lme4::getME(model1, "Z")[rownames(stra),target_trms]  -
+          build_new_Z(model1, "gen", new_data = c("loc" = "L1", "rep" = "R1"))[stra$gen,]
+    ), 0
   )
 
   stra <- subset(model.frame(model1), loc == "L2" & rep == "R2")
-  max(lme4::getME(model1, "Z")[rownames(stra),target_trms]  -
-    build_new_Z(model1, "gen", new_data = c("loc" = "L2", "rep" = "R2"))[stra$gen,]
+  expect_equal(
+    max(lme4::getME(model1, "Z")[rownames(stra),target_trms]  -
+      build_new_Z(model1, "gen", new_data = c("loc" = "L2", "rep" = "R2"))[stra$gen,]
+    ), 0
   )
 
   stra <- subset(model.frame(model1), loc == "L3" & rep == "R3")
-  max(lme4::getME(model1, "Z")[rownames(stra),target_trms]  -
-        build_new_Z(model1, "gen", new_data = c("loc" = "L3", "rep" = "R3"))[stra$gen,]
+  expect_equal(
+    max(lme4::getME(model1, "Z")[rownames(stra),target_trms]  -
+          build_new_Z(model1, "gen", new_data = c("loc" = "L3", "rep" = "R3"))[stra$gen,]
+    ), 0
   )
-
-
 
   target_trms <- map_target_terms(model2, "gen")$idx
 
   stra <- subset(model.frame(model2), loc == "L1" & rep == "R1")
-  max(lme4::getME(model2, "Z")[rownames(stra),target_trms]  -
-        build_new_Z(model2, "gen", new_data = c("loc" = "L1", "rep" = "R1"))[stra$gen,]
+  expect_equal(
+    max(lme4::getME(model2, "Z")[rownames(stra),target_trms]  -
+          build_new_Z(model2, "gen", new_data = c("loc" = "L1", "rep" = "R1"))[stra$gen,]
+    ), 0
   )
 
   stra <- subset(model.frame(model2), loc == "L2" & rep == "R2")
-  max(lme4::getME(model2, "Z")[rownames(stra),target_trms]  -
-        build_new_Z(model2, "gen", new_data = c("loc" = "L2", "rep" = "R2"))[stra$gen,]
+  expect_equal(
+    max(lme4::getME(model2, "Z")[rownames(stra),target_trms]  -
+          build_new_Z(model2, "gen", new_data = c("loc" = "L2", "rep" = "R2"))[stra$gen,]
+    ), 0
   )
 
   stra <- subset(model.frame(model2), loc == "L3" & rep == "R3")
-  max(lme4::getME(model2, "Z")[rownames(stra),target_trms]  -
-        build_new_Z(model2, "gen", new_data = c("loc" = "L3", "rep" = "R3"))[stra$gen,]
+  expect_equal(
+    max(lme4::getME(model2, "Z")[rownames(stra),target_trms]  -
+          build_new_Z(model2, "gen", new_data = c("loc" = "L3", "rep" = "R3"))[stra$gen,]
+    ), 0
   )
-
 
 })
 
