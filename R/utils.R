@@ -414,6 +414,7 @@ var_comp <- function(model, target, calc_C22 = TRUE,
 #' @keywords internal
 #' @importFrom Matrix colMeans
 map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
+  mf <- stats::model.frame(model)
   mmlist   <- lme4::getME(model, "mmList")
   grp_list <- lme4::getME(model, "flist")
   grp_names <- names(lme4::getME(model, "cnms"))
@@ -444,15 +445,28 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
 
     # Get weighting matrix
     if(grp_names[g] != target){
-      target_order <- which(stringr::str_split(grp_names[g], ":", simplify = TRUE) == target)
+      grp_names_split <- stringr::str_split(grp_names[g], ":", simplify = TRUE)
+      target_order <- which(stringr::str_split(grp_names_split, ":", simplify = TRUE) == target)
       grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
       grp_no_target <- apply(grp_no_target, 1, function(g) paste0(g, collapse = ":"))
-      w <- as.numeric((table(grp_no_target)/q)[grp_no_target])
+      grp_w <- as.numeric((table(grp_no_target)/q)[grp_no_target])
+
+      stra <- apply(mf[, grp_names_split[,-target_order], drop = FALSE], 1, paste, collapse = ":")
+      stra_w <- lapply(unique(stra), function(x){
+        colMeans(mm[stra == x, , drop = FALSE]) |> unname()
+      })
+      names(stra_w) <- unique(stra)
+      stra_w <- do.call(c, stra_w[grp_no_target])
+
+      # BLUP weight
+      w <- grp_w * stra_w
 
       # Get intercept terms
       intercept_idx <- c(intercept_idx, rep(0, p*q))
     } else {
+      # BLUP weight
       w <- rep(1, p*q)
+      w <- w * rep(colMeans(mm), q)
 
       # Get intercept terms
       pi <- which("(Intercept)" %in% colnames(mm))
@@ -460,8 +474,6 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
       if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
       intercept_idx <- c(intercept_idx, z)
     }
-    # BLUP weight
-    w <- w * rep(colMeans(mm), q)
     if(!marginal) w <- rep(1, p * q)
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
 
@@ -500,7 +512,7 @@ map_target_terms <- function(model, target, marginal = TRUE) {
 #' @keywords internal
 #' @noRd
 build_new_Z.lmerMod <- function(model, target, new_data){
-  trms <- names(new_data)
+  trms <- colnames(new_data)
   mf   <- stats::model.frame(model)
 
   for(trm in trms){
@@ -508,7 +520,11 @@ build_new_Z.lmerMod <- function(model, target, new_data){
       cli::cli_abort("{.code {trm}} in {.code new_data} was not found in the model.")
     }
 
-    if (is.factor(mf[[trm]]) && !new_data[trm] %in% levels(mf[[trm]])) {
+    if (!is.factor(mf[[trm]]) && !inherits(new_data[,trm], "numeric")) {
+      cli::cli_abort("{.code {trm}} should be a numeric.")
+    }
+
+    if (is.factor(mf[[trm]]) && !new_data[, trm] %in% levels(mf[[trm]])) {
       cli::cli_abort("Unknow level in {.code {trm}} detected: {.code {new_data[trm]}}.")
     }
   }
@@ -518,9 +534,13 @@ build_new_Z.lmerMod <- function(model, target, new_data){
   gnames <- levels(g)
   n_g    <- nlevels(g)
 
-  new_data <- matrix(rep(new_data, n_g), ncol = n_g) |> t() |> data.frame()
-  colnames(new_data) <- trms
-  new_data[[target]] <- gnames
+  if(length(trms) == 1){
+    new_data <- data.frame(rep(new_data[,1], n_g))
+    colnames(new_data) <- trms
+  } else {
+    new_data <- rep(new_data, n_g)
+  }
+  new_data[[target]] <- factor(gnames, levels = gnames)
 
   # Add factor level and contrast
   for (trm in trms) {
@@ -543,6 +563,12 @@ build_new_Z.lmerMod <- function(model, target, new_data){
 
   # Split grouping-variable names per matched term, e.g. "gen:rep" -> c("gen","rep")
   grp_names_split <- stringr::str_split(grp_names, ":")
+  required_var <- do.call(c, grp_names_split[matched_grp]) |> unique()
+  missing_trms <- required_var[!required_var %in% trms]
+  missing_trms <- missing_trms[missing_trms != target]
+  if(length(missing_trms) > 0){
+    cli::cli_abort("Terms {.code {missing_trms}} interact with {.code {target}} but were not provided.")
+  }
 
   Z_list <- list()
 
