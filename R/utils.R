@@ -15,7 +15,15 @@
 
 pull_terms.asreml <- function(model) {
   fixed_trms <- attr(model$formulae$fixed, "term.labels")
-  ran_trms <- attr(model$formulae$random, "term.labels")
+  ran_trms <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) y[["facnam"]])
+    paste0(do.call(c,facnam), collapse = ":")
+  }) |> unname()
+  attr(ran_trms, "spec") <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) y[["model"]])
+    paste0(do.call(c,facnam), collapse = ":")
+  })  |> unname()
+
   return(list(fixed = fixed_trms, random = ran_trms))
 }
 
@@ -61,23 +69,17 @@ semivariance <- function(X) {
 
 #' @keywords internal
 pull_terms_without_specials.asreml <- function(model) {
-  model_terms <- pull_terms(model)
-  pattern <- paste0(
-    "^(",
-    paste0(asreml_Spcls, collapse = "|"),
-    ")\\(([^,]+),?.*\\)"
-  )
-  clean_which <- stringr::str_which(model_terms$fixed, pattern)
-  model_terms$fixed[clean_which] <- stringr::str_extract(model_terms$fixed[clean_which],
-    pattern,
-    group = 2
-  )
-  clean_which <- stringr::str_which(model_terms$random, pattern)
-  model_terms$random[clean_which] <- stringr::str_extract(model_terms$random[clean_which],
-    pattern,
-    group = 2
-  )
-  model_terms
+  fixed_trms <- attr(model$formulae$fixed, "term.labels")
+  ran_trms <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) names(y[["model"]]))
+    paste0(do.call(c,facnam), collapse = ":")
+  }) |> unname()
+  attr(ran_trms, "spec") <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) y[["model"]])
+    paste0(do.call(c,facnam), collapse = ":")
+  })  |> unname()
+
+  return(list(fixed = fixed_trms, random = ran_trms))
 }
 
 #' @keywords internal
@@ -423,10 +425,9 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
 
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
-  idx <- do.call(c,
-                 lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
-  )
-  terms <- colnames(Z[,idx])
+  idx <- lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
+  idx_all <- do.call(c,idx)
+  terms <- colnames(Z[,idx_all])
   target_grp <- levels(grp_list[[target]])
   n_tg <- length(target_grp)
 
@@ -435,34 +436,39 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   m_list <- list()
   intercept_idx <- c()
 
-  for(g in matched_grp){
-    mm <- Matrix::Matrix(mmlist[[g]])
-    grp <- levels(grp_list[[grp_names[g]]])
+  for(itr in seq_along(matched_grp)){
+    g_idx <- matched_grp[itr]
+    mm <- Matrix::Matrix(mmlist[[g_idx]])
+    grp <- levels(grp_list[[grp_names[g_idx]]])
+    grp <- factor(grp, levels = grp)
 
     n <- nrow(mm)
     p <- ncol(mm)
     q <- length(grp)
 
     # Get weighting matrix
-    if(grp_names[g] != target){
-      grp_names_split <- stringr::str_split(grp_names[g], ":", simplify = TRUE)
+    if(grp_names[g_idx] != target){
+
+      grp_names_split <- stringr::str_split(grp_names[g_idx], ":", simplify = TRUE)
       target_order <- which(stringr::str_split(grp_names_split, ":", simplify = TRUE) == target)
       grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
-      grp_no_target <- apply(grp_no_target, 1, function(g) paste0(g, collapse = ":"))
-      grp_w <- as.numeric((table(grp_no_target)/q)[grp_no_target])
+      grp_key <- apply(grp_no_target, 1, paste, collapse = ":")
+      mm_key <- colnames(mm)
+      stra_key <- apply(expand.grid(mm_key, grp_key), 1, function(x) paste0(x, collapse = ":"))
+      stra_id <- match(stra_key, unique(stra_key))
 
-      stra <- apply(mf[, grp_names_split[,-target_order], drop = FALSE], 1, paste, collapse = ":")
-      stra_w <- lapply(unique(stra), function(x){
-        colMeans(mm[stra == x, , drop = FALSE]) |> unname()
-      })
-      names(stra_w) <- unique(stra)
-      stra_w <- do.call(c, stra_w[grp_no_target])
-
-      # BLUP weight
-      w <- grp_w * stra_w
+      z <- Z[,idx[[itr]]]
+      w <- numeric(p*q)
+      for(id in unique(stra_id)){
+        s <- which(stra_id == id)
+        if(length(s) > 0){
+          w[s] <- sum(z[,s])/n
+        }
+      }
 
       # Get intercept terms
       intercept_idx <- c(intercept_idx, rep(0, p*q))
+
     } else {
       # BLUP weight
       w <- rep(1, p*q)
@@ -474,6 +480,7 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
       if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
       intercept_idx <- c(intercept_idx, z)
     }
+
     if(!marginal) w <- rep(1, p * q)
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
 
@@ -485,8 +492,8 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
       m[grepl(pattern, names(w)),tg] <- 1
     }
     m <- m * w
-    m_list[[g]] <- m
-    w_list[[g]] <- w
+    m_list[[itr]] <- m
+    w_list[[itr]] <- w
   }
 
   m <- do.call(rbind, m_list)
@@ -495,7 +502,7 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   intercept <- intercept_idx==1
   list(m = m,
        w = w,
-       idx = setNames(idx, terms),
+       idx = setNames(idx_all, terms),
        intercept = setNames(intercept, terms))
 }
 
@@ -572,43 +579,208 @@ build_new_Z.lmerMod <- function(model, target, new_data){
 
   Z_list <- list()
 
-  for (idx in seq_along(matched_grp)) {
-    g_idx <- matched_grp[idx]
+  for (itr in seq_along(matched_grp)) {
+    g_idx <- matched_grp[itr]
     term  <- grp_names[g_idx]
 
     # Within-group design for this RE term (n x p)
-    mm <- stats::model.matrix(stats::as.formula(frm[g_idx]), new_data)
-    mm <- as(mm, "dgCMatrix")
+    mm <- Matrix::sparse.model.matrix(stats::as.formula(frm[g_idx]), new_data)
     grp <- levels(grp_list[[term]])
-
-    # New grouping labels
-    grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
-    j_grp   <- match(grp_new, grp)
+    grp <- factor(grp, levels = grp)
 
     n <- nrow(mm)
     p <- ncol(mm)
     q <- length(grp)
 
-    s <- Matrix::summary(mm)  # i, j, x (1-based)
+    grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
+    i <- seq_len(n)
+    j <- match(grp_new, grp)
+    keep <- !is.na(j)
+    mm_grp <- Matrix::sparseMatrix(
+        i    = i[keep],
+        j    = j[keep],
+        x    = rep(1, sum(keep)),
+        dims = c(n, q)
+      )
 
-    # Keep only nonzero coming from rows whose group matches training levels
-    keep <- !is.na(j_grp[s$i])
-
-    s <- s[keep, , drop = FALSE]
-    j <- (j_grp[s$i] - 1L) * p + s$j
-
-    Z_list[[idx]] <- Matrix::sparseMatrix(
-      i    = s$i,
-      j    = j,
-      x    = s$x,
-      dims = c(n, q * p),
-      dimnames = list(gnames, rep(grp, each = p))
-    )
+    z <- KhatriRao(t(mm_grp), t(mm)) %>% t
+    dimnames(z) <- list(gnames, rep(grp, each = p))
+    Z_list[[itr]] <- z
   }
   do.call(cbind, Z_list)
 }
 
-# To Do, asreml
+#' @keywords internal
+#' @noRd
+build_new_Z.asreml <- function(model, target, new_data){
+  mf <- model$mf
+  if (is.null(mf)) {
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    mf <- model$mf
+  }
+
+  grp_names <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) names(y[["model"]]))
+    paste0(do.call(c,facnam), collapse = ":")
+  })
+
+  matched_grp <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) names(y[["model"]]) == target)
+    any(do.call(c,facnam))
+  }) |> which()
+
+  required_var <- sapply(model$G.param, function(x){
+    facnam <- lapply(x[-1], function(y) names(y[["model"]]))
+    unique(do.call(c,facnam))
+  })
+  required_var <- do.call(c,required_var[matched_grp]) |> unique()
+
+  u <- model$coefficients$random
+  Gp <- cumsum(attr(u, "terms")[,"n"])
+  Gp <- c(0, Gp)
+  idx <- lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
+
+  trms <- colnames(new_data)
+
+  for(trm in trms){
+    if (!trm %in% colnames(mf)){
+      cli::cli_abort("{.code {trm}} in {.code new_data} was not found in the model.")
+    }
+
+    if (!is.factor(mf[[trm]]) && !inherits(new_data[,trm], "numeric")) {
+      cli::cli_abort("{.code {trm}} should be a numeric.")
+    }
+
+    if (is.factor(mf[[trm]]) && !new_data[, trm] %in% levels(mf[[trm]])) {
+      cli::cli_abort("Unknow level in {.code {trm}} detected: {.code {new_data[trm]}}.")
+    }
+  }
+
+  missing_trms <- required_var[!required_var %in% trms]
+  missing_trms <- missing_trms[missing_trms != target]
+  if(length(missing_trms) > 0){
+    cli::cli_abort("Terms {.code {missing_trms}} interact with {.code {target}} but were not provided.")
+  }
+
+  # Target levels
+  g      <- mf[[target]]
+  gnames <- levels(g)
+  n_g    <- nlevels(g)
+
+  if(length(trms) == 1){
+    new_data <- data.frame(rep(new_data[,1], n_g))
+    colnames(new_data) <- trms
+  } else {
+    new_data <- rep(new_data, n_g)
+  }
+  new_data[[target]] <- factor(gnames, levels = gnames)
+
+
+  # Add factor level and contrast
+  var_type <- c()
+  for (trm in trms) {
+    var_type[trm] <- class(mf[[trm]])
+    if (is.factor(mf[[trm]])) {
+      new_data[[trm]] <- factor(new_data[[trm]], levels = levels(mf[[trm]]))
+      stats::contrasts(new_data[[trm]]) <- stats::contrasts(mf[[trm]])
+    }
+  }
+  numeric_var <- trms[var_type == "numeric"]
+
+  Z_list <- list()
+
+  for (i in seq_along(matched_grp)) {
+    g_idx <- matched_grp[i]
+    term  <- grp_names[g_idx]
+    vars <-  sapply(model$G.param[[i]][-1], function(x) names(x[["model"]]))
+    levs <-  sapply(model$G.param[[i]][-1], function(x) x[["levels"]])
+    specs <- sapply(model$G.param[[i]][-1], function(x) x[["model"]])
+    nlevs <- sapply(levs, length)
+
+    numeric_var_idx <- which(vars %in% numeric_var)
+    factor_idx <- which(!vars %in% numeric_var)
+    stra_idx <- which(!vars %in% numeric_var & vars != target)
+    target_idx <- which(vars == target)
+
+
+    if (length(numeric_var_idx) > 0 && any(specs[numeric_var_idx] != "id")) {
+      # Build a group level matrix
+      combo_df <- do.call(
+        expand.grid,
+        c(rev(levs), list(stringsAsFactors = FALSE))
+      )
+      combo_df <- combo_df[, rev(seq_len(ncol(combo_df))), drop = FALSE]
+
+      # Helper function, build factor matrix
+      build_f_mat <- function(x, level){
+        i <- seq_along(x)
+        j <- match(x, level)
+        keep <- !is.na(j)
+        mm_grp <- Matrix::sparseMatrix(
+          i    = i[keep],
+          j    = j[keep],
+          x    = rep(1, sum(keep)),
+          dims = c(length(x), length(level))
+        )
+        mm_grp
+      }
+
+      # Helper function, build basis
+      build_basis <- function(Z, stra){
+        sapply(stra, function(s) {
+          s <- intersect(colnames(Z), s)
+          Matrix::rowSums(Z[, s, drop = FALSE])
+        })
+      }
+
+      # Group by numeric terms
+      # Get the design matrix
+      design <- model$design
+      if (is.null(design)) {
+        design_default <- asreml::asreml.options()$design
+        asreml::asreml.options(design = TRUE)
+        model <- asreml::update.asreml(model)
+        design <- model$design
+        asreml::asreml.options(design = design_default)
+      }
+
+      numeric_var_key <- apply(combo_df[, numeric_var_idx,drop = FALSE], 1, function(x) paste0(x, collapse = ":"))
+      numeric_var_id <- match(numeric_var_key, unique(numeric_var_key))
+      numeric_var_colname <- lapply(
+        unique(numeric_var_id),
+        function(id) rownames(u)[idx[[i]]][numeric_var_id == id]
+      )
+
+      # Choose best approximation row in mf, then get weights per group
+      best_apprx <- sweep(
+        data.frame(mf)[, vars[numeric_var_idx], drop = FALSE],
+        2,
+        new_data[1, vars[numeric_var_idx]],
+        "-"
+      )^2 |> rowSums() |> which.min()
+
+      z <- build_basis(design, numeric_var_colname)[best_apprx, numeric_var_id]
+
+      if(length(stra_idx) > 1){
+        new_strata <- new_data[1, vars[stra_idx]]
+        stra_key <- apply(combo_df[, stra_idx, drop = FALSE], 1, function(x) paste0(x, collapse = ":"))
+        z <- z * (stra_key == new_strata)
+      }
+      Z_list[[i]] <- t(z * build_f_mat(combo_df[, target_idx], gnames))
+
+    } else {
+
+      frm <- as.formula(paste0("~0+", term))
+      Z_list[[i]] <- Matrix::sparse.model.matrix(frm, new_data)
+
+    }
+
+  }
+
+  Z <- do.call(cbind,Z_list)
+  colnames(Z) <- names(u[do.call(c,idx),])
+  Z
+}
 
 #' @keywords internal
 #' @noRd
@@ -616,4 +788,5 @@ build_new_Z <- function(model, target, new_data) {
   UseMethod("build_new_Z")
 }
 .S3method("build_new_Z", "lmerMod", build_new_Z.lmerMod)
+.S3method("build_new_Z", "asreml", build_new_Z.asreml)
 

@@ -77,19 +77,20 @@ asreml.options(design = TRUE)
 
 lettuce_asreml <- asreml(
   fixed = y ~ 1,
-  random =  ~ gen  + rep:pol(pseudo_var, 3):gen,
+  random =  ~ gen  + pol(pseudo_var, 2):gen,
   data = lettuce_phenotypes,
   trace = FALSE,
 )
 
 #lettuce_asreml$G.param$`rep:pol(pseudo_var, 3):gen`
-lettuce_asreml$G.param$`spl(pseudo_var, 3):pol(pseudo_var, 3):gen`
+#lettuce_asreml$G.param$`spl(pseudo_var, 3):pol(pseudo_var, 3):gen`
 
 # build_new_Z.lmermod lacks check for whether the required grouping variable is provided.
+build_new_Z(lettuce_asreml, "gen", data.frame("loc" = "L1"))
+build_new_Z(lettuce_asreml, "gen", data.frame("pseudo_var" = 1))
 
 
-
-new_data <- data.frame("pseudo_var" = 1, "rep" = "R1")
+new_data <- data.frame("pseudo_var" = 1)
 target <- "gen"
 
 mf <- lettuce_asreml$mf
@@ -179,7 +180,6 @@ for (i in seq_along(matched_grp)) {
 
 
   if (length(numeric_var_idx) > 0 && any(specs[numeric_var_idx] != "id")) {
-
     # Build a group level matrix
     combo_df <- do.call(
       expand.grid,
@@ -187,64 +187,35 @@ for (i in seq_along(matched_grp)) {
     )
     combo_df <- combo_df[, rev(seq_len(ncol(combo_df))), drop = FALSE]
 
-    # Strata match score z (per combo row), then split by target
-    # strata values for the new row
-    new_strata <- new_data[1, vars[stra_idx]]
+    # Helper function, build factor matrix
+    build_f_mat <- function(x, level){
+      i <- seq_along(x)
+      j <- match(x, level)
+      keep <- !is.na(j)
+      mm_grp <- Matrix::sparseMatrix(
+        i    = i[keep],
+        j    = j[keep],
+        x    = rep(1, sum(keep)),
+        dims = c(length(x), length(level))
+      )
+      mm_grp
+    }
 
-    # z_strata: number of strata variables matching new_data in each combo row
-    z_strata <- rowSums(
-      sweep(combo_df[, vars[stra_idx], drop = FALSE], 2, new_strata, "==")
+    # Helper function, build basis
+    build_basis <- function(Z, stra){
+      sapply(stra, function(s) {
+        s <- intersect(colnames(Z), s)
+        rowSums(Z[, s, drop = FALSE])
+      })
+    }
+
+    # Group by numeric terms
+    numeric_var_key <- apply(combo_df[, numeric_var_idx,drop = FALSE], 1, function(x) paste0(x, collapse = ":"))
+    numeric_var_id <- match(numeric_var_key, unique(numeric_var_key))
+    numeric_var_colname <- lapply(
+      unique(numeric_var_id),
+      function(id) rownames(u)[idx[[i]]][numeric_var_id == id]
     )
-
-    # one-hot for target levels (gnames), then multiply by strata score
-    target_level <- as.character(combo_df[[target_idx]])
-    col_idx <- match(target_level, gnames)
-
-    hit <- !is.na(col_idx)
-    target_onehot <- sparseMatrix(
-      i = which(hit),
-      j = col_idx[hit],
-      x = 1,
-      dims = c(nrow(combo_df), length(gnames)),
-      dimnames = list(NULL, gnames)
-    )
-
-    # z: sparse, with value = z_strata in the target column for each row
-    # (since one-hot, we can build it directly without diag %*%)
-    z <- sparseMatrix(
-      i = which(hit),
-      j = col_idx[hit],
-      x = z_strata[hit],
-      dims = c(nrow(combo_df), length(gnames)),
-      dimnames = list(NULL, gnames)
-    )
-
-    # Numeric-group labels for basis terms (e.g. order0:order1:...)
-    numeric_group <- apply(
-      combo_df[, numeric_var_idx, drop = FALSE],
-      1,
-      function(row) paste0(row, collapse = ":")
-    )
-
-    # Following x reconstruction can be extended when we know how to deal with
-    # basis construction of continuous variable.
-
-    # Map each numeric-group to the corresponding asreml columns
-    # asreml column names for this random term block
-    asreml_cols <- rownames(u)[idx[[i]]]
-
-    # split asreml columns by numeric-group (same grouping vector as numeric_group)
-    cols_by_group <- lapply(
-      unique(numeric_group),
-      function(g) asreml_cols[numeric_group == g]
-    )
-    names(cols_by_group) <- unique(numeric_group)
-
-    # Build x: for each numeric-group, row-sum the matching design cols
-    x <- sapply(cols_by_group, function(cols) {
-      cols <- intersect(colnames(lettuce_asreml$design), cols)
-      rowSums(lettuce_asreml$design[, cols, drop = FALSE])
-    })  # (n_obs x n_groups) matrix
 
     # Choose best approximation row in mf, then get weights per group
     best_apprx <- sweep(
@@ -254,14 +225,14 @@ for (i in seq_along(matched_grp)) {
       "-"
     )^2 |> rowSums() |> which.min()
 
-    best_weights <- x[best_apprx, ]               # named by group via colnames(x)
-    best_weights <- setNames(best_weights, colnames(x))
+    z <- build_basis(lettuce_asreml$design, numeric_var_colname)[best_apprx, numeric_var_id]
 
-    # per-combo weight w, aligned with numeric_group vector
-    w <- best_weights[numeric_group]              # length n_combo
-
-    ## Final design block for this random term
-    Z_list[[i]] <- t(z * w)
+    if(length(stra_idx) > 1){
+      new_strata <- new_data[1, vars[stra_idx]]
+      stra_key <- apply(combo_df[, stra_idx, drop = FALSE], 1, function(x) paste0(x, collapse = ":"))
+      z <- z * (stra_key == new_strata)
+    }
+    Z_list[[i]] <- t(z * build_f_mat(combo_df[, target_idx], gnames))
 
   } else {
 
@@ -273,6 +244,10 @@ for (i in seq_along(matched_grp)) {
 }
 
 Z <- do.call(cbind,Z_list)
-colnames(Z) <- names(u[idx,])
+colnames(Z) <- names(u[do.call(c,idx),])
 
 })
+
+
+pheatmap::pheatmap(Z, cluster_rows = F, cluster_cols = F, show_rownames = F, show_colnames = F)
+colnames(Z)

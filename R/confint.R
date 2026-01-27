@@ -159,7 +159,8 @@ bootstrap_asreml <- function(model,
 
   mf <- model$mf
   if (is.null(mf)) {
-    stop("Model frame (`model$mf`) not found. Fit with `model.frame = TRUE` so data are stored.")
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    mf <- model$mf
   }
 
   mf <- as.data.frame(mf)
