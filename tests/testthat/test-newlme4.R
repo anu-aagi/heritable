@@ -2,9 +2,9 @@
 test_that("Confint works",{
   skip()
 
-require(stringr)
-require(asreml)
-devtools::document()
+# require(stringr)
+# require(asreml)
+# devtools::document()
 lettuce_subset <- lettuce_phenotypes |>
   dplyr::filter(loc == "L2")
 N <- nrow(lettuce_subset)
