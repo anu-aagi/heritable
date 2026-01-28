@@ -449,21 +449,25 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
     # Get weighting matrix
     if(grp_names[g_idx] != target){
 
-      grp_names_split <- stringr::str_split(grp_names[g_idx], ":", simplify = TRUE)
-      target_order <- which(stringr::str_split(grp_names_split, ":", simplify = TRUE) == target)
-      grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
-      grp_key <- apply(grp_no_target, 1, paste, collapse = ":")
-      mm_key <- colnames(mm)
-      stra_key <- apply(expand.grid(mm_key, grp_key), 1, function(x) paste0(x, collapse = ":"))
-      stra_id <- match(stra_key, unique(stra_key))
+      if (marginal) {
+        grp_names_split <- stringr::str_split(grp_names[g_idx], ":", simplify = TRUE)
+        target_order <- which(stringr::str_split(grp_names_split, ":", simplify = TRUE) == target)
+        grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
+        grp_key <- apply(grp_no_target, 1, paste, collapse = ":")
+        mm_key <- colnames(mm)
+        stra_key <- apply(expand.grid(mm_key, grp_key), 1, function(x) paste0(x, collapse = ":"))
+        stra_id <- match(stra_key, unique(stra_key))
 
-      z <- Z[,idx[[itr]]]
-      w <- numeric(p*q)
-      for(id in unique(stra_id)){
-        s <- which(stra_id == id)
-        if(length(s) > 0){
-          w[s] <- sum(z[,s])/n
+        z <- Z[,idx[[itr]]]
+        w <- numeric(p*q)
+        for(id in unique(stra_id)){
+          s <- which(stra_id == id)
+          if(length(s) > 0){
+            w[s] <- sum(z[,s])/n
+          }
         }
+      } else {
+        w <- rep(1, p * q)
       }
 
       # Get intercept terms
@@ -472,7 +476,9 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
     } else {
       # BLUP weight
       w <- rep(1, p*q)
-      w <- w * rep(colMeans(mm), q)
+      if (marginal) {
+        w <- w * rep(colMeans(mm), q)
+      }
 
       # Get intercept terms
       pi <- which("(Intercept)" %in% colnames(mm))
@@ -481,7 +487,6 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
       intercept_idx <- c(intercept_idx, z)
     }
 
-    if(!marginal) w <- rep(1, p * q)
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
 
     # BLUP weight matrix
