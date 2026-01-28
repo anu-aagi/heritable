@@ -1,3 +1,4 @@
+
 #' Bootstrap confidence interval for heritability
 #'
 #' @description
@@ -73,7 +74,7 @@ confint.heritable <- function(object,
 
   if (h2.type == "broad_sense") {
     Fun_use <- function(x) {
-     H2(x, target, method, options = list(check = FALSE))
+      H2(x, target, method, options = list(check = FALSE))
     }
   } else {
     Fun_use <- function(x) {
@@ -83,20 +84,20 @@ confint.heritable <- function(object,
 
   if (inherits(model, "lmerMod")) {
     boot_mod <- lme4::bootMer(model,
-      FUN = Fun_use, nsim = B, seed = seed,
-      use.u = !resample_u, ...
+                              FUN = Fun_use, nsim = B, seed = seed,
+                              use.u = !resample_u, ...
     )
     ci <- stats::confint(boot_mod, level = level, type = type)
   } else {
     boot_mod <- bootstrap_asreml(model,
-      FUN = Fun_use, nsim = B, seed = seed,
-      use.u = !resample_u, ...
+                                 FUN = Fun_use, nsim = B, seed = seed,
+                                 use.u = !resample_u, ...
     )
     ci <- stats::confint(boot_mod, level = level, type = type)
     ci <- matrix(ci,
                  nrow = length(method),
                  dimnames = list(method, colnames(ci))
-          )
+    )
   }
   attr(ci, "boot_mod") <- boot_mod
   ci
@@ -159,7 +160,8 @@ bootstrap_asreml <- function(model,
 
   mf <- model$mf
   if (is.null(mf)) {
-    stop("Model frame (`model$mf`) not found. Fit with `model.frame = TRUE` so data are stored.")
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    mf <- model$mf
   }
 
   mf <- as.data.frame(mf)
