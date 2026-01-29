@@ -1,6 +1,6 @@
 
 
-<!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- README.md is generated from README.qmd. Please edit that file -->
 
 # heritable
 
@@ -8,10 +8,9 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
-[![CRAN
-status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test
 coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
+[![CRAN status](https://www.r-pkg.org/badges/version/heritable)](https://CRAN.R-project.org/package=heritable)
 <!-- badges: end -->
 
 `heritable` is to be the one-stop shop for heritability calculations in
@@ -59,7 +58,7 @@ H2(fit_asreml, target = "gen")
 #> 0.8090841 0.8090841 0.8029760 0.8090841 0.8400648
 H2(fit_lme4, target = "gen")
 #>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8091338 0.8091338 0.7966375 0.8091338 0.8400678
+#> 0.8091339 0.8091339 0.7966376 0.8091339 0.8400679
 ```
 
 Alternatively, with the help of tidyverse functions, you can return all

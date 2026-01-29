@@ -18,7 +18,7 @@
 }
 \arguments{
 \item{object}{A heritability object returned by \code{\link[=H2]{H2()}} (broad-sense) or
-\link[=H2]{heritable::h2()} (narrow-sense). The object must store the fitted model
+\link[=H2]{h2()} (narrow-sense). The object must store the fitted model
 as an attribute.}
 
 \item{parm}{a specification of which parameters are to be given confidence intervals,
