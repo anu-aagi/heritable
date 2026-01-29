@@ -5,6 +5,8 @@
 \alias{h2}
 \title{Calculate heritability from mixed model object}
 \usage{
+H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
+
 H2(model,
    target,
    method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),

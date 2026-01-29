@@ -28,6 +28,7 @@ test_that("Inner checks are triggered", {
   # Method level
   expect_error(H2(asreml_model_fixed, target, "Oakey"))
   expect_error(H2(asreml_model_fixed, target, "Cullis"))
+
 })
 
 test_that("We can find GRM",{

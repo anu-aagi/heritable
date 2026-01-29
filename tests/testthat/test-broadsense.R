@@ -26,10 +26,10 @@ test_that("H2 for asreml works", {
   expect_no_error(H2(asreml_model_R, "gen"))
 
   # GxE models -----------------------------------------------------------------
-  #TODO: Commented out because in development
+  #TODO: Currently not yet implemented so should error
   asreml_model_g_by_e <- readRDS(file = test_path("fixtures/asreml_model_g_by_e.rds"))
 
-  # expect_error(H2(asreml_model_g_by_e, target = "gen"))
+  expect_error(H2(asreml_model_g_by_e, target = "gen"))
 })
 
 
@@ -109,8 +109,4 @@ test_that("asreml methods work", {
   expect_equal(H2_Standard.asreml(asreml_model_random, target = "gen"), 0.8400648, tolerance = 1e-5)
 })
 
-test_that("What happens when user fits a fixed genotype model", {
-  asreml_model_fixed <- readRDS(test_path("fixtures/asreml_model_fixed.rds"))
-  expect_error(H2(asreml_model_fixed, "gen"))
 
-})

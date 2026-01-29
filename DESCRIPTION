@@ -17,10 +17,8 @@ Imports:
     boot,
     cli,
     emmeans,
-    MASS,
     Matrix,
     methods,
-    reformulas,
     stringr,
     vctrs
 Suggests: 

@@ -81,31 +81,5 @@
 #
 # saveRDS(lmer_model_g_by_e, file = test_path("fixtures/lmer_model_g_by_e.rds"))
 #
-# # Lettuce model for confint testing
-# lettuce_subset <- lettuce_phenotypes |>
-#   dplyr::filter(loc == "L2")
+# #TODO: Narrow sense for lme4
 #
-# confint_lettuce_asreml <- asreml(
-#   fixed = y ~ rep,
-#   random =  ~ gen,
-#   data = lettuce_subset,
-#   trace = FALSE,
-# )
-#
-# saveRDS(confint_lettuce_asreml, file = test_path("fixtures/confint_lettuce_asreml.rds"))
-# Test for lme4
-# confint_lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
-#
-# saveRDS(confint_lettuce_lme4, file = test_path("fixtures/confint_lettuce_lme4.rds"))
-#
-# lettuce_subset <- lettuce_phenotypes |>
-#   subset(loc == "L2")
-#
-# lettuce_asreml <- asreml(
-#   fixed = y ~ rep,
-#   random = ~ gen,
-#   data = lettuce_subset,
-#   trace = FALSE
-# )
-#
-# saveRDS(lettuce_asreml, test_path("fixtures/lettuce_asreml.rds")
