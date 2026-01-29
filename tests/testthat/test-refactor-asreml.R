@@ -140,8 +140,12 @@ if(length(missing_trms) > 0){
 
 # Target levels
 g      <- mf[[target]]
+if(!is.factor(g)){
+  cli::cli_abort("The target {.code {target}} provided is not a factor.")
+}
 gnames <- levels(g)
 n_g    <- nlevels(g)
+
 
 if(length(trms) == 1){
   new_data <- data.frame(rep(new_data[,1], n_g))
@@ -246,8 +250,345 @@ for (i in seq_along(matched_grp)) {
 Z <- do.call(cbind,Z_list)
 colnames(Z) <- names(u[do.call(c,idx),])
 
+pheatmap::pheatmap(Z, cluster_rows = F, cluster_cols = F, show_rownames = F, show_colnames = F)
+colnames(Z)
+
+### mapper
+pseudo_var <- rnorm(nrow(lettuce_phenotypes))
+
+lettuce_asreml <- asreml(
+  fixed = y ~ 1,
+  random =  ~ loc:gen + gen,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+target <- "gen"
+marginal <- TRUE
+map_target_terms(lettuce_asreml, "gen")
+map_target_terms(model2, "gen")
+
+
+mf <- lettuce_asreml$mf
+grp_names <- sapply(lettuce_asreml$G.param, function(x){
+  facnam <- lapply(x[-1], function(y) names(y[["model"]]))
+  paste0(do.call(c,facnam), collapse = ":")
+})
+
+matched_grp <- sapply(lettuce_asreml$G.param, function(x){
+  facnam <- lapply(x[-1], function(y) names(y[["model"]]) == target)
+  any(do.call(c,facnam))
+}) |> which()
+
+u <- lettuce_asreml$coefficients$random
+Gp <- cumsum(attr(u, "terms")[,"n"])
+Gp <- c(0, Gp)
+idx <- lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
+idx_all <- do.call(c, idx)
+terms <- rownames(u)[idx_all]
+
+g      <- mf[[target]]
+if(!is.factor(g)){
+  cli::cli_abort("The target {.code {target}} provided is not a factor.")
+}
+target_grp <- levels(g)
+n_tg  <- nlevels(g)
+n <- nrow(mf)
+
+w_list <- list()
+m_list <- list()
+intercept_idx <- c()
+
+
+for(i in seq_along(matched_grp)){
+  g_idx <- matched_grp[i]
+  term  <- grp_names[g_idx]
+  vars <-  sapply(lettuce_asreml$G.param[[i]][-1], function(x) names(x[["model"]]))
+  levs <-  sapply(lettuce_asreml$G.param[[i]][-1], function(x) x[["levels"]])
+  nlevs <- sapply(levs, length)
+  target_idx <- which(vars == target)
+  stra_idx <- which(vars != target)
+  grp <- rownames(u)[idx[[i]]]
+  n_g <- length(grp)
+
+  if(grp_names[g_idx] != target){
+
+    combo_df <- do.call(
+      expand.grid,
+      c(rev(levs), list(stringsAsFactors = FALSE))
+    )
+    combo_df <- combo_df[, rev(seq_len(ncol(combo_df))), drop = FALSE]
+    target_key <- combo_df[[target]]
+
+    if (marginal) {
+      stra_key <- apply(combo_df[, stra_idx,drop = FALSE], 1, function(x) paste0(x, collapse = ":"))
+      stra_id <- match(stra_key, unique(stra_key))
+      stra_colname <- lapply(
+        unique(stra_id),
+        function(id) grp[stra_id == id]
+      )
+
+      design <- lettuce_asreml$design
+
+      stra_w <-sapply(stra_colname, function(s) {
+        s <- intersect(colnames(design), s)
+        sum(design[, s, drop = FALSE])/n
+      })
+      w <- stra_w[stra_id]
+    } else {
+      w <- rep(1, prod(nlevs))
+    }
+
+    # Get intercept terms
+    intercept_idx <- c(intercept_idx, rep(0, prod(nlevs)))
+  } else {
+    target_key <- target_grp
+    w <- rep(1, n_g)
+    intercept_idx <- c(intercept_idx, rep(1, n_g))
+  }
+
+  # Helper function, build factor matrix
+  build_f_mat <- function(x, level){
+    i <- seq_along(x)
+    j <- match(x, level)
+    keep <- !is.na(j)
+    mm_grp <- Matrix::sparseMatrix(
+      i    = i[keep],
+      j    = j[keep],
+      x    = rep(1, sum(keep)),
+      dims = c(length(x), length(level))
+    )
+    mm_grp
+  }
+
+  m <- build_f_mat(target_key, target_grp)
+  m <- m * w
+  dimnames(m) <- list(grp, target_grp)
+  m_list[[i]] <- m
+  w_list[[i]] <- w
+}
+
+m <- do.call(rbind, m_list)
+w <- do.call(c, w_list)
+
+intercept <- intercept_idx==1
+list(m = m,
+     w = w,
+     idx = setNames(idx_all, terms),
+     intercept = setNames(intercept, terms))
+
+
+
+### Build variance component
+lettuce_asreml <- asreml(
+  fixed = y ~ 1,
+  random =  ~ loc + gen,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
+target <- "gen"
+
+
+grp_names <- sapply(lettuce_asreml$G.param, function(x){
+  facnam <- lapply(x[-1], function(y) y[["facnam"]])
+  paste0(do.call(c,facnam), collapse = ":")
+})
+
+matched_grp <- sapply(lettuce_asreml$G.param, function(x){
+  facnam <- lapply(x[-1], function(y) names(y[["model"]]) == target)
+  any(do.call(c,facnam))
+}) |> which()
+
+grp_names
+lapply(matched_grp, function(x){
+  predict(lettuce_asreml,
+          classify = grp_names[1],
+          vcov = TRUE,
+          trace = FALSE
+  )$vcov
 })
 
 
-pheatmap::pheatmap(Z, cluster_rows = F, cluster_cols = F, show_rownames = F, show_colnames = F)
-colnames(Z)
+lettuce_asreml <- asreml(
+  fixed = y ~ 1,
+  random =  ~ loc + gen,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
+
+predict(lettuce_asreml,
+        classify = "loc:gen",
+        vcov = TRUE,
+        trace = FALSE
+)$vcov
+
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random =  ~ gen + gen:loc,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+predict(lettuce_asreml,
+               classify = "gen:loc",
+               only = "gen:loc",
+               vcov = TRUE,
+               trace = FALSE
+)$vcov
+
+ predict(lettuce_asreml,
+         classify = "ar1(gen)",
+         only = "ar1(gen)",
+         vcov = TRUE,
+         trace = FALSE
+ )$vcov
+
+
+
+ M <- as.matrix(lettuce_markers[, -1] + 1)
+ N <- nrow(M)
+ pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)
+ pm <- pmin(pmax(pm, 1e-6), 1 - 1e-6) # guard against 0 or 1
+ W <- sweep(M, 2, 2 * pm, "-")
+ W <- sweep(W, 2, sqrt(2 * pm * (1 - pm)), "/")
+ G <- tcrossprod(W) / ncol(M)
+ Ginv <- MASS::ginv(G)
+ dimnames(G) <- dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
+ attr(Ginv, "INVERSE") <- TRUE
+
+
+ lettuce_asreml <- asreml(
+   fixed = y ~ rep,
+   random =  ~ vm(gen, G, singG = "PSD") ,
+   data = lettuce_phenotypes,
+   trace = FALSE,
+ )
+ map_target_terms(lettuce_asreml, "gen")
+ lettuce_asreml$coefficients$random
+ lettuce_asreml$G.param[[1]]
+
+ grp_names <- sapply(lettuce_asreml$G.param, function(x){
+   facnam <- lapply(x[-1], function(y) y[["facnam"]])
+   paste0(do.call(c,facnam), collapse = ":")
+ })
+ G_list <- sapply(seq_along(grp_names), function(x){
+   phrase_G(lettuce_asreml$G.param[[x]])
+ })
+ G <- Matrix::bdiag(G_list)
+ design <- lettuce_asreml$design
+ u <- lettuce_asreml$coefficients$random
+ u_names <- rownames(u)
+
+
+ lettuce_asreml <- asreml(
+   fixed = y ~ rep,
+   random =  ~ gen ,
+   data = lettuce_phenotypes,
+   trace = FALSE,
+ )
+
+
+lapply(lettuce_asreml$G.param, function(x){
+   facnam <- lapply(x[-1], function(y) paste0(y[["facnam"]], "_", y[["levels"]]))
+   facnam <- do.call(
+     expand.grid,
+     c(rev(facnam), list(stringsAsFactors = FALSE))
+   )
+   facnam <- facnam[, rev(seq_len(ncol(facnam))), drop = FALSE]
+   facnam
+})
+
+
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random =  ~ loc:gen + gen ,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random =  ~ vm(gen, G, singG = "PSD") ,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random =  ~ gen + pol(pseudo_var,3):gen ,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
+
+map_target_terms(lettuce_asreml, "gen")
+build_new_Z(lettuce_asreml, "gen", data.frame("loc" = "L1"))
+
+lettuce_asreml$coefficients$random
+
+
+df <- data.frame(x1 = rnorm(100), x2 = rnorm(100), x3 = sample(c("A","B"), 100, TRUE), x4 = sample(c("A","B"), 100, TRUE), x5 = sample(c("A","B"), 100, TRUE))
+model.matrix(~0+ x4:x3:x5, df)
+
+
+
+
+
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random =  ~ loc + gen ,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+target <- "gen"
+
+
+mapper <- map_target_terms(lettuce_asreml, target)
+g <- mapper$idx
+
+grp_names <- sapply(lettuce_asreml$G.param, function(x){
+  facnam <- lapply(x[-1], function(y) y[["facnam"]])
+  paste0(do.call(c,facnam), collapse = ":")
+})
+ran_terms <- lapply(lettuce_asreml$G.param, function(x){
+  facnam <- lapply(x[-1], function(y) {
+    y <- paste0(y[["facnam"]], "_", y[["levels"]])
+    factor(y, levels = y)
+  }
+  )
+  facnam <- do.call(
+    expand.grid,
+    c(rev(facnam), list(stringsAsFactors = FALSE))
+  )
+  facnam <- facnam[, rev(seq_len(ncol(facnam))), drop = FALSE]
+  facnam <- apply(facnam, 1, function(x) paste0(x, collapse = ":"))
+})
+ran_terms <- do.call(c, ran_terms)
+
+
+G_list <- sapply(seq_along(grp_names), function(x){
+  phrase_G(lettuce_asreml$G.param[[x]])
+})
+G <- Matrix::bdiag(G_list)
+G <- G * lettuce_asreml$sigma2
+dimnames(G) <- list(ran_terms, ran_terms)
+Q <- ncol(G)
+
+design <- lettuce_asreml$design
+N <- nrow(design)
+Z <- Matrix::Matrix(0, N, Q)
+colnames(Z) <- ran_terms
+common_col <- intersect(colnames(design), ran_terms)
+Z[,common_col] <- design[, common_col]
+
+X <- design[,!colnames(design) %in% ran_terms]
+
+
+var_comp(lettuce_asreml, "gen")
+
+map_target_terms(lettuce_asreml, "gen")
+
+
+})
+
+

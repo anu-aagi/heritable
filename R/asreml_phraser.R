@@ -18,7 +18,7 @@ phrase_G <- function(G_params){
     if (spec == "ar1") G_list[[trm]] <- phrase_ar1(G_params[[trm]]) * v
   }
 
-  G_list
+  Reduce(function(X, Y) Matrix::kronecker(X, Y), G_list)
 }
 
 phrase_id <- function(G_params){
