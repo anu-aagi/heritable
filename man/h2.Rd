@@ -2,17 +2,9 @@
 % Please edit documentation in R/broad-sense.R
 \name{H2}
 \alias{H2}
-\alias{h2}
 \title{Calculate heritability from mixed model object}
 \usage{
 H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
-
-H2(model,
-   target,
-   method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-   options = NULL,
-   ...
-   )
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
@@ -21,9 +13,7 @@ H2(model,
 
 \item{method}{Character vector of name of method to calculate heritability. See details.}
 
-\item{options}{NULL by default, for internal checking of model object before calculations.}
-
-\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
+\item{options}{NULL by default, for internal checking of model object before calculations}
 }
 \value{
 A named numeric vector, length matching number of methods supplied

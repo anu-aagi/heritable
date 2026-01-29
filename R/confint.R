@@ -1,4 +1,3 @@
-
 #' Bootstrap confidence interval for heritability
 #'
 #' @description
@@ -87,13 +86,13 @@ confint.heritable <- function(object,
                               FUN = Fun_use, nsim = B, seed = seed,
                               use.u = !resample_u, ...
     )
-    ci <- stats::confint(boot_mod, level = level, type = type)
+    ci <- confint(boot_mod, level = level, type = type)
   } else {
     boot_mod <- bootstrap_asreml(model,
                                  FUN = Fun_use, nsim = B, seed = seed,
                                  use.u = !resample_u, ...
     )
-    ci <- stats::confint(boot_mod, level = level, type = type)
+    ci <- confint(boot_mod, level = level, type = type)
     ci <- matrix(ci,
                  nrow = length(method),
                  dimnames = list(method, colnames(ci))
@@ -160,8 +159,7 @@ bootstrap_asreml <- function(model,
 
   mf <- model$mf
   if (is.null(mf)) {
-    model <- asreml::update.asreml(model, model.frame = TRUE)
-    mf <- model$mf
+    stop("Model frame (`model$mf`) not found. Fit with `model.frame = TRUE` so data are stored.")
   }
 
   mf <- as.data.frame(mf)

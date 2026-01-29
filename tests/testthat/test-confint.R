@@ -7,7 +7,6 @@ test_that("Confint works",{
   skip_if_not_installed("asreml")
   skip_on_cran()
   skip_on_ci()
-  skip()
 
   # lettuce_subset <- lettuce_phenotypes |>
   #   dplyr::filter(loc == "L2")
@@ -48,12 +47,10 @@ test_that("Confint works",{
   H2_values_asreml <- H2(lettuce_asreml, "gen", c("Standard")) # H2
   ci_asreml <- confint(H2_values_asreml, B = 1000, seed = 1)
   ci_fix_asreml <- confint(H2_values_asreml, B = 1000, seed = 1, random_effect = "conditional")
+  # attr(ci_asreml, "boot_mod") |> boot::boot.ci(type = "basic")
+  # hist(attr(ci_asreml , "boot_mod")$t)
 
-# attr(ci_asreml, "boot_mod") |> boot::boot.ci(type = "basic")
-# hist(attr(ci_asreml , "boot_mod")$t)
-
-# Compare results
-
+  # Compare results
   plot_df <- data.frame(lme4_resample =  attr(ci_lme4, "boot_mod")$t |> drop(),
                         asreml_resample = attr(ci_asreml, "boot_mod")$t |> drop(),
                         lme4_fix = attr(ci_fix_lme4, "boot_mod")$t |> drop(),

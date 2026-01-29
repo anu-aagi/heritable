@@ -4,7 +4,7 @@
 \alias{H2_Delta_by_genotype}
 \title{Calculate heritability of differences for a given genotype from model object}
 \usage{
-H2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options, ...)
+H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
@@ -14,8 +14,6 @@ H2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options, ...)
 \item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
-
-\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }
 \value{
 Numeric

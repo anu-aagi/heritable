@@ -10,8 +10,8 @@
 #' @param options NULL by default, for internal checking of model object before calculations
 # @aliases H2
 #' @usage
-# h2(model, target, method = c("Oakey", "Delta"), source, options)
-#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options, ...)
+#' h2(model, target, method = c("Oakey", "Delta"), options)
+#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
 #' @returns A named numeric vector, length matching number of methods supplied
 #' @details
 #'
@@ -40,7 +40,7 @@
 #' @noRd
 #' @keywords internal
 
-h2 <- function(model, target, method = c("Oakey", "Delta"), source, options, ...) {
+h2 <- function(model, target, method = c("Oakey", "Delta"), options) {
   UseMethod("h2")
 }
 
