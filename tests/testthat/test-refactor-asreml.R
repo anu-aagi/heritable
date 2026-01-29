@@ -584,6 +584,13 @@ Z[,common_col] <- design[, common_col]
 X <- design[,!colnames(design) %in% ran_terms]
 
 
+lettuce_asreml <- asreml(
+  fixed = y ~ rep,
+  random =  ~ loc + ar1(gen):loc ,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
 var_comp(lettuce_asreml, "gen")
 
 map_target_terms(lettuce_asreml, "gen")
