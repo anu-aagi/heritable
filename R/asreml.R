@@ -89,7 +89,7 @@ get_vc_g_asreml <- function(model, target) {
 #'
 #' H2_Cullis.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
+H2_Cullis.asreml <- function(model, target = NULL, options = NULL, ...) {
   initial_checks(model, target, options)
 
   # Get genotype variance
@@ -124,7 +124,7 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 #'
 #' H2_Oakey.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
+H2_Oakey.asreml <- function(model, target = NULL, options = NULL, ...) {
   initial_checks(model, target, options)
 
   # Check if target is random or fixed
@@ -163,7 +163,7 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL) {
 #'
 #' H2_Piepho.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
+H2_Piepho.asreml <- function(model, target = NULL, options = NULL, ...) {
   initial_checks(model, target, options)
 
   model_fix <- fit_counterpart_model.asreml(model, target)
@@ -201,7 +201,7 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL) {
 #'
 #' H2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL) {
+H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL, ...) {
   initial_checks(model, target, options)
   vc_g <- get_vc_g_asreml(model, target)
   if (type == "BLUP") {
@@ -235,7 +235,7 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
 #'
 #' H2_Standard.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Standard.asreml <- function(model, target = NULL, options = NULL) {
+H2_Standard.asreml <- function(model, target = NULL, options = NULL, ...) {
   initial_checks(model, target, options)
 
   # Check if target is random or fixed
