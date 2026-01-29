@@ -605,7 +605,7 @@ build_new_Z.lmerMod <- function(model, target, new_data){
       dims = c(n, q)
     )
 
-    z <- KhatriRao(t(mm_grp), t(mm)) %>% t
+    z <- Matrix::KhatriRao(t(mm_grp), t(mm)) |> t()
     dimnames(z) <- list(gnames, rep(grp, each = p))
     Z_list[[itr]] <- z
   }
