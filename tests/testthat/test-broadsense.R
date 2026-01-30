@@ -63,12 +63,6 @@ test_that("H2 works for lme4",{
   expect_equal(setNames(as.numeric(lmer_H2_all_methods), names(lmer_H2_all_methods)), truth_random_lme4, tolerance = 1e-3)
   expect_equal(H2_Delta(lmer_model_random, target = "gen", type = "BLUE"), 0.7967, tolerance = 1e-3)
 
-  # GxE models -----------------------------------------------------------------
-  #TODO: Currently not yet implemented so should error
-  lmer_model_g_by_e <- readRDS(test_path("fixtures/lmer_model_g_by_e.rds"))
-
-  expect_error(H2(lmer_model_g_by_e, target = "gen"))
-
   # lme4 Random "gen" single RE----------------------------------------------------------
   lettuce_lme4 <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
   expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"))

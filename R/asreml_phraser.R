@@ -13,12 +13,12 @@ phrase_G <- function(G_params){
 
   for(trm in terms){
     spec <- G_params[[trm]][["model"]]
-    if (spec == "id") G_list[[trm]] <- phrase_id(G_params[[trm]]) * v
-    if (spec == "diag") G_list[[trm]] <- phrase_diag(G_params[[trm]]) * v
-    if (spec == "ar1") G_list[[trm]] <- phrase_ar1(G_params[[trm]]) * v
+    if (spec == "id") G_list[[trm]] <- phrase_id(G_params[[trm]])
+    if (spec == "diag") G_list[[trm]] <- phrase_diag(G_params[[trm]])
+    if (spec == "ar1") G_list[[trm]] <- phrase_ar1(G_params[[trm]])
   }
 
-  Reduce(function(X, Y) Matrix::kronecker(X, Y), G_list)
+  Reduce(function(X, Y) Matrix::kronecker(X, Y), G_list) * v
 }
 
 phrase_id <- function(G_params){

@@ -1,6 +1,5 @@
 test_that("asreml PEV definition",{
   skip()
-  require(asreml)
 
   asreml.options(design = TRUE)
 

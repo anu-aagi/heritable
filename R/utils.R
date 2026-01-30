@@ -372,10 +372,10 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   # Get BLUP weight
   if(is.null(stratification)){
     m <- mapper$m
-    intercept <- mapper$intercept
-    if(sum(intercept) != 0 && !marginal){
-      g <- g[intercept]
-      m <- m[intercept, , drop=FALSE]
+    main <- mapper$main
+    if(sum(main) != 0 && !marginal){
+      g <- g[main]
+      m <- m[main, , drop=FALSE]
       cli::cli_inform(
         c(
           "Heritability will be evaluated using non-interactive components of the target term.",
@@ -425,6 +425,15 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 #' @keywords internal
 var_comp.asreml <- function(model, target, calc_C22 = TRUE,
                              marginal = TRUE, stratification = NULL) {
+  design <- model$design
+  if(calc_C22 && is.null(design)){
+    cli::cli_warn("A design matrix was not found in the asreml object. Building a design matrix.")
+    design_default <- asreml::asreml.options()$design
+    asreml::asreml.options(design = TRUE)
+    model <- asreml::update.asreml(model)
+    design <- model$design
+    asreml::asreml.options(design = design_default)
+  }
 
   mapper <- map_target_terms(model, target, marginal)
   g <- mapper$idx
@@ -432,10 +441,10 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
   # Get BLUP weight
   if(is.null(stratification)){
     m <- mapper$m
-    intercept <- mapper$intercept
-    if(sum(intercept) != 0 && !marginal){
-      g <- g[intercept]
-      m <- m[intercept, , drop=FALSE]
+    main <- mapper$main
+    if(sum(main) != 0 && !marginal){
+      g <- g[main]
+      m <- m[main, , drop=FALSE]
       cli::cli_inform(
         c(
           "Heritability will be evaluated using non-interactive components of the target term.",
@@ -497,7 +506,6 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     dimnames(G_g) <- list(gnames, gnames)
 
     # Build design matrix
-    design <- model$design
     N <- nrow(design)
     Z <- Matrix::Matrix(0, N, Q)
     colnames(Z) <- ran_terms
@@ -570,7 +578,7 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
 
   w_list <- list()
   m_list <- list()
-  intercept_idx <- c()
+  main_idx <- c()
 
   for(itr in seq_along(matched_grp)){
     g_idx <- matched_grp[itr]
@@ -609,8 +617,8 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
         w <- rep(1, p * q)
       }
 
-      # Get intercept terms
-      intercept_idx <- c(intercept_idx, rep(0, p*q))
+      # Get main terms
+      main_idx <- c(main_idx, rep(0, p*q))
 
     } else {
       # BLUP weight
@@ -621,11 +629,11 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
       }
       target_key <- rep(target_grp, each = p)
 
-      # Get intercept terms
+      # Get main terms
       pi <- which("(Intercept)" %in% colnames(mm))
       z <- rep(0, p*q)
       if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
-      intercept_idx <- c(intercept_idx, z)
+      main_idx <- c(main_idx, z)
     }
 
     grp_key <- rep(grp, p)
@@ -641,11 +649,11 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   m <- do.call(rbind, m_list)
   w <- do.call(c, w_list)
 
-  intercept <- intercept_idx==1
+  main <- main_idx==1
   list(m = m,
        w = w,
        idx = setNames(idx_all, terms),
-       intercept = setNames(intercept, terms))
+       main = setNames(main, terms))
 }
 
 #' @keywords internal
@@ -701,7 +709,7 @@ map_target_terms.asreml <- function(model, target, marginal = TRUE){
 
   w_list <- list()
   m_list <- list()
-  intercept_idx <- c()
+  main_idx <- c()
 
 
   for(i in seq_along(matched_grp)){
@@ -746,11 +754,11 @@ map_target_terms.asreml <- function(model, target, marginal = TRUE){
         w <- rep(1, n_g)
       }
 
-      # Get intercept terms
-      intercept_idx <- c(intercept_idx, rep(0, n_g))
+      # Get main terms
+      main_idx <- c(main_idx, rep(0, n_g))
     } else {
       w <- rep(1, n_g)
-      intercept_idx <- c(intercept_idx, rep(1, n_g))
+      main_idx <- c(main_idx, rep(1, n_g))
     }
 
     m <- build_f_mat(target_key, target_lev)
@@ -764,13 +772,49 @@ map_target_terms.asreml <- function(model, target, marginal = TRUE){
   m <- do.call(rbind, m_list)
   w <- do.call(c, w_list)
 
-  intercept <- intercept_idx==1
+  main <- main_idx==1
   list(m = m,
        w = w,
        idx = setNames(idx, terms),
-       intercept = setNames(intercept, terms))
+       main = setNames(main, terms))
 }
 
+
+#' Map target-associated random-effect terms to genotype-level effects
+#'
+#' Identify random-effect terms in a mixed model that involve a target random factor
+#' (e.g. a genotype effect) and construct linear mapping matrices that summarise
+#' those term-level random effects as genotype-level effects.
+#'
+#' In models where the target factor appears in multiple random-effect terms
+#' (e.g. `gen`, `gen:env`), the fitted random effects live on different
+#' coefficient spaces (one per term). This function determines which terms are
+#' associated with `target` and builds weighting / aggregation matrices that map
+#' each term’s coefficient vector onto a common genotype-level scale (typically an
+#' average over the interacting strata).
+#'
+#' @param model A fitted mixed model object.
+#' @param target A character string giving the name of the target random-effect
+#'   factor.
+#' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
+#'   mappings so that each genotype receives a single averaged effect per term.
+#'   If `FALSE`, mappings will only consider the main genotype effect and ignore the
+#'   iteracting terms.
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{m}{A numeric/sparse matrix whose rows corresponds to
+#'     random-effect coefficients across all matched terms, and columns matche the levels
+#'     of `target`.
+#'   \item{w}{A numeric vector of giving the per-coefficient weights
+#'     applied in `m` (i.e. `m` is formed by multiplying an indicator map by `w`).}
+#'   \item{idx}{An integer vector giving the indices of the random effect
+#'     variance-covariance matrix that correspond to the matched target-associated coefficients.
+#'   \item{main}{A logical vector indicating whether each
+#'     matched coefficient corresponds columns for the main `target`
+#'     random-effect term. Named consistently with `idx`.}
+#' }
+#'
 #' @keywords internal
 #' @noRd
 map_target_terms <- function(model, target, marginal = TRUE) {
@@ -1060,6 +1104,32 @@ build_new_Z.asreml <- function(model, target, new_data){
   Z
 }
 
+#' Construct a strata-specific random-effects design matrix
+#'
+#' Build a new random-effects design matrix that maps genotype effects
+#' within a specified stratum for a fitted mixed model object.
+#'
+#' For each level of the target random term (e.g. a genotype factor),
+#' this function constructs a design matrix that activates the effect
+#' corresponding to the supplied `new_data` stratum, while setting all
+#' other strata-specific contributions to zero. This enables prediction
+#' or extraction of genotype effects within a particular interacting
+#' context (e.g. genotype × environment).
+#'
+#' The returned matrix preserves the ordering and naming of random-effect
+#' coefficients as defined by the original mixed-model specification.
+#'
+#' @param model A fitted mixed model object.
+#' @param target A character string giving the name of the target random-effect
+#'   factor.
+#' @param new_data A one-row data frame defining the stratum in which
+#'   genotype effects should be evaluated. The columns must correspond
+#'   to model terms that interact with `target`.
+#'
+#' @return A sparse matrix whose rows correspond to
+#'   levels of the target factor and whose columns align with the
+#'   original random-effect coefficients involving `target`.
+#'
 #' @keywords internal
 #' @noRd
 build_new_Z <- function(model, target, new_data) {
