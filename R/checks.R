@@ -241,3 +241,20 @@ check_model_specification <- function(model, target, type) {
 }
 .S3method("check_model_specification", "asreml", check_model_specification.asreml)
 .S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
+
+#' Check if asreml is installed and load it
+#' 
+#' Checks whether asreml is installed, errors if not, and loads it if present.
+#'
+#' @keywords internal
+#' @noRd
+
+check_and_load_asreml <- function() {
+  if (!requireNamespace("asreml", quietly = TRUE)) {
+    cli::cli_abort(
+      "The {.pkg asreml} package is required for this function. 
+       Please install it before proceeding."
+    )
+  }
+  invisible(library("asreml", character.only = TRUE))
+}
