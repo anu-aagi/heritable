@@ -1,4 +1,3 @@
-
 #' Bootstrap confidence interval for heritability
 #'
 #' @description
@@ -6,8 +5,7 @@
 #' bootstrap of the underlying mixed model.
 #'
 #' @param object
-#' A heritability object returned by [H2()] (broad-sense) or
-#' [h2()] (narrow-sense). The object must store the fitted model
+#' A heritability object returned by [H2()] (broad-sense). The object must store the fitted model
 #' as an attribute.
 #' @param parm a specification of which parameters are to be given confidence intervals,
 #' either a vector of numbers or a vector of names.
