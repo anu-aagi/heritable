@@ -361,7 +361,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 
   sigma2 <- stats::sigma(model)^2
   Lambda <- lme4::getME(model, "Lambda")
-  G <- tcrossprod(Lambda) * sigma2
+  G <- Matrix::tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
   mapper <- map_target_terms(model, target, marginal)
