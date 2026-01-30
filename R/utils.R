@@ -344,7 +344,7 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
 
 #' @noRd
 #' @keywords internal
-#' @importFrom Matrix Diagonal Matrix t diag
+#' @importFrom Matrix Diagonal Matrix t diag crossprod tcrossprod
 var_diff <- function(V) {
   d <- diag(V)
   delta <- - 2 * V
@@ -862,7 +862,7 @@ build_new_Z.lmerMod <- function(model, target, new_data){
     grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
     mm_grp <- build_f_mat(grp_new, grp)
 
-    z <- KhatriRao(t(mm_grp), t(mm)) %>% t
+    z <- Matrix::KhatriRao(t(mm_grp), t(mm)) |> t()
     dimnames(z) <- list(gnames, rep(grp, each = p))
     Z_list[[itr]] <- z
   }
