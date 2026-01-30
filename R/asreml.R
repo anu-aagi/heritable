@@ -63,7 +63,7 @@ h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL)
   }
 }
 
-#'@export
+#' @keywords internal
 h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -106,29 +106,36 @@ h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type =
 #'
 #' H2_Cullis.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Cullis.asreml <- function(model, target = NULL, options = NULL, ...) {
+H2_Cullis.asreml <- function(model,
+                              target = NULL,
+                              options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
+                              vc = NULL,
+                              ...) {
   initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     return(NA)
   }
 
-  # Get genotype variance
-  vc_g <- get_vc_g_asreml(model, target)
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, marginal, stratification)
+  }
+  s2_g <- mean(diag(vc$G_g))
+  n <- vc$n_g
+  C22_g <- vc$C22_g
 
-  vdBLUP_mat <- predict(model,
-    classify = target,
-    only = target,
-    sed = TRUE,
-    trace = FALSE
-  )$sed^2
+  # This is equivalent to delta <- var_diff(C22_g); delta_avg = mean(delta[lower.tri(delta)])
+  delta_avg <- (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
 
-  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
-
-  H2_Cullis <- H2_Cullis_parameters(vd_BLUP_avg, vc_g)
-
-  return(H2_Cullis)
+  return(H2_Cullis_parameters(delta_avg, s2_g))
 }
 
 #' Calculate Oakey's heritability from asreml model

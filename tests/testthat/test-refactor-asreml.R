@@ -2,6 +2,52 @@ test_that("Refactored asreml works",{
   skip_if_not_installed("lme4")
   skip()
 
+  lettuce_phenotypes_na_impute <- lettuce_phenotypes
+  lettuce_phenotypes_na_impute$y[is.na(lettuce_phenotypes_na_impute$y)] <- 3
+  table(lettuce_phenotypes_na_impute$rep, lettuce_phenotypes_na_impute$gen)
+
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
+    random =  ~ loc + gen + gen:loc ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+  lettuce_asreml$vparameters * lettuce_asreml$sigma2
+
+  lettuce_lme4 <- lmer(
+    y~  rep + (1|loc) +  (1|gen) +  (1|gen:loc),
+    data = lettuce_phenotypes_na_impute
+  )
+  summary(lettuce_lme4)
+
+  lettuce_phenotypes_na_impute[is.na(lettuce_phenotypes_na_impute$y),]
+  tail(lettuce_phenotypes_na_impute)
+
+  diag(var_comp(lettuce_asreml, "gen")$G_g -   var_comp(lettuce_lme4, "gen")$G_g)
+  diag(var_comp(lettuce_lme4, "gen")$G_g)
+  diag(var_comp(lettuce_asreml, "gen")$G_g)
+
+  map_target_terms(lettuce_lme4, "gen")$w
+  map_target_terms(lettuce_asreml, "gen")$w
+
+  H2_Cullis(lettuce_asreml, "gen")
+  H2_Cullis(lettuce_lme4, "gen")
+
+  lettuce_lme4 <- lmer(
+    y~  rep + (1|gen:loc),
+    data = lettuce_phenotypes_na_impute
+  )
+  lme4::getME(lettuce_lme4, "Z") %>% colnames()
+  l1_idx <- grep("L1",lme4::getME(lettuce_lme4, "Z") %>% colnames())
+  rowSums(lme4::getME(lettuce_lme4, "Z")[,l1_idx])
+  l2_idx <- grep("L2",lme4::getME(lettuce_lme4, "Z") %>% colnames())
+  rowSums(lme4::getME(lettuce_lme4, "Z")[,l2_idx])
+  l3_idx <- grep("L3",lme4::getME(lettuce_lme4, "Z") %>% colnames())
+  rowSums(lme4::getME(lettuce_lme4, "Z")[,l3_idx])
+  subset(lettuce_phenotypes_na_impute, gen == "G81")
+  lme4::getME(lettuce_lme4, "Z")[703,]
+
+
 #   pseudo_var <- rnorm(nrow(lettuce_phenotypes))
 #   pseudo_var2 <- rnorm(nrow(lettuce_phenotypes))
 #
