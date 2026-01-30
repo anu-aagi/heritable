@@ -23,9 +23,12 @@ pull_terms.asreml <- function(model) {
 pull_terms.lmerMod <- function(model) {
   model_formula <- formula(model)
   term_labels <- attr(terms(model_formula), "term.labels")
-
-  ran_trms <- names(lme4::ranef(model))
-  fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
+  ran_trms_formula <-
+    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
+  fixed_trms <- setdiff(term_labels, ran_trms_formula)
+  ran_trms <- sapply(
+    reformulas::findbars(model_formula), deparse
+  )
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -41,6 +44,12 @@ pull_terms <- function(model) {
 #' @keywords internal
 pull_terms_without_specials.lmerMod <- function(model) {
   model_terms <- pull_terms(model)
+  model_terms$random <- sapply(
+    model_terms$random,
+    function(frm){
+      stringr::str_extract(frm, "(?<=\\|\\ ).+")
+    }
+  ) |> unname()
   model_terms
 }
 
@@ -103,22 +112,31 @@ target_vm_term_asreml <- function(model, target) {
   w <- grepl(paste0("^vm\\(", target), vpars)
   if (sum(w) == 1) {
     target_vm <- vpars[w]
-    name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
-    if (exists(name_GRM, envir = env)) {
+    # name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+    name_GRM <- stringr::str_match(
+      vpars[w],
+      paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
+    )[,2]
+    if (exists(name_GRM, envir = env, inherits = FALSE)) {
       GRM_source <- get(name_GRM, envir = env)
       if (is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
+        #TODO: Change in future because GRM_source could be singular
         GRMinv <- solve(sp2Matrix(GRM_source))
-      } else {
-        GRMinv <- solve(GRM_source)
       }
       if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
         GRMinv <- GRM_source
+      } else {
+        GRMinv <- MASS::ginv(GRM_source)
       }
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
     }
+    # Assign names
+    dimnames(GRMinv) <- dimnames(GRM_source)
+
     return(list(
       target_vm = vpars[w],
+      GRM_source = GRM_source,
       GRMinv = GRMinv
     ))
   } else {
@@ -188,25 +206,36 @@ fit_counterpart_model.asreml <- function(model, target) {
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target) {
   # get the terms from model object
-  trms <- pull_terms.lmerMod(model)
+  trms <- pull_terms_without_specials(model)
+  trms <- lapply(trms, unique)
+  fixed_trms <- trms$fixed
+  ran_trms <- trms$random
 
-  # check whether there is only a single RE
-  if (check_single_random_effect(trms)) {
-    # Fit a lm instead
-    fixed_formula <- lme4::nobars(formula(model))
-    fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
-    # Pull out data
-    model_data <- model@frame %||% model.frame(model)
-    refit_model <- lm(fixed_formula, data = model_data)
-  } else if (length(trms$random) > 1) {
-    # If target is in random effects
-    if (target %in% trms$random) {
-      refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
-      check_model_convergence(refit_model)
-    } else if (target %in% trms$fixed) { # If target is in fixed effects
-      refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
+  # If target is in random effects
+  if(target %in% ran_trms){
+    # check whether there is only a single RE
+    if(length(ran_trms) == 1){
+      # Fit a lm instead
+      fixed_formula <- reformulas::nobars(formula(model))
+      fixed_formula <- update(fixed_formula, paste(". ~ . +", ran_trms))
+      # Pull out data
+      model_data <- model@frame %||% model.frame(model)
+      refit_model <- lm(fixed_formula, data = model_data)
+    } else {
+      ran_frms <- reformulas::findbars(formula(model))
+      contains_target <- sapply(ran_frms, function(frm){
+          frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> utils::tail(n=1)
+        }) == target
+      target_ran_frms <- sapply(ran_frms[contains_target], function(frm){
+        paste0("(", deparse1(frm), ")")
+      })
+      target_ran_frms <- paste(target_ran_frms, collapse = "-")
+      refit_model <- update(model, as.formula(paste(". ~ . - ", target_ran_frms, " + ", target)))
       check_model_convergence(refit_model)
     }
+  } else if (target %in% fixed_trms) { # If target is in fixed effects
+    refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
+    check_model_convergence(refit_model)
   } else {
     cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
   }
@@ -232,6 +261,7 @@ fit_counterpart_model <- function(model, target = NULL) {
 print.heritable <- function(x, digits = getOption("digits"), ...) {
   attr(x, "model") <- NULL
   attr(x, "target") <- NULL
+  attr(x, "type") <- NULL
   print(unclass(x))
 }
 
@@ -331,7 +361,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 
   sigma2 <- stats::sigma(model)^2
   Lambda <- lme4::getME(model, "Lambda")
-  G <- tcrossprod(Lambda) * sigma2
+  G <- Matrix::tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
   mapper <- map_target_terms(model, target, marginal)

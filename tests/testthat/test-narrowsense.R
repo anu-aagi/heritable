@@ -93,7 +93,7 @@ test_that("Refactoring delta parameter functions works", {
   )
 
   vc_g <- 0.01
-  vd_matrix <- matrix(c(NA,0.2,0.2,NA),2,2)
+  vd_matrix <- matrix(c(NA, 0.2, 0.2, NA), 2, 2)
 
   expect_equal(
     H2_Delta_BLUE_parameters(vc_g, vd_matrix),

@@ -313,11 +313,11 @@ test_that("Refactored lme4 works",{
 # # with target as grouping factors.
 # lettuce_lme4 <- lme4::lmer(y ~ rep + ( pseudo_var || gen) + (1|pseudo_var), data = lettuce_subset)
 # ran_frms <- reformulas::findbars(formula(lettuce_lme4))
-# use <- reformulas::findbars(formula(lettuce_lme4)) %>%
+# use <- reformulas::findbars(formula(lettuce_lme4)) |>
 #   sapply(., function(frm){
 #     frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> tail(n=1)
 #   }) == "gen"
-# ran_frms <- ran_frms[use] %>%
+# ran_frms <- ran_frms[use] |>
 #   sapply(., function(frm){
 #     paste0("(", deparse1(frm), ")")
 #   })
@@ -479,7 +479,7 @@ test_that("Refactored lme4 works",{
 # # gnames<- levels(lettuce_phenotypes$gen)
 # # n_g <- nlevels(lettuce_phenotypes$gen)
 # # new_dat <- lettuce_phenotypes[1,c("loc","rep")]
-# # new_dat <- rep(new_dat, n_g) %>% dplyr::mutate(gen = gnames)
+# # new_dat <- rep(new_dat, n_g) |> dplyr::mutate(gen = gnames)
 # # new_Z <- lme4::mkNewReTrms(
 # #   object = lettuce_lme4,
 # #   newdata = new_dat[,1:2],
@@ -492,7 +492,7 @@ test_that("Refactored lme4 works",{
 # #
 # # pull_terms_without_specials(lettuce_lme4)
 # # reformulas::findbars(formula(lettuce_lme4))
-# lme4::getME(lettuce_lme4, "Z") %>% colnames()
+# lme4::getME(lettuce_lme4, "Z") |> colnames()
 # maps <- map_target_terms(lettuce_lme4, "gen")
 # H2(lettuce_lme4, "gen", marginal = FALSE)
 # H2(lettuce_lme4, "gen", marginal = TRUE)
@@ -513,7 +513,7 @@ test_that("Refactored lme4 works",{
 # lme4::ranef(lettuce_lme4)
 # lme4::VarCorr(lettuce_lme4)
 # lme4::ngrps(lettuce_lme4)
-# lme4::getME(lettuce_lme4, "Z") %>% colnames()
+# lme4::getME(lettuce_lme4, "Z") |> colnames()
 # terms(y ~ x * z * w + (1|x))
 # formula <- y ~ x * z * w + (1|x) + (1|z)
 # grep("x",deparse1(formula))
