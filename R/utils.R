@@ -342,7 +342,7 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
 
 #' @noRd
 #' @keywords internal
-#' @importFrom Matrix Diagonal Matrix t diag
+#' @importFrom Matrix Diagonal Matrix t diag crossprod tcrossprod
 var_diff <- function(V) {
   d <- diag(V)
   delta <- - 2 * V
@@ -361,7 +361,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 
   sigma2 <- stats::sigma(model)^2
   Lambda <- lme4::getME(model, "Lambda")
-  G <- Matrix::tcrossprod(Lambda) * sigma2
+  G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
   mapper <- map_target_terms(model, target, marginal)
@@ -370,10 +370,10 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   # Get BLUP weight
   if(is.null(stratification)){
     m <- mapper$m
-    intercept <- mapper$intercept
-    if(sum(intercept) != 0 && !marginal){
-      g <- g[intercept]
-      m <- m[intercept, , drop=FALSE]
+    main <- mapper$main
+    if(sum(main) != 0 && !marginal){
+      g <- g[main]
+      m <- m[main, , drop=FALSE]
     }
   } else {
     m <- build_new_Z(model, target, stratification) |> t()
@@ -402,6 +402,21 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 
 # To Do, asreml
 
+#' Build variance components for genotype-level heritability calculations
+#'
+#' Construct the variance components required to compute heritability for a
+#' target random factor representing genotype effects in a fitted mixed model.
+#'
+#' For the requested `target` random factor, this function returns:
+#' \itemize{
+#'   \item the estimated variance–covariance matrix of genotype effects, `G_g`, and
+#'   \item (optionally) the corresponding prediction error variance matrix, `C22_g`.
+#' }
+#'
+#' Argument `marginal` and `stratification` will be passed to the internal function
+#' `map_target_terms` and `build_new_Z`, respectively for strata-averaged and
+#' strata-specific heritability calculation.
+#'
 #' @keywords internal
 #' @noRd
 var_comp <- function(model, target, calc_C22 = TRUE,
@@ -431,7 +446,7 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
 
   w_list <- list()
   m_list <- list()
-  intercept_idx <- c()
+  main_idx <- c()
 
   for(itr in seq_along(matched_grp)){
     g_idx <- matched_grp[itr]
@@ -467,8 +482,8 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
         w <- rep(1, p * q)
       }
 
-      # Get intercept terms
-      intercept_idx <- c(intercept_idx, rep(0, p*q))
+      # Get main terms
+      main_idx <- c(main_idx, rep(0, p*q))
 
     } else {
       # BLUP weight
@@ -477,11 +492,11 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
         w <- w * rep(Matrix::colMeans(mm), q)
       }
 
-      # Get intercept terms
+      # Get main terms
       pi <- which("(Intercept)" %in% colnames(mm))
       z <- rep(0, p*q)
       if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
-      intercept_idx <- c(intercept_idx, z)
+      main_idx <- c(main_idx, z)
     }
 
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
@@ -501,22 +516,56 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   m <- do.call(rbind, m_list)
   w <- do.call(c, w_list)
 
-  intercept <- intercept_idx==1
+  main <- main_idx==1
   list(m = m,
        w = w,
        idx = setNames(idx_all, terms),
-       intercept = setNames(intercept, terms))
+       main = setNames(main, terms))
 }
 
 # To Do, asreml
 
+#' Map target-associated random-effect terms to genotype-level effects
+#'
+#' Identify random-effect terms in a mixed model that involve a target random factor
+#' (e.g. a genotype effect) and construct linear mapping matrices that summarise
+#' those term-level random effects as genotype-level effects.
+#'
+#' In models where the target factor appears in multiple random-effect terms
+#' (e.g. `gen`, `gen:env`), the fitted random effects live on different
+#' coefficient spaces (one per term). This function determines which terms are
+#' associated with `target` and builds weighting / aggregation matrices that map
+#' each term’s coefficient vector onto a common genotype-level scale (typically an
+#' average over the interacting strata).
+#'
+#' @param model A fitted mixed model object.
+#' @param target A character string giving the name of the target random-effect
+#'   factor.
+#' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
+#'   mappings so that each genotype receives a single averaged effect per term.
+#'   If `FALSE`, mappings will only consider the main genotype effect and ignore the
+#'   iteracting terms.
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{m}{A numeric/sparse matrix whose rows corresponds to
+#'     random-effect coefficients across all matched terms, and columns matche the levels
+#'     of `target`.
+#'   \item{w}{A numeric vector of giving the per-coefficient weights
+#'     applied in `m` (i.e. `m` is formed by multiplying an indicator map by `w`).}
+#'   \item{idx}{An integer vector giving the indices of the random effect
+#'     variance-covariance matrix that correspond to the matched target-associated coefficients.
+#'   \item{main}{A logical vector indicating whether each
+#'     matched coefficient corresponds columns for the main `target`
+#'     random-effect term. Named consistently with `idx`.}
+#' }
+#'
 #' @keywords internal
 #' @noRd
 map_target_terms <- function(model, target, marginal = TRUE) {
   UseMethod("map_target_terms")
 }
 .S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)
-
 
 #' @keywords internal
 #' @noRd
@@ -615,6 +664,33 @@ build_new_Z.lmerMod <- function(model, target, new_data){
 
 # To Do, asreml
 
+
+#' Construct a strata-specific random-effects design matrix
+#'
+#' Build a new random-effects design matrix that maps genotype effects
+#' within a specified stratum for a fitted mixed model object.
+#'
+#' For each level of the target random term (e.g. a genotype factor),
+#' this function constructs a design matrix that activates the effect
+#' corresponding to the supplied `new_data` stratum, while setting all
+#' other strata-specific contributions to zero. This enables prediction
+#' or extraction of genotype effects within a particular interacting
+#' context (e.g. genotype × environment).
+#'
+#' The returned matrix preserves the ordering and naming of random-effect
+#' coefficients as defined by the original mixed-model specification.
+#'
+#' @param model A fitted mixed model object.
+#' @param target A character string giving the name of the target random-effect
+#'   factor.
+#' @param new_data A one-row data frame defining the stratum in which
+#'   genotype effects should be evaluated. The columns must correspond
+#'   to model terms that interact with `target`.
+#'
+#' @return A sparse matrix whose rows correspond to
+#'   levels of the target factor and whose columns align with the
+#'   original random-effect coefficients involving `target`.
+#'
 #' @keywords internal
 #' @noRd
 build_new_Z <- function(model, target, new_data) {
