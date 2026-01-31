@@ -12,41 +12,82 @@ test_that("Refactored asreml works",{
     data = lettuce_phenotypes_na_impute,
     trace = FALSE,
   )
-  lettuce_asreml$vparameters * lettuce_asreml$sigma2
 
   lettuce_lme4 <- lmer(
     y~  rep + (1|loc) +  (1|gen) +  (1|gen:loc),
     data = lettuce_phenotypes_na_impute
   )
-  summary(lettuce_lme4)
-
-  lettuce_phenotypes_na_impute[is.na(lettuce_phenotypes_na_impute$y),]
-  tail(lettuce_phenotypes_na_impute)
-
-  diag(var_comp(lettuce_asreml, "gen")$G_g -   var_comp(lettuce_lme4, "gen")$G_g)
-  diag(var_comp(lettuce_lme4, "gen")$G_g)
-  diag(var_comp(lettuce_asreml, "gen")$G_g)
-
-  map_target_terms(lettuce_lme4, "gen")$w
-  map_target_terms(lettuce_asreml, "gen")$w
 
   H2_Cullis(lettuce_asreml, "gen")
   H2_Cullis(lettuce_lme4, "gen")
+  H2_Cullis(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+  H2_Cullis(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+  H2_Cullis(lettuce_asreml, "gen", marginal = FALSE)
+  H2_Cullis(lettuce_lme4, "gen", marginal = FALSE)
+
+
+  H2_Oakey(lettuce_asreml, "gen")
+  H2_Oakey(lettuce_lme4, "gen")
+  H2_Oakey(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+  H2_Oakey(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+  H2_Oakey(lettuce_asreml, "gen", marginal = FALSE)
+  H2_Oakey(lettuce_lme4, "gen", marginal = FALSE)
+
+  H2_Standard(lettuce_asreml, "gen")
+  H2_Standard(lettuce_lme4, "gen")
+  H2_Standard(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+  H2_Standard(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+  H2_Standard(lettuce_asreml, "gen", marginal = FALSE)
+  H2_Standard(lettuce_lme4, "gen", marginal = FALSE)
+
+  H2_Delta(lettuce_asreml, "gen")
+  H2_Delta(lettuce_lme4, "gen")
+  H2_Delta(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+  H2_Delta(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+  H2_Delta(lettuce_asreml, "gen", marginal = FALSE)
+  H2_Delta(lettuce_lme4, "gen", marginal = FALSE)
+
+  # Test counterpart
+  H2_Delta(lettuce_asreml, "gen", marginal = FALSE, type = "BLUE")
+  H2_Delta(lettuce_asreml, "gen", marginal = FALSE, type = "BLUP")
+  H2_Delta(lettuce_lme4, "gen", marginal = FALSE, type = "BLUE")
+  H2_Delta(lettuce_lme4, "gen", marginal = FALSE, type = "BLUP")
+
+
+  H2(lettuce_asreml, "gen")
+  H2(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+  H2(lettuce_asreml, "gen", marginal = FALSE)
+  H2(lettuce_lme4, "gen")
+
+
+  # Test simple
+  lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
+  table(lettuce_subset$gen)
+  table(lettuce_phenotypes_na_impute$gen)
+
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
+    random =  ~ gen ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+  H2_Delta(lettuce_asreml, "gen", type = "BLUP")
+  H2_Piepho(lettuce_asreml, "gen")
+  H2_Standard(lettuce_asreml, "gen")
+  H2_Cullis(lettuce_asreml, "gen")
+  H2_Oakey(lettuce_asreml, "gen")
+  H2(lettuce_asreml, "gen")
 
   lettuce_lme4 <- lmer(
-    y~  rep + (1|gen:loc),
+    y~  rep +  (1|gen),
     data = lettuce_phenotypes_na_impute
   )
-  lme4::getME(lettuce_lme4, "Z") %>% colnames()
-  l1_idx <- grep("L1",lme4::getME(lettuce_lme4, "Z") %>% colnames())
-  rowSums(lme4::getME(lettuce_lme4, "Z")[,l1_idx])
-  l2_idx <- grep("L2",lme4::getME(lettuce_lme4, "Z") %>% colnames())
-  rowSums(lme4::getME(lettuce_lme4, "Z")[,l2_idx])
-  l3_idx <- grep("L3",lme4::getME(lettuce_lme4, "Z") %>% colnames())
-  rowSums(lme4::getME(lettuce_lme4, "Z")[,l3_idx])
-  subset(lettuce_phenotypes_na_impute, gen == "G81")
-  lme4::getME(lettuce_lme4, "Z")[703,]
-
+  H2_Delta(lettuce_lme4, "gen", type = "BLUP")
+  H2_Piepho(lettuce_lme4, "gen")
+  H2_Standard(lettuce_lme4, "gen")
+  H2_Cullis(lettuce_lme4, "gen")
+  H2_Oakey(lettuce_lme4, "gen")
+  H2(lettuce_lme4, "gen")
 
 #   pseudo_var <- rnorm(nrow(lettuce_phenotypes))
 #   pseudo_var2 <- rnorm(nrow(lettuce_phenotypes))

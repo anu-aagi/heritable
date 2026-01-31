@@ -151,19 +151,6 @@ H2_Delta_parameters <- function(vc_g, vd_matrix, type = c("BLUP", "BLUE")) {
     1 / (1 + vd_matrix / denom)
   }
 }
-#' @noRd
-#' @keywords internal
-H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
-  denom <- 2 * vc_g
-  1 - vd_matrix / denom
-}
-
-#' @noRd
-#' @keywords internal
-H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
-  denom <- 2 * vc_g
-  1 / (1 + vd_matrix / denom)
-}
 
 #' @noRd
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs

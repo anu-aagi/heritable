@@ -121,15 +121,18 @@ H2_Piepho.lmerMod <- function(model,
     return(NA)
   }
 
-  conterpart <- fit_counterpart_model(model, target)
-
   # Get genotype variance
   if(is.null(vc)){
-    G_g <- var_comp(model, target, calc_C22 = FALSE, marginal, stratification)$G_g
-  } else {
-    G_g <- vc$G_g
+    vc <- var_comp(model, target, calc_C22 = FALSE, marginal, stratification)
   }
+  if(!vc$main){
+    cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+    return(NA)
+  }
+  G_g <- vc$G_g
   s2_g <- mean(diag(G_g))
+
+  conterpart <- fit_counterpart_model(model, target)
 
   # Get mean variance of a difference between genotypes
   frm <- as.formula(paste("pairwise ~", target))
@@ -186,13 +189,27 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
                                            vc = NULL) {
   initial_checks(model, target, options)
 
-  conterpart <- fit_counterpart_model(model, target)
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
 
   # Extract vc_g and vc_e
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, marginal, stratification)
   }
+  if(!vc$main){
+    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+    return(NA)
+  }
   s2_g <- mean(diag(vc$G_g))
+
+  conterpart <- fit_counterpart_model(model, target)
 
   # Calculate mean variance of a difference between genotypes
   frm <- as.formula(paste("pairwise ~", target))
@@ -219,8 +236,11 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
     delta[g2, g1] <- EMM_fit$var[i] # symmetric
   }
 
+  delta <- Matrix::Matrix(delta)
+  diag(delta) <- NA
+
   # H2 Delta BLUE
-  H2_Delta_BLUE <- H2_Delta_BLUE_parameters(s2_g, delta)
+  H2_Delta_BLUE <- H2_Delta_parameters(s2_g, delta, "BLUE")
 
   return(H2_Delta_BLUE)
 }
@@ -234,6 +254,16 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
                                            vc = NULL) {
   initial_checks(model, target, options)
 
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = TRUE, marginal, stratification)
   }
@@ -246,7 +276,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   dimnames(delta) <- list(vc$gnames, vc$gnames)
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_BLUP_parameters(s2_g, delta)
+  H2_Delta_BLUP <- H2_Delta_parameters(s2_g, delta, "BLUP")
 
   dimnames(H2_Delta_BLUP) <- dimnames(delta)
 

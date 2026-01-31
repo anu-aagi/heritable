@@ -117,6 +117,58 @@ check_target_both <- function(model, target) {
   }
 }
 
+# Check if the design matrix exists, otherwise builds one.
+#' @keywords internal
+check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
+
+  if(!inherits(model, "asreml")){
+    return(model)
+  }
+
+  if(build_design){
+    # Get the design matrix
+    design <- model$design
+    if (is.null(design)) {
+      cli::cli_inform("A design matrix was not found in the asreml object. Building a design matrix.")
+      build_design <- TRUE
+    } else {
+      build_design <- FALSE
+    }
+  }
+
+  if(build_mf){
+    # Get the design matrix
+    mf <- model$mf
+    if (is.null(mf)) {
+      cli::cli_inform("A model frame was not found in the asreml object. Building a model frame.")
+      build_mf <- TRUE
+    } else {
+      build_mf <- FALSE
+    }
+  }
+
+  if(build_design && build_mf){
+    design_default <- asreml::asreml.options()$design
+    asreml::asreml.options(design = TRUE)
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    asreml::asreml.options(design = design_default)
+  }
+
+  if(!build_design && build_mf){
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+  }
+
+  if(build_design && !build_mf){
+    design_default <- asreml::asreml.options()$design
+    asreml::asreml.options(design = TRUE)
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    asreml::asreml.options(design = design_default)
+  }
+
+  model
+}
+
+
 ########################### Method specific check ##############################
 # Helper function to check if GRM exists in environment
 #' @keywords internal

@@ -156,12 +156,13 @@ bootstrap_asreml <- function(model,
     stop("`model` must be an `asreml` object.")
   }
 
-  mf <- model$mf
-  if (is.null(mf)) {
-    cli::cli_warn("A model frame was not found in the asreml object. Building a model frame.")
-    model <- asreml::update.asreml(model, model.frame = TRUE)
-    mf <- model$mf
+  # Get model frame
+  if(!use.u){
+    model <- check_deisgn_exsits(model)
+  } else {
+    model <- check_deisgn_exsits(model, build_design = FALSE)
   }
+  mf <- model$mf
 
   mf <- as.data.frame(mf)
   N <- nrow(mf)
@@ -258,16 +259,9 @@ get_fixed_fit_asreml <- function(model) {
     stop("`model` must be an `asreml` object.")
   }
 
-  # Get the design matrix
+  # Get model frame
+  model <- check_deisgn_exsits(model, build_mf = FALSE)
   design <- model$design
-  if (is.null(design)) {
-    cli::cli_warn("A design matrix was not found in the asreml object. Building a design matrix.")
-    design_default <- asreml::asreml.options()$design
-    asreml::asreml.options(design = TRUE)
-    model <- asreml::update.asreml(model)
-    design <- model$design
-    asreml::asreml.options(design = design_default)
-  }
 
   N <- nrow(design)
 

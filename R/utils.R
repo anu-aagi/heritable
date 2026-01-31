@@ -382,6 +382,9 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
+      main <- TRUE
+    } else if(sum(!main) == 0) {
+      main <- TRUE
     } else {
       cli::cli_inform(
         c(
@@ -389,6 +392,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "involving the target term."
         )
       )
+      main <- FALSE
     }
   } else {
     cli::cli_inform(
@@ -397,6 +401,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
         "Estimation is restricted to the defined strata."
       )
     )
+    main <- FALSE
     m <- build_new_Z(model, target, stratification) |> t()
   }
 
@@ -418,22 +423,15 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
     C22_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames)
+  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames, main = main)
 }
 
 #' @noRd
 #' @keywords internal
 var_comp.asreml <- function(model, target, calc_C22 = TRUE,
                              marginal = TRUE, stratification = NULL) {
+  model <- check_deisgn_exsits(model)
   design <- model$design
-  if(calc_C22 && is.null(design)){
-    cli::cli_warn("A design matrix was not found in the asreml object. Building a design matrix.")
-    design_default <- asreml::asreml.options()$design
-    asreml::asreml.options(design = TRUE)
-    model <- asreml::update.asreml(model)
-    design <- model$design
-    asreml::asreml.options(design = design_default)
-  }
 
   mapper <- map_target_terms(model, target, marginal)
   g <- mapper$idx
@@ -451,6 +449,9 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
+      main <- TRUE
+    } else if(sum(!main) == 0) {
+      main <- TRUE
     } else {
       cli::cli_inform(
         c(
@@ -458,6 +459,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "involving the target term."
         )
       )
+      main <- FALSE
     }
   } else {
     cli::cli_inform(
@@ -466,6 +468,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
         "Estimation is restricted to the defined strata."
       )
     )
+    main <- FALSE
     m <- build_new_Z(model, target, stratification) |> t()
   }
 
@@ -502,6 +505,18 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     G <- G * model$sigma2
     dimnames(G) <- list(ran_terms, ran_terms)
     Q <- ncol(G)
+
+    # Identify missing terms.
+    col_design <- colnames(design)
+    missing_terms <- which(
+      Matrix::colSums(design[,intersect(ran_terms,col_design)] != 0) == 0
+    ) |> names()
+    missing_terms <- unique(c(missing_terms, setdiff(ran_terms, col_design)))
+    if(length(missing_terms) > 1){
+      G[missing_terms, ] <- 0
+      G[, missing_terms] <- 0
+    }
+
     G_g <- crossprod(m,G[g, g, drop=FALSE]) %*% m
     dimnames(G_g) <- list(gnames, gnames)
 
@@ -539,13 +554,25 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     G <- G * model$sigma2
     terms <- names(mapper$idx)
     dimnames(G) <- list(terms, terms)
+
+    # Identify missing terms.
+    col_design <- colnames(design)
+    missing_terms <- which(
+      Matrix::colSums(design[,intersect(terms,col_design)] != 0) == 0
+    ) |> names()
+    missing_terms <- unique(c(missing_terms, setdiff(terms, col_design)))
+    if(length(missing_terms) > 1){
+      G[missing_terms, ] <- 0
+      G[, missing_terms] <- 0
+    }
+
     G_g <- crossprod(m,G[rownames(m), rownames(m), drop=FALSE]) %*% m
     dimnames(G_g) <- list(gnames, gnames)
 
     C22_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames)
+  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames, main = main)
 }
 
 #' @keywords internal
@@ -574,7 +601,6 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   terms <- colnames(Z[,idx_all])
   target_grp <- levels(mf[[target]])
   n_tg <- length(target_grp)
-
 
   w_list <- list()
   m_list <- list()
@@ -659,12 +685,9 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
 #' @keywords internal
 #' @noRd
 map_target_terms.asreml <- function(model, target, marginal = TRUE){
+  model <- check_deisgn_exsits(model)
+  design <- model$design
   mf <- model$mf
-  if (is.null(mf)) {
-    cli::cli_warn("A model frame was not found in the asreml object. Building a model frame.")
-    model <- asreml::update.asreml(model, model.frame = TRUE)
-    mf <- model$mf
-  }
 
   grp_names <- sapply(model$G.param, function(x){
     facnam <- lapply(x[-1], function(y) names(y[["model"]]))
@@ -735,21 +758,12 @@ map_target_terms.asreml <- function(model, target, marginal = TRUE){
           function(id) grp[stra_id == id]
         )
 
-        design <- model$design
-        if (is.null(design)) {
-          cli::cli_warn("A design matrix was not found in the asreml object. Building a design matrix.")
-          design_default <- asreml::asreml.options()$design
-          asreml::asreml.options(design = TRUE)
-          model <- asreml::update.asreml(model)
-          design <- model$design
-          asreml::asreml.options(design = design_default)
-        }
-
         stra_w <-sapply(stra_colname, function(s) {
           s <- intersect(colnames(design), s)
           sum(design[, s, drop = FALSE])/n
         })
         w <- stra_w[stra_id]
+
       } else {
         w <- rep(1, n_g)
       }
@@ -916,12 +930,9 @@ build_new_Z.lmerMod <- function(model, target, new_data){
 #' @keywords internal
 #' @noRd
 build_new_Z.asreml <- function(model, target, new_data){
+  model <- check_deisgn_exsits(model)
+  design <- model$design
   mf <- model$mf
-  if (is.null(mf)) {
-    cli::cli_warn("A model frame was not found in the asreml object. Building a model frame.")
-    model <- asreml::update.asreml(model, model.frame = TRUE)
-    mf <- model$mf
-  }
 
   grp_names <- sapply(model$G.param, function(x){
     facnam <- lapply(x[-1], function(y) names(y[["model"]]))
@@ -1036,7 +1047,7 @@ build_new_Z.asreml <- function(model, target, new_data){
     target_levs <- levels(target_key)
 
     if (length(numeric_var_idx) > 0 && any(specs[numeric_var_idx] != "id")) {
-      cli::cli_warn(
+      cli::cli_inform(
         c(
           "The target interacts with numerical predictors generated by special model syntax:",
           "  {.code {specs[numeric_var_idx]}}",
@@ -1053,17 +1064,6 @@ build_new_Z.asreml <- function(model, target, new_data){
       }
 
       # Group by numeric terms
-      # Get the design matrix
-      design <- model$design
-      if (is.null(design)) {
-        cli::cli_warn("A design matrix was not found in the asreml object. Building a design matrix.")
-        design_default <- asreml::asreml.options()$design
-        asreml::asreml.options(design = TRUE)
-        model <- asreml::update.asreml(model)
-        design <- model$design
-        asreml::asreml.options(design = design_default)
-      }
-
       numeric_var_key <- apply(grp_split[, numeric_var_idx,drop = FALSE], 1, function(x) paste0(x, collapse = ":"))
       numeric_var_id <- match(numeric_var_key, unique(numeric_var_key))
       numeric_var_colname <- lapply(
@@ -1165,4 +1165,5 @@ ginv_sym_sparse <- function(A, tol = 1e-10) {
 
   e$vectors %*% (d_inv * t(e$vectors))
 }
+
 
