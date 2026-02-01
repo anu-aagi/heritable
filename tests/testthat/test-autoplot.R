@@ -6,11 +6,12 @@ test_that("Autoplot", {
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
 
   # Extract the random effects
-  expect_named(extract_var_comps(asreml_model_random))
+  H2 <- H2(asreml_model_random, "gen", "Standard")
+  expect_named(extract_var_comps(H2))
 
   # Visual testing
-  vdiffr::expect_doppelganger("Bar plot", autoplot(asreml_model_random))
-  vdiffr::expect_doppelganger("Stacked bar plot", autoplot(asreml_model_random, type = "stacked"))
-  vdiffr::expect_doppelganger("Pie plot", autoplot(asreml_model_random, type = "pie"))
-  vdiffr::expect_doppelganger("Donut plot", autoplot(asreml_model_random, type = "donut"))
+  vdiffr::expect_doppelganger("Bar plot", autoplot(H2))
+  vdiffr::expect_doppelganger("Stacked bar plot", autoplot(H2, type = "stacked"))
+  vdiffr::expect_doppelganger("Pie plot", autoplot(H2, type = "pie"))
+  vdiffr::expect_doppelganger("Donut plot", autoplot(H2, type = "donut"))
 })
