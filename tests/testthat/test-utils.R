@@ -9,9 +9,9 @@ test_that("Helper functions working with asreml", {
 
   # Can we pull out the correct terms?
   # Can we fit the counter model?
-  expect_named(pull_terms(asreml_model_random), c("fixed", "random"))
-  expect_true("gen" %in% pull_terms(asreml_model_random)$random)
-  expect_true("gen" %in% pull_terms(asreml_model_fixed)$fixed)
+  expect_named(pull_terms_without_specials(asreml_model_random), c("fixed", "random"))
+  expect_true("gen" %in% pull_terms_without_specials(asreml_model_random)$random)
+  expect_true("gen" %in% pull_terms_without_specials(asreml_model_fixed)$fixed)
   expect_true("gen" %in% pull_terms_without_specials(asreml_model_grm)$random)
 })
 
@@ -26,11 +26,11 @@ test_that("Helper functions working with lme4", {
 
   # Can we pull out the correct terms?
   # Can we fit the counter model
-  expect_named(pull_terms(lmer_model_random), c("fixed", "random"))
-  expect_true("gen" %in% pull_terms(lmer_model_random)$random)
-  expect_true("gen" %in% pull_terms(lmer_model_fixed)$fixed)
+  expect_named(pull_terms_without_specials(lmer_model_random), c("fixed", "random"))
+  expect_true("gen" %in% pull_terms_without_specials(lmer_model_random)$random)
+  expect_true("gen" %in% pull_terms_without_specials(lmer_model_fixed)$fixed)
 
-  lm_model <- fit_counterpart_model(lme4_lettuce)
+  lm_model <- fit_counterpart_model(lme4_lettuce, target = "gen")
   expect_named(lm_model)
 })
 
