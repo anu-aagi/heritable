@@ -1,3 +1,4 @@
+
 #' Bootstrap confidence interval for heritability
 #'
 #' @description
@@ -5,8 +6,8 @@
 #' bootstrap of the underlying mixed model.
 #'
 #' @param object
-#' A heritability object returned by [H2()] (broad-sense) or
-#' [h2()] (narrow-sense). The object must store the fitted model
+#' A heritability object returned by [heritable::H2()] (broad-sense) or
+#' [heritable::h2()] (narrow-sense). The object must store the fitted model
 #' as an attribute.
 #' @param parm a specification of which parameters are to be given confidence intervals,
 #' either a vector of numbers or a vector of names.
@@ -73,7 +74,7 @@ confint.heritable <- function(object,
 
   if (h2.type == "broad_sense") {
     Fun_use <- function(x) {
-     H2(x, target, method, options = list(check = FALSE))
+      H2(x, target, method, options = list(check = FALSE))
     }
   } else {
     Fun_use <- function(x) {
@@ -83,20 +84,20 @@ confint.heritable <- function(object,
 
   if (inherits(model, "lmerMod")) {
     boot_mod <- lme4::bootMer(model,
-      FUN = Fun_use, nsim = B, seed = seed,
-      use.u = !resample_u, ...
+                              FUN = Fun_use, nsim = B, seed = seed,
+                              use.u = !resample_u, ...
     )
-    ci <- confint(boot_mod, level = level, type = type)
+    ci <- stats::confint(boot_mod, level = level, type = type)
   } else {
     boot_mod <- bootstrap_asreml(model,
-      FUN = Fun_use, nsim = B, seed = seed,
-      use.u = !resample_u, ...
+                                 FUN = Fun_use, nsim = B, seed = seed,
+                                 use.u = !resample_u, ...
     )
-    ci <- confint(boot_mod, level = level, type = type)
+    ci <- stats::confint(boot_mod, level = level, type = type)
     ci <- matrix(ci,
                  nrow = length(method),
                  dimnames = list(method, colnames(ci))
-          )
+    )
   }
   attr(ci, "boot_mod") <- boot_mod
   ci
@@ -159,7 +160,8 @@ bootstrap_asreml <- function(model,
 
   mf <- model$mf
   if (is.null(mf)) {
-    stop("Model frame (`model$mf`) not found. Fit with `model.frame = TRUE` so data are stored.")
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    mf <- model$mf
   }
 
   mf <- as.data.frame(mf)
@@ -251,7 +253,6 @@ bootstrap_asreml <- function(model,
 #'
 #' Random effects (BLUPs) are not included.
 #'
-#' @export
 get_fixed_fit_asreml <- function(model) {
   if (!inherits(model, "asreml")) {
     stop("`model` must be an `asreml` object.")

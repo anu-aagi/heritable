@@ -1,4 +1,4 @@
-#' Phenotypic data of 89 lettuce varieties
+#' Phenotypic of 89 lettuce varieties
 #' @usage lettuce_phenotypes
 #' @description
 #' 89 lettuce varieties tested at three environments, each laid out as a
@@ -12,9 +12,6 @@
 #' - `gen` genotype identifier
 #' - `rep` replicate identifier
 #' - `y` resistance to downy mildew scored on a scale ranging from 0 to 5
-#' @source [https://figshare.com/articles/dataset/Lettuce_trial_phenotypic_and_marker_data_/8299493](https://figshare.com/articles/dataset/Lettuce_trial_phenotypic_and_marker_data_/8299493)
-#' @references Hadasch, S., Simko, I., Hayes, R.J., Ogutu, J.O. and Piepho, H.-P. (2016), Comparing the Predictive Abilities of Phenotypic and Marker-Assisted Selection Methods in a Biparental Lettuce Population. The Plant Genome, 9: plantgenome2015.03.0014. \doi{doi:10.3835/plantgenome2015.03.0014}
-#' @references Hayes, R. J., Galeano, C. H., Luo, Y., Antonise, R., & Simko, I. (2014). Inheritance of Decay of Fresh-cut Lettuce in a Recombinant Inbred Line Population from ‘Salinas 88’ × ‘La Brillante’. Journal of the American Society for Horticultural Science, 139(4), 388–398. \doi{doi:10.21273/JASHS.139.4.388}
 "lettuce_phenotypes"
 
 #'Molecular marker data and genomic relatedness matrix of 89 lettuce varieties
@@ -46,54 +43,3 @@
 #' @references Hayes, R. J., Galeano, C. H., Luo, Y., Antonise, R., & Simko, I. (2014). Inheritance of Decay of Fresh-cut Lettuce in a Recombinant Inbred Line Population from ‘Salinas 88’ × ‘La Brillante’. Journal of the American Society for Horticultural Science, 139(4), 388–398. \doi{doi:10.21273/JASHS.139.4.388}
 "lettuce_markers"
 "lettuce_GRM"
-
-#' Phenotypic data of Australian lizards
-#' @usage lizard_phenotypes
-#' @description
-#' Phenotypic data for Australian lizards (_L. delicata_). Lizard eggs were
-#' incubated at two different incubation treatment temperatures. Lizards were
-#' weighed to investigate differences in growth between treatments.
-#'
-#'
-#' @format ## `lizard_phenotypes`
-#' A data frame with 3928 rows and 9 columns:
-#'
-#' - `liz_id` individual identifier, equivalent to `gen` in `lizard_markers` 261 individuals
-#' - `treatment` temperature (degrees celcius) at which lizard eggs were incubated
-#' - `dam_id` dam identifier
-#' - `sire_id` sire identifer
-#' - `mass` mass of lizard in
-#' - `ln_mass` natural log `mass`
-#' - `days_since_hatch` days since hatching (age)
-#' - `z_days_since_hatch` scaled and centered `days_since_hatch` see ?scale()
-#' - `z_days_since_hatch_i2` squared `z_days_since_hatch` see Kar et al 2024 to see details on their analysis
-#'
-#' @references Kar, F., Nakagawa, S. and Noble, D.W.A. (2024) “Heritability and developmental plasticity of growth in an oviparous lizard,” Heredity, 132(2), pp. 67–76. Available at: https://doi.org/10.1038/s41437-023-00660-3.
-#' @source [https://osf.io/hjkxd/?view_only=12a6b6010567474fac9fecd54472aa3d](https://osf.io/hjkxd/?view_only=12a6b6010567474fac9fecd54472aa3d)
-"lizard_phenotypes"
-
-#' Molecular markers data and genomic relatedness matrix of Australian lizards
-#' @aliases lizard_GRM
-#' @usage lizard_markers
-#' @usage lizard_GRM
-#' @format ## `lizard_markers`
-#' A data frame with 261 rows and 8438 columns:
-#'
-#' - `gen` individual identifier, equivalent to `liz_id` in `lizard_phenotypes`
-#' - 8437 genetic markers scored as 0, 2, 1 (see Details)
-#'
-#' @format ## `lizard_GRM`
-#'  A matrix array with 261 rows and 261 columns where each row/column represents
-#' a genotype
-#'
-#' @details See `?snpReady::G.matrix` for how GRM was computed.
-#' The biallelic marker \eqn{M_iw} for the ith genotype and the \eqn{w}th marker with
-#'  alleles \eqn{A_1} (i.e. the reference allele) and \eqn{A_2} was coded as:
-#'
-#' - 0 for \eqn{A_1} \eqn{A_1},
-#' - 1 for \eqn{A_1} \eqn{A_2} and \eqn{A_2} \eqn{A_1}
-#' - 2 for \eqn{A_2} \eqn{A_2}
-#' @source [https://osf.io/hjkxd/?view_only=12a6b6010567474fac9fecd54472aa3d](https://osf.io/hjkxd/?view_only=12a6b6010567474fac9fecd54472aa3d)
-#' @references Kar, F., Nakagawa, S. and Noble, D.W.A. (2024) “Heritability and developmental plasticity of growth in an oviparous lizard,” Heredity, 132(2), pp. 67–76. Available at: https://doi.org/10.1038/s41437-023-00660-3.
-"lizard_markers"
-"lizard_GRM"

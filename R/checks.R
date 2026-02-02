@@ -27,6 +27,13 @@ initial_checks <- function(model, target, options) {
     # Check if target appears in the model
     check_target_exists(model, target)
 
+    # Check if target is random
+    if(!check_target_random(model, target)){
+      cli::cli_abort(
+        "The target {.var {target}} is not fitted random effect"
+      )
+    }
+
     # Check if the target is specified as both fixed and random
     check_target_both(model, target)
 
@@ -35,10 +42,17 @@ initial_checks <- function(model, target, options) {
       check_G_by_E_exists(model, target)
     }
 
+    if (options$target_once %||% TRUE) {
+      # Check if target only appears exactly once in the model
+      check_target_appears_once(model, target)
+    }
+
+    # Check if target is random or fixed
+    if (!check_target_random(model, target)) {
+      cli::cli_abort("Heritability can only be calculated if {.value target} is a random effect.")
+    }
   }
 }
-
-########################### Check all ##############################
 
 # Check if model converged
 #' @keywords internal
@@ -90,6 +104,35 @@ check_target_exists <- function(model, target) {
   }
 }
 
+check_target_appears_once <- function(model, target) {
+  model_terms <- pull_terms_without_specials(model)
+  form <- as.formula(paste("~", paste(
+    c(
+      model_terms$fixed,
+      model_terms$random
+    ),
+    collapse = " + "
+  )))
+  form <- update(form, paste0("~ . - ", target))
+  fcts <- rownames(attr(terms(form), "factors"))
+  if (target %in% fcts) {
+    cli::cli_abort(
+      "The specified target {.code {target}} is found in multiple terms. Please specify only once."
+    )
+  }
+}
+
+# Check if target is in fixed or random
+#' @keywords internal
+check_target_random <- function(model, target) {
+  model_terms <- pull_terms_without_specials(model)
+  if (target %in% model_terms$random) {
+    TRUE
+  } else {
+    FALSE
+  }
+}
+
 # Check if target is in both fixed and random
 #' @keywords internal
 check_target_both <- function(model, target) {
@@ -135,17 +178,6 @@ check_G_by_E_exists <- function(model, target) {
 .S3method("check_G_by_E_exists", "lmerMod", check_G_by_E_exists.lmerMod)
 
 ########################### Method specific check ##############################
-# Check if target is in fixed or random
-#' @keywords internal
-check_target_random <- function(model, target) {
-  model_terms <- pull_terms_without_specials(model)
-  if (!target %in% model_terms$random) {
-    cli::cli_warn("Heritability can only be calculated if the target {.code {target}} is a random effect.")
-    return(FALSE)
-  }
-  TRUE
-}
-
 # Helper function to check if GRM exists in environment
 #' @keywords internal
 check_GRM_in_environment <- function(model, target) {
@@ -168,6 +200,7 @@ check_GRM_in_environment <- function(model, target) {
 
 #' Check if GRM is supplied if not search environment
 #' @keywords internal
+#' @noRd
 check_GRM_exists <- function(model, target, source = NULL){
   # Is source supplied?
   if(!is.null(source)){
@@ -176,8 +209,17 @@ check_GRM_exists <- function(model, target, source = NULL){
     # Is it in the environment?
     TRUE
   } else {
-    # Source doesn't exist and not supplied
-    cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
+    FALSE
+  }
+}
+
+# Check length of random effects
+#' @keywords internal
+check_single_random_effect <- function(terms) {
+  if (length(terms$random) == 1) { #
+    TRUE
+  } else {
+    FALSE
   }
 }
 

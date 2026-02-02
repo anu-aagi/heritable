@@ -8,10 +8,21 @@
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param options NULL by default, for internal checking of model object before calculations
+#' @aliases H2
+#' @usage
+# h2(model, target, method = c("Oakey", "Delta"), options)
+#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
+#' @param options NULL by default, for internal checking of model object before calculations.
+#' @param ... Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.
 #' @aliases h2
 #' @usage
-#' h2(model, target, method = c("Oakey", "Delta"), options)
-#' H2(model, target, method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"), options)
+# h2(model, target, method = c("Oakey", "Delta"), options, ...)
+#' H2(model,
+#'    target,
+#'    method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
+#'    options = NULL,
+#'    ...
+#'    )
 #' @returns A named numeric vector, length matching number of methods supplied
 #' @details
 #'
@@ -55,9 +66,10 @@
 #' }
 #' @export
 H2 <- function(model,
-               target,
+               target = NULL,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
-               options = NULL
+               options = NULL,
+               ...
                ) {
   UseMethod("H2")
 }
@@ -66,25 +78,28 @@ H2 <- function(model,
 #' @noRd
 #' @export
 H2.default <- function(model,
-                       target,
+                       target = NULL,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       options = NULL
+                       options = NULL,
+                       ...
                        ) {
   method <- match.arg(method, several.ok = TRUE)
 
   initial_checks(model, target, options = options)
 
   # Check correct model specification.
-  check_model_specification(model, target, "broad-sense")
+  if(options$check %||% TRUE){
+    check_model_specification(model, target, "broad-sense")
+  }
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
     switch(m,
-      Cullis = H2_Cullis(model, target, options = list(check = FALSE)),
-      Oakey = H2_Oakey(model, target, options = list(check = FALSE)),
-      Piepho = H2_Piepho(model, target, options = list(check = FALSE)),
-      Delta = H2_Delta(model, target, options = list(check = FALSE)),
-      Standard = H2_Standard(model, target, options = list(check = FALSE)),
+      Cullis = H2_Cullis(model, target, options = list(check = FALSE), ...),
+      Oakey = H2_Oakey(model, target, options = list(check = FALSE), ...),
+      Piepho = H2_Piepho(model, target, options = list(check = FALSE), ...),
+      Delta = H2_Delta(model, target, options = list(check = FALSE), ...),
+      Standard = H2_Standard(model, target, options = list(check = FALSE), ...),
       cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
     )
   })
@@ -101,7 +116,7 @@ H2.default <- function(model,
 #' Calculate standard heritability from model object
 #' @description Compute standard heritability using the classic ratio method of
 #' genotypic and phenotypic variance. See Falconer & Mackay (1996)
-#' @usage H2_Standard(model, target, options)
+#' @usage H2_Standard(model, target, options, ...)
 #' @inheritParams H2
 #' @return Numeric value
 #' @details
@@ -131,7 +146,10 @@ H2.default <- function(model,
 #'
 #' H2_Standard(lettuce_asreml, target = "gen")
 #' }
-H2_Standard <- function(model, target, options) {
+H2_Standard <- function(model,
+                        target,
+                        options = NULL,
+                        ...) {
   UseMethod("H2_Standard")
 }
 
@@ -139,7 +157,7 @@ H2_Standard <- function(model, target, options) {
 #' @description Compute "generalised heritability" for unbalanced experimental designs.
 #' See Cullis, Smith and Coombes (2006) for derivation.
 #' @inheritParams H2
-#' @usage H2_Cullis(model, target, options)
+#' @usage H2_Cullis(model, target, options, ...)
 #' @return Numeric value
 #' @details The equation for Cullis heritability is as follow
 #'
@@ -168,7 +186,10 @@ H2_Standard <- function(model, target, options) {
 #' H2_Cullis(lettuce_asreml, target = "gen")
 #' }
 
-H2_Cullis <- function(model, target, options) {
+H2_Cullis <- function(model,
+                      target,
+                      options = NULL,
+                      ...) {
   UseMethod("H2_Cullis")
 }
 
@@ -189,7 +210,7 @@ H2_Cullis <- function(model, target, options) {
 #' See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
 #' @usage
 # h2_Oakey(model, target, options)
-#' H2_Oakey(model, target, options)
+#' H2_Oakey(model, target, options, ...)
 #' @returns Numeric
 #' @examples
 #' # lme4 model
@@ -211,13 +232,16 @@ H2_Cullis <- function(model, target, options) {
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
 #' @export
-H2_Oakey <- function(model, target, options) {
+H2_Oakey <- function(model,
+                     target,
+                     options = NULL,
+                     ...) {
   UseMethod("H2_Oakey")
 }
 
 #' Calculate Piepho's heritability from model object
 #' Compute Piepho's heritability using variance differences between genotype BLUEs
-#' @usage H2_Piepho(model, target, options)
+#' @usage H2_Piepho(model, target, options, ...)
 #' @inheritParams H2
 #' @details The equation for Piepho's heritability is as follows:
 #'
@@ -248,7 +272,10 @@ H2_Oakey <- function(model, target, options) {
 #'
 #' H2_Piepho(lettuce_asreml, target = "gen")
 #' }
-H2_Piepho <- function(model, target, options) {
+H2_Piepho <- function(model,
+                      target,
+                      options = NULL,
+                      ...) {
   UseMethod("H2_Piepho")
 }
 
@@ -270,11 +297,11 @@ H2_Piepho <- function(model, target, options) {
 #          aggregate = c("arithmetic", "harmonic"),
 #          options)
 #'
-#' H2_Delta(model,
-#'          target,
+#' H2_Delta(model, target,
 #'          type = c("BLUP", "BLUE"),
 #'          aggregate = c("arithmetic", "harmonic"),
-#'          options
+#'          options,
+#'          ...
 #'          )
 #' @returns Numeric
 #' @details
@@ -313,21 +340,23 @@ H2_Delta <- function(
     target,
     type = c("BLUP", "BLUE"),
     aggregate = c("arithmetic", "harmonic"),
-    options) {
+    options = NULL,
+    ...) {
   UseMethod("H2_Delta")
 }
 
 #' @noRd
 #' @export
 H2_Delta.default <- function(model,
-                             target = NULL,
+                             target,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
-                             options = NULL) {
+                             options = NULL,
+                             ...) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
-  H2D_ij <- H2_Delta_pairwise(model, target, type = type)
+  H2D_ij <- H2_Delta_pairwise(model, target, type = type, options = options, ...)
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,
@@ -343,8 +372,8 @@ H2_Delta.default <- function(model,
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `h2/H2_Delta_by_genotype` and it's variants
 #' @usage
-# h2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
-#' H2_Delta_by_genotype(model, target, type = c("BLUE", "BLUP"), options)
+# h2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options)
+#' H2_Delta_by_genotype(model, target, type = c("BLUP", "BLUE"), options, ...)
 #' @inheritParams H2_Delta
 # @aliases H2_Delta_by_genotype
 #' @returns Numeric
@@ -380,17 +409,22 @@ H2_Delta.default <- function(model,
 #'
 #' H2_Delta_by_genotype(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-H2_Delta_by_genotype <- function(model, target, type = c("BLUE", "BLUP"), options) {
+H2_Delta_by_genotype <- function(model,
+                                 target,
+                                 type = c("BLUP", "BLUE"),
+                                 options = NULL,
+                                 ...) {
   UseMethod("H2_Delta_by_genotype")
 }
 
 #' @noRd
 #' @export
 H2_Delta_by_genotype.default <- function(model,
-                                         target = NULL,
-                                         type = NULL,
-                                         options = NULL) {
-  H2D_ij <- H2_Delta_pairwise(model, target, type, options)
+                                         target,
+                                         type = c("BLUP", "BLUE"),
+                                         options = NULL,
+                                         ...) {
+  H2D_ij <- H2_Delta_pairwise(model, target, type, options, ...)
 
   H2D_i <- as.matrix(H2D_ij) |>
     rowMeans(na.rm = TRUE) |>
@@ -410,8 +444,8 @@ H2_Delta_by_genotype.default <- function(model,
 #' referring to the genotype, line or variety of interest. See
 #' reference for origin and interpretation of `h2/H2_Delta_pairwise` and it's variants
 #' @usage
-# h2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
-#' H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
+# h2_Delta_pairwise(model, target, type = c("BLUP", "BLUE"), options)
+#' H2_Delta_pairwise(model, target, type = c("BLUP", "BLUE"), options, ...)
 #' @inheritParams H2_Delta
 # @aliases H2_Delta_pairwise
 #' @returns A `dspMatrix`
@@ -435,7 +469,11 @@ H2_Delta_by_genotype.default <- function(model,
 #'
 #' H2_Delta_pairwise(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-H2_Delta_pairwise <- function(model, target, type = c("BLUE", "BLUP"), options) {
+H2_Delta_pairwise <- function(model,
+                              target,
+                              type =  c("BLUP", "BLUE"),
+                              options = NULL,
+                              ...) {
   UseMethod("H2_Delta_pairwise")
 }
 

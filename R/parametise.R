@@ -62,11 +62,11 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' this heritability measure.
 #'
 #' @param Gg_inv The inverse of the genotypic variance-covariance matrix.
-#' @param C22_g Prediction error variance matrix associated with the genotype effects.
+#' @param C_gg Prediction error variance matrix associated with the genotype effects.
 #' @return Numeric value
 #' @examples
 #' Gg_inv = diag(1/0.15, 3, 3)
-#' C22_g <- matrix(
+#' C_gg <- matrix(
 #'   c(
 #'     0.08, 0.01, 0.00,
 #'     0.01, 0.07, 0.01,
@@ -74,15 +74,13 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #'   ),
 #'   nrow = 3, byrow = TRUE
 #' )
-#' H2_Oakey_parameters(Gg_inv, C22_g)
+#' H2_Oakey_parameters(Gg_inv, C_gg)
 #' @export
-H2_Oakey_parameters <- function(Gg_inv, C22_g) {
+H2_Oakey_parameters <- function(Gg_inv, C_gg) {
    n_g <- nrow(Gg_inv)
-   svds <- svd(Gg_inv)
-   Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
-   M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
+   M <- diag(n_g) - (Gg_inv %*% C_gg)
+   eM <- eigen(M)
 
-   eM <- eigen(M, symmetric = TRUE)
    thres <- 1e-5
    H2_Oakey <- mean(eM$values[eM$values > thres])
    return(H2_Oakey)
@@ -118,7 +116,7 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' Calculate heritability of pairwise differences using variance parameters
 #' @description Compute broad-sense heritability of differences
 #' using the variance of differences between two BLUPs/BLUEs
-#' @aliases h2_Delta_parameters
+#' @aliases h2_Delta_parameters 
 #' @usage
 #' h2_Delta_parameters(G_g, vd_matrix, type)
 #'
@@ -188,8 +186,7 @@ h2_Delta_parameters <- function(G_g, vd_matrix, type = c("BLUP", "BLUE")) {
 h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
 vd <- diag(G_g)
 n_g <- nrow(G_g)
- denom <- var_diff(G_g)
-#denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
+denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
 1 - vd_matrix / denom
 }
 

@@ -17,11 +17,13 @@ Imports:
     boot,
     cli,
     emmeans,
+<<<<<<< HEAD
     ggplot2,
     MASS,
+=======
+>>>>>>> main
     Matrix,
     methods,
-    reformulas,
     stringr,
     vctrs
 Suggests: 

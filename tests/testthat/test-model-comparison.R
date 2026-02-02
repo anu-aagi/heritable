@@ -1,5 +1,5 @@
 test_that("compare models", {
-
+  skip()
   # model <- list(fixed = list(), random = list())
   # model$random[["asreml"]] <- readRDS(test_path("fixtures/asreml_model_random.rds"))
   # model$random[["lme4"]] <- readRDS(test_path("fixtures/lmer_model_random.rds"))

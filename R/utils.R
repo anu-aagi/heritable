@@ -23,12 +23,9 @@ pull_terms.asreml <- function(model) {
 pull_terms.lmerMod <- function(model) {
   model_formula <- formula(model)
   term_labels <- attr(terms(model_formula), "term.labels")
-  ran_trms_formula <-
-    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
-  fixed_trms <- setdiff(term_labels, ran_trms_formula)
-  ran_trms <- sapply(
-    reformulas::findbars(model_formula), deparse
-  )
+
+  ran_trms <- names(lme4::ranef(model))
+  fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -44,12 +41,6 @@ pull_terms <- function(model) {
 #' @keywords internal
 pull_terms_without_specials.lmerMod <- function(model) {
   model_terms <- pull_terms(model)
-  model_terms$random <- sapply(
-    model_terms$random,
-    function(frm){
-      stringr::str_extract(frm, "(?<=\\|\\ ).+")
-    }
-  ) |> unname()
   model_terms
 }
 
@@ -112,31 +103,22 @@ target_vm_term_asreml <- function(model, target) {
   w <- grepl(paste0("^vm\\(", target), vpars)
   if (sum(w) == 1) {
     target_vm <- vpars[w]
-    # name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
-    name_GRM <- stringr::str_match(
-      vpars[w],
-      paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
-    )[,2]
-    if (exists(name_GRM, envir = env, inherits = FALSE)) {
+    name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+    if (exists(name_GRM, envir = env)) {
       GRM_source <- get(name_GRM, envir = env)
       if (is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
-        #TODO: Change in future because GRM_source could be singular
         GRMinv <- solve(sp2Matrix(GRM_source))
+      } else {
+        GRMinv <- solve(GRM_source)
       }
       if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
         GRMinv <- GRM_source
-      } else {
-        GRMinv <- MASS::ginv(GRM_source)
       }
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
     }
-    # Assign names
-    dimnames(GRMinv) <- dimnames(GRM_source)
-
     return(list(
       target_vm = vpars[w],
-      GRM_source = GRM_source,
       GRMinv = GRMinv
     ))
   } else {
@@ -166,7 +148,7 @@ target_vm_term_asreml <- function(model, target) {
 #' @importFrom stats as.formula update
 #' @keywords internal
 #' @noRd
-fit_counterpart_model.asreml <- function(model, target = NULL) {
+fit_counterpart_model.asreml <- function(model, target) {
   # get the terms from model object
   fixed_trms <- pull_terms.asreml(model)$fixed
   ran_trms_without_specials <- pull_terms_without_specials.asreml(model)$random
@@ -204,38 +186,27 @@ fit_counterpart_model.asreml <- function(model, target = NULL) {
 
 #' @importFrom stats lm model.frame
 #' @keywords internal
-fit_counterpart_model.lmerMod <- function(model, target = NULL) {
+fit_counterpart_model.lmerMod <- function(model, target) {
   # get the terms from model object
-  trms <- pull_terms_without_specials(model)
-  trms <- lapply(trms, unique)
-  fixed_trms <- trms$fixed
-  ran_trms <- trms$random
+  trms <- pull_terms.lmerMod(model)
 
-  # If target is in random effects
-  if(target %in% ran_trms){
-    # check whether there is only a single RE
-    if(length(ran_trms) == 1){
-      # Fit a lm instead
-      fixed_formula <- reformulas::nobars(formula(model))
-      fixed_formula <- update(fixed_formula, paste(". ~ . +", ran_trms))
-      # Pull out data
-      model_data <- model@frame %||% model.frame(model)
-      refit_model <- lm(fixed_formula, data = model_data)
-    } else {
-      ran_frms <- reformulas::findbars(formula(model))
-      contains_target <- sapply(ran_frms, function(frm){
-          frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> utils::tail(n=1)
-        }) == target
-      target_ran_frms <- sapply(ran_frms[contains_target], function(frm){
-        paste0("(", deparse1(frm), ")")
-      })
-      target_ran_frms <- paste(target_ran_frms, collapse = "-")
-      refit_model <- update(model, as.formula(paste(". ~ . - ", target_ran_frms, " + ", target)))
+  # check whether there is only a single RE
+  if (check_single_random_effect(trms)) {
+    # Fit a lm instead
+    fixed_formula <- lme4::nobars(formula(model))
+    fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
+    # Pull out data
+    model_data <- model@frame %||% model.frame(model)
+    refit_model <- lm(fixed_formula, data = model_data)
+  } else if (length(trms$random) > 1) {
+    # If target is in random effects
+    if (target %in% trms$random) {
+      refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
+      check_model_convergence(refit_model)
+    } else if (target %in% trms$fixed) { # If target is in fixed effects
+      refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
       check_model_convergence(refit_model)
     }
-  } else if (target %in% fixed_trms) { # If target is in fixed effects
-    refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
-    check_model_convergence(refit_model)
   } else {
     cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
   }
@@ -261,7 +232,6 @@ fit_counterpart_model <- function(model, target = NULL) {
 print.heritable <- function(x, digits = getOption("digits"), ...) {
   attr(x, "model") <- NULL
   attr(x, "target") <- NULL
-  attr(x, "type") <- NULL
   print(unclass(x))
 }
 
@@ -354,23 +324,29 @@ var_diff <- function(V) {
 
 #' @noRd
 #' @keywords internal
-var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
+var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
+                             marginal = TRUE, stratification = NULL) {
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
-  sigma2 <- sigma(model)^2
+  sigma2 <- stats::sigma(model)^2
   Lambda <- lme4::getME(model, "Lambda")
   G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
-  # Get BLUP weight
-  mapper <- map_target_terms(model, target)
+  mapper <- map_target_terms(model, target, marginal)
   g <- mapper$idx
-  m <- mapper$m
-  intercept <- mapper$intercept
-  if(sum(intercept) != 0){
-    g <- g[intercept]
-    m <- m[intercept, , drop=FALSE]
+
+  # Get BLUP weight
+  if(is.null(stratification)){
+    m <- mapper$m
+    intercept <- mapper$intercept
+    if(sum(intercept) != 0 && !marginal){
+      g <- g[intercept]
+      m <- m[intercept, , drop=FALSE]
+    }
+  } else {
+    m <- build_new_Z(model, target, stratification) |> t()
   }
 
   gnames <- levels(model@flist[[target]])
@@ -398,15 +374,16 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE) {
 
 #' @keywords internal
 #' @noRd
-var_comp <- function(model, target, calc_C22 = TRUE) {
+var_comp <- function(model, target, calc_C22 = TRUE,
+                     marginal = TRUE, stratification = NULL) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
 
 #' @noRd
 #' @keywords internal
-#' @importFrom Matrix colMeans
-map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
+map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
+  mf <- stats::model.frame(model)
   mmlist   <- lme4::getME(model, "mmList")
   grp_list <- lme4::getME(model, "flist")
   grp_names <- names(lme4::getME(model, "cnms"))
@@ -415,10 +392,9 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
 
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
-  idx <- do.call(c,
-                 lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
-  )
-  terms <- colnames(Z[,idx])
+  idx <- lapply(matched_grp, function(x) (Gp[x]+1):Gp[x+1])
+  idx_all <- do.call(c,idx)
+  terms <- colnames(Z[,idx_all])
   target_grp <- levels(grp_list[[target]])
   n_tg <- length(target_grp)
 
@@ -427,25 +403,49 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
   m_list <- list()
   intercept_idx <- c()
 
-  for(g in matched_grp){
-    mm <- Matrix::Matrix(mmlist[[g]])
-    grp <- levels(grp_list[[grp_names[g]]])
+  for(itr in seq_along(matched_grp)){
+    g_idx <- matched_grp[itr]
+    mm <- Matrix::Matrix(mmlist[[g_idx]])
+    grp <- levels(grp_list[[grp_names[g_idx]]])
+    grp <- factor(grp, levels = grp)
 
     n <- nrow(mm)
     p <- ncol(mm)
     q <- length(grp)
 
     # Get weighting matrix
-    if(grp_names[g] != target){
-      target_order <- which(stringr::str_split(grp_names[g], ":", simplify = TRUE) == target)
-      grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
-      grp_no_target <- apply(grp_no_target, 1, function(g) paste0(g, collapse = ":"))
-      w <- as.numeric((table(grp_no_target)/q)[grp_no_target])
+    if(grp_names[g_idx] != target){
+
+      if (marginal) {
+        grp_names_split <- stringr::str_split(grp_names[g_idx], ":", simplify = TRUE)
+        target_order <- which(stringr::str_split(grp_names_split, ":", simplify = TRUE) == target)
+        grp_no_target <- stringr::str_split(grp, ":", simplify = TRUE)[, -target_order, drop=FALSE]
+        grp_key <- apply(grp_no_target, 1, paste, collapse = ":")
+        mm_key <- colnames(mm)
+        stra_key <- apply(expand.grid(mm_key, grp_key), 1, function(x) paste0(x, collapse = ":"))
+        stra_id <- match(stra_key, unique(stra_key))
+
+        z <- Z[,idx[[itr]]]
+        w <- numeric(p*q)
+        for(id in unique(stra_id)){
+          s <- which(stra_id == id)
+          if(length(s) > 0){
+            w[s] <- sum(z[,s])/n
+          }
+        }
+      } else {
+        w <- rep(1, p * q)
+      }
 
       # Get intercept terms
       intercept_idx <- c(intercept_idx, rep(0, p*q))
+
     } else {
+      # BLUP weight
       w <- rep(1, p*q)
+      if (marginal) {
+        w <- w * rep(Matrix::colMeans(mm), q)
+      }
 
       # Get intercept terms
       pi <- which("(Intercept)" %in% colnames(mm))
@@ -453,8 +453,7 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
       if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
       intercept_idx <- c(intercept_idx, z)
     }
-    # BLUP weight
-    w <- w * rep(colMeans(mm), q)
+
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
 
     # BLUP weight matrix
@@ -465,8 +464,8 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
       m[grepl(pattern, names(w)),tg] <- 1
     }
     m <- m * w
-    m_list[[g]] <- m
-    w_list[[g]] <- w
+    m_list[[itr]] <- m
+    w_list[[itr]] <- w
   }
 
   m <- do.call(rbind, m_list)
@@ -475,7 +474,7 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
   intercept <- intercept_idx==1
   list(m = m,
        w = w,
-       idx = setNames(idx, terms),
+       idx = setNames(idx_all, terms),
        intercept = setNames(intercept, terms))
 }
 
@@ -483,7 +482,113 @@ map_target_terms.lmerMod <- function(model, target, reconstruct = FALSE){
 
 #' @keywords internal
 #' @noRd
-map_target_terms <- function(model, target, reconstruct = FALSE) {
+map_target_terms <- function(model, target, marginal = TRUE) {
   UseMethod("map_target_terms")
 }
 .S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)
+
+
+#' @keywords internal
+#' @noRd
+build_new_Z.lmerMod <- function(model, target, new_data){
+  trms <- colnames(new_data)
+  mf   <- stats::model.frame(model)
+
+  for(trm in trms){
+    if (!trm %in% colnames(mf)){
+      cli::cli_abort("{.code {trm}} in {.code new_data} was not found in the model.")
+    }
+
+    if (!is.factor(mf[[trm]]) && !inherits(new_data[,trm], "numeric")) {
+      cli::cli_abort("{.code {trm}} should be a numeric.")
+    }
+
+    if (is.factor(mf[[trm]]) && !new_data[, trm] %in% levels(mf[[trm]])) {
+      cli::cli_abort("Unknow level in {.code {trm}} detected: {.code {new_data[trm]}}.")
+    }
+  }
+
+  # Target levels
+  g      <- mf[[target]]
+  gnames <- levels(g)
+  n_g    <- nlevels(g)
+
+  if(length(trms) == 1){
+    new_data <- data.frame(rep(new_data[,1], n_g))
+    colnames(new_data) <- trms
+  } else {
+    new_data <- rep(new_data, n_g)
+  }
+  new_data[[target]] <- factor(gnames, levels = gnames)
+
+  # Add factor level and contrast
+  for (trm in trms) {
+    if (is.factor(mf[[trm]])) {
+      new_data[[trm]] <- factor(new_data[[trm]], levels = levels(mf[[trm]]))
+      stats::contrasts(new_data[[trm]]) <- stats::contrasts(mf[[trm]])
+    }
+  }
+
+  mmlist   <- lme4::getME(model, "mmList")
+  mm_names <- names(mmlist)
+  frm      <- stringr::str_extract(mm_names, "^.+(?=\\ \\|)")
+  frm      <- paste("~", frm)
+
+  grp_list  <- lme4::getME(model, "flist")
+  grp_names <- names(lme4::getME(model, "cnms"))
+
+  pattern     <- paste0("(^|:)", target, "(:|$)")
+  matched_grp <- which(grepl(pattern, grp_names))
+
+  # Split grouping-variable names per matched term, e.g. "gen:rep" -> c("gen","rep")
+  grp_names_split <- stringr::str_split(grp_names, ":")
+  required_var <- do.call(c, grp_names_split[matched_grp]) |> unique()
+  missing_trms <- required_var[!required_var %in% trms]
+  missing_trms <- missing_trms[missing_trms != target]
+  if(length(missing_trms) > 0){
+    cli::cli_abort("Terms {.code {missing_trms}} interact with {.code {target}} but were not provided.")
+  }
+
+  Z_list <- list()
+
+  for (itr in seq_along(matched_grp)) {
+    g_idx <- matched_grp[itr]
+    term  <- grp_names[g_idx]
+
+    # Within-group design for this RE term (n x p)
+    mm <- Matrix::sparse.model.matrix(stats::as.formula(frm[g_idx]), new_data)
+    grp <- levels(grp_list[[term]])
+    grp <- factor(grp, levels = grp)
+
+    n <- nrow(mm)
+    p <- ncol(mm)
+    q <- length(grp)
+
+    grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
+    i <- seq_len(n)
+    j <- match(grp_new, grp)
+    keep <- !is.na(j)
+    mm_grp <- Matrix::sparseMatrix(
+      i    = i[keep],
+      j    = j[keep],
+      x    = rep(1, sum(keep)),
+      dims = c(n, q)
+    )
+
+    z <- KhatriRao(t(mm_grp), t(mm)) %>% t
+    dimnames(z) <- list(gnames, rep(grp, each = p))
+    Z_list[[itr]] <- z
+  }
+  do.call(cbind, Z_list)
+}
+
+
+# To Do, asreml
+
+#' @keywords internal
+#' @noRd
+build_new_Z <- function(model, target, new_data) {
+  UseMethod("build_new_Z")
+}
+.S3method("build_new_Z", "lmerMod", build_new_Z.lmerMod)
+
