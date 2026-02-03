@@ -4,7 +4,7 @@
 \alias{extract_var_comps}
 \title{Extract variance component values method}
 \usage{
-extract_var_comps(model)
+extract_var_comps(heritable)
 }
 \description{
 Extract variance component values method

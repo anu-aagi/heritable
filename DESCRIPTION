@@ -21,6 +21,7 @@ Imports:
     MASS,
     Matrix,
     methods,
+    reformulas,
     stringr,
     vctrs
 Suggests: 

@@ -6,6 +6,7 @@ test_that("h2 heritability works", {
 
   asreml_model_random <- readRDS(file = test_path("fixtures/asreml_model_random.rds"))
   asreml_model_grm <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+
   data("lettuce_GRM")
 
   # From Schmidt et al 2019 Fig 1.
@@ -93,7 +94,7 @@ test_that("Refactoring delta parameter functions works", {
   )
 
   vc_g <- 0.01
-  vd_matrix <- matrix(c(NA,0.2,0.2,NA),2,2)
+  vd_matrix <- matrix(c(NA, 0.2, 0.2, NA), 2, 2)
 
   expect_equal(
     H2_Delta_BLUE_parameters(vc_g, vd_matrix),

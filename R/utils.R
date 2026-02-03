@@ -23,9 +23,12 @@ pull_terms.asreml <- function(model) {
 pull_terms.lmerMod <- function(model) {
   model_formula <- formula(model)
   term_labels <- attr(terms(model_formula), "term.labels")
-
-  ran_trms <- names(lme4::ranef(model))
-  fixed_trms <- setdiff(term_labels, paste0("1 | ", ran_trms))
+  ran_trms_formula <-
+    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
+  fixed_trms <- setdiff(term_labels, ran_trms_formula)
+  ran_trms <- sapply(
+    reformulas::findbars(model_formula), deparse
+  )
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -41,6 +44,12 @@ pull_terms <- function(model) {
 #' @keywords internal
 pull_terms_without_specials.lmerMod <- function(model) {
   model_terms <- pull_terms(model)
+  model_terms$random <- sapply(
+    model_terms$random,
+    function(frm){
+      stringr::str_extract(frm, "(?<=\\|\\ ).+")
+    }
+  ) |> unname()
   model_terms
 }
 
@@ -103,22 +112,31 @@ target_vm_term_asreml <- function(model, target) {
   w <- grepl(paste0("^vm\\(", target), vpars)
   if (sum(w) == 1) {
     target_vm <- vpars[w]
-    name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
-    if (exists(name_GRM, envir = env)) {
+    # name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+    name_GRM <- stringr::str_match(
+      vpars[w],
+      paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
+    )[,2]
+    if (exists(name_GRM, envir = env, inherits = FALSE)) {
       GRM_source <- get(name_GRM, envir = env)
       if (is.data.frame(GRM_source) & ncol(GRM_source) == 3) {
+        #TODO: Change in future because GRM_source could be singular
         GRMinv <- solve(sp2Matrix(GRM_source))
-      } else {
-        GRMinv <- solve(GRM_source)
       }
       if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
         GRMinv <- GRM_source
+      } else {
+        GRMinv <- MASS::ginv(GRM_source)
       }
     } else {
       cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
     }
+    # Assign names
+    dimnames(GRMinv) <- dimnames(GRM_source)
+
     return(list(
       target_vm = vpars[w],
+      GRM_source = GRM_source,
       GRMinv = GRMinv
     ))
   } else {
@@ -188,25 +206,36 @@ fit_counterpart_model.asreml <- function(model, target) {
 #' @keywords internal
 fit_counterpart_model.lmerMod <- function(model, target) {
   # get the terms from model object
-  trms <- pull_terms.lmerMod(model)
+  trms <- pull_terms_without_specials(model)
+  trms <- lapply(trms, unique)
+  fixed_trms <- trms$fixed
+  ran_trms <- trms$random
 
-  # check whether there is only a single RE
-  if (check_single_random_effect(trms)) {
-    # Fit a lm instead
-    fixed_formula <- lme4::nobars(formula(model))
-    fixed_formula <- update(fixed_formula, paste(". ~ . +", trms$random))
-    # Pull out data
-    model_data <- model@frame %||% model.frame(model)
-    refit_model <- lm(fixed_formula, data = model_data)
-  } else if (length(trms$random) > 1) {
-    # If target is in random effects
-    if (target %in% trms$random) {
-      refit_model <- update(model, as.formula(paste(". ~ . - (1|", target, ") + ", target)))
-      check_model_convergence(refit_model)
-    } else if (target %in% trms$fixed) { # If target is in fixed effects
-      refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
+  # If target is in random effects
+  if(target %in% ran_trms){
+    # check whether there is only a single RE
+    if(length(ran_trms) == 1){
+      # Fit a lm instead
+      fixed_formula <- reformulas::nobars(formula(model))
+      fixed_formula <- update(fixed_formula, paste(". ~ . +", ran_trms))
+      # Pull out data
+      model_data <- model@frame %||% model.frame(model)
+      refit_model <- lm(fixed_formula, data = model_data)
+    } else {
+      ran_frms <- reformulas::findbars(formula(model))
+      contains_target <- sapply(ran_frms, function(frm){
+          frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> utils::tail(n=1)
+        }) == target
+      target_ran_frms <- sapply(ran_frms[contains_target], function(frm){
+        paste0("(", deparse1(frm), ")")
+      })
+      target_ran_frms <- paste(target_ran_frms, collapse = "-")
+      refit_model <- update(model, as.formula(paste(". ~ . - ", target_ran_frms, " + ", target)))
       check_model_convergence(refit_model)
     }
+  } else if (target %in% fixed_trms) { # If target is in fixed effects
+    refit_model <- update(model, as.formula(paste(". ~ . + (1|", target, ") - ", target)))
+    check_model_convergence(refit_model)
   } else {
     cli::cli_abort("{.var {target}} not found in either fixed or random effects of the model.")
   }
@@ -232,6 +261,7 @@ fit_counterpart_model <- function(model, target = NULL) {
 print.heritable <- function(x, digits = getOption("digits"), ...) {
   attr(x, "model") <- NULL
   attr(x, "target") <- NULL
+  attr(x, "type") <- NULL
   print(unclass(x))
 }
 
@@ -312,7 +342,7 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
 
 #' @noRd
 #' @keywords internal
-#' @importFrom Matrix Diagonal Matrix t diag
+#' @importFrom Matrix Diagonal Matrix t diag crossprod tcrossprod
 var_diff <- function(V) {
   d <- diag(V)
   delta <- - 2 * V
@@ -340,10 +370,10 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   # Get BLUP weight
   if(is.null(stratification)){
     m <- mapper$m
-    intercept <- mapper$intercept
-    if(sum(intercept) != 0 && !marginal){
-      g <- g[intercept]
-      m <- m[intercept, , drop=FALSE]
+    main <- mapper$main
+    if(sum(main) != 0 && !marginal){
+      g <- g[main]
+      m <- m[main, , drop=FALSE]
     }
   } else {
     m <- build_new_Z(model, target, stratification) |> t()
@@ -372,6 +402,21 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 
 # To Do, asreml
 
+#' Build variance components for genotype-level heritability calculations
+#'
+#' Construct the variance components required to compute heritability for a
+#' target random factor representing genotype effects in a fitted mixed model.
+#'
+#' For the requested `target` random factor, this function returns:
+#' \itemize{
+#'   \item the estimated variance–covariance matrix of genotype effects, `G_g`, and
+#'   \item (optionally) the corresponding prediction error variance matrix, `C22_g`.
+#' }
+#'
+#' Argument `marginal` and `stratification` will be passed to the internal function
+#' `map_target_terms` and `build_new_Z`, respectively for strata-averaged and
+#' strata-specific heritability calculation.
+#'
 #' @keywords internal
 #' @noRd
 var_comp <- function(model, target, calc_C22 = TRUE,
@@ -401,7 +446,7 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
 
   w_list <- list()
   m_list <- list()
-  intercept_idx <- c()
+  main_idx <- c()
 
   for(itr in seq_along(matched_grp)){
     g_idx <- matched_grp[itr]
@@ -437,8 +482,8 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
         w <- rep(1, p * q)
       }
 
-      # Get intercept terms
-      intercept_idx <- c(intercept_idx, rep(0, p*q))
+      # Get main terms
+      main_idx <- c(main_idx, rep(0, p*q))
 
     } else {
       # BLUP weight
@@ -447,11 +492,11 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
         w <- w * rep(Matrix::colMeans(mm), q)
       }
 
-      # Get intercept terms
+      # Get main terms
       pi <- which("(Intercept)" %in% colnames(mm))
       z <- rep(0, p*q)
       if(length(pi) == 1) z[pi + p * (seq_len(q) - 1)] <- 1
-      intercept_idx <- c(intercept_idx, z)
+      main_idx <- c(main_idx, z)
     }
 
     m <- Matrix::Matrix(0, nrow = p * q, ncol = n_tg)
@@ -471,22 +516,56 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE){
   m <- do.call(rbind, m_list)
   w <- do.call(c, w_list)
 
-  intercept <- intercept_idx==1
+  main <- main_idx==1
   list(m = m,
        w = w,
        idx = setNames(idx_all, terms),
-       intercept = setNames(intercept, terms))
+       main = setNames(main, terms))
 }
 
 # To Do, asreml
 
+#' Map target-associated random-effect terms to genotype-level effects
+#'
+#' Identify random-effect terms in a mixed model that involve a target random factor
+#' (e.g. a genotype effect) and construct linear mapping matrices that summarise
+#' those term-level random effects as genotype-level effects.
+#'
+#' In models where the target factor appears in multiple random-effect terms
+#' (e.g. `gen`, `gen:env`), the fitted random effects live on different
+#' coefficient spaces (one per term). This function determines which terms are
+#' associated with `target` and builds weighting / aggregation matrices that map
+#' each term’s coefficient vector onto a common genotype-level scale (typically an
+#' average over the interacting strata).
+#'
+#' @param model A fitted mixed model object.
+#' @param target A character string giving the name of the target random-effect
+#'   factor.
+#' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
+#'   mappings so that each genotype receives a single averaged effect per term.
+#'   If `FALSE`, mappings will only consider the main genotype effect and ignore the
+#'   iteracting terms.
+#'
+#' @return A list with the following elements:
+#' \describe{
+#'   \item{m}{A numeric/sparse matrix whose rows corresponds to
+#'     random-effect coefficients across all matched terms, and columns matche the levels
+#'     of `target`.
+#'   \item{w}{A numeric vector of giving the per-coefficient weights
+#'     applied in `m` (i.e. `m` is formed by multiplying an indicator map by `w`).}
+#'   \item{idx}{An integer vector giving the indices of the random effect
+#'     variance-covariance matrix that correspond to the matched target-associated coefficients.
+#'   \item{main}{A logical vector indicating whether each
+#'     matched coefficient corresponds columns for the main `target`
+#'     random-effect term. Named consistently with `idx`.}
+#' }
+#'
 #' @keywords internal
 #' @noRd
 map_target_terms <- function(model, target, marginal = TRUE) {
   UseMethod("map_target_terms")
 }
 .S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)
-
 
 #' @keywords internal
 #' @noRd
@@ -575,7 +654,7 @@ build_new_Z.lmerMod <- function(model, target, new_data){
       dims = c(n, q)
     )
 
-    z <- KhatriRao(t(mm_grp), t(mm)) %>% t
+    z <- Matrix::KhatriRao(t(mm_grp), t(mm)) |> t()
     dimnames(z) <- list(gnames, rep(grp, each = p))
     Z_list[[itr]] <- z
   }
@@ -585,6 +664,33 @@ build_new_Z.lmerMod <- function(model, target, new_data){
 
 # To Do, asreml
 
+
+#' Construct a strata-specific random-effects design matrix
+#'
+#' Build a new random-effects design matrix that maps genotype effects
+#' within a specified stratum for a fitted mixed model object.
+#'
+#' For each level of the target random term (e.g. a genotype factor),
+#' this function constructs a design matrix that activates the effect
+#' corresponding to the supplied `new_data` stratum, while setting all
+#' other strata-specific contributions to zero. This enables prediction
+#' or extraction of genotype effects within a particular interacting
+#' context (e.g. genotype × environment).
+#'
+#' The returned matrix preserves the ordering and naming of random-effect
+#' coefficients as defined by the original mixed-model specification.
+#'
+#' @param model A fitted mixed model object.
+#' @param target A character string giving the name of the target random-effect
+#'   factor.
+#' @param new_data A one-row data frame defining the stratum in which
+#'   genotype effects should be evaluated. The columns must correspond
+#'   to model terms that interact with `target`.
+#'
+#' @return A sparse matrix whose rows correspond to
+#'   levels of the target factor and whose columns align with the
+#'   original random-effect coefficients involving `target`.
+#'
 #' @keywords internal
 #' @noRd
 build_new_Z <- function(model, target, new_data) {

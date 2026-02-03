@@ -5,13 +5,12 @@ check_ran_iid.heritable <- function(model) {
 
 #' Extract variance component values method
 #' @export
-extract_var_comps <- function(model) {
+extract_var_comps <- function(heritable) {
   UseMethod("extract_var_comps")
 }
 
 #' Extract variance component values from asreml model object
 #' @noRd
-#' @keywords internal
 #' @export
 extract_var_comps.heritable <- function(heritable) {
   model <- attr(heritable, "model")
@@ -59,7 +58,6 @@ make_fill_scale <- function(var_comps,
     labels = c(non_targets, target)
   )
 }
-
 
 #' Bar plot
 #' @noRd
@@ -158,3 +156,4 @@ autoplot.heritable <- function(object, type = "bar", ...) {
   var_comps <- extract_var_comps.heritable(object)
   plot_var_comps(var_comps, type = type)
 }
+
