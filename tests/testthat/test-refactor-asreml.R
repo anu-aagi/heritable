@@ -107,14 +107,6 @@ test_that("Refactored asreml works",{
   lettuce_asreml$G.param$`gen:loc`$variance
   phrase_id(lettuce_asreml$G.param$`gen:loc`$loc)
 
-  lettuce_asreml <- asreml(
-    fixed = y ~ rep,
-    random =  ~ loc + vm(gen, lettuce_GRM) ,
-    data = lettuce_phenotypes_na_impute,
-    trace = FALSE,
-  )
-  lettuce_asreml$G.param[[2]][[2]]$facnam
-
 #   pseudo_var <- rnorm(nrow(lettuce_phenotypes))
 #   pseudo_var2 <- rnorm(nrow(lettuce_phenotypes))
 #
@@ -733,4 +725,26 @@ test_that("Refactored asreml works",{
 
 })
 
+
+test_that("VM extraction works", {
+  skip_if_not_installed("asreml")
+  skip_on_ci()
+  skip_on_cran()
+
+  lettuce_phenotypes_na_impute <- lettuce_phenotypes
+  lettuce_phenotypes_na_impute$y[is.na(lettuce_phenotypes_na_impute$y)] <- 3
+
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
+    random =  ~ loc + vm(gen, lettuce_GRM) ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+
+  var_comps <- var_comp(lettuce_asreml, "gen", calc_C22 = TRUE)
+
+  expect_named(var_comps)
+  expect_length(var_comps, 5)
+  expect_equal(dim(var_comps$G_g), dim(lettuce_GRM))
+})
 
