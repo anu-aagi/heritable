@@ -89,6 +89,32 @@ test_that("Refactored asreml works",{
   H2_Oakey(lettuce_lme4, "gen")
   H2(lettuce_lme4, "gen")
 
+  lettuce_phenotypes |> dplyr::filter(is.na(y))
+
+  var_comp(lettuce_lme4, "gen")
+
+
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
+    random =  ~ loc + ar1(gen) + ar1(gen):loc ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+
+  lettuce_asreml$G.param
+  phrase_G(lettuce_asreml$G.param$`gen:loc`)
+  lettuce_asreml$G.param$`gen:loc`$gen$initial
+  lettuce_asreml$G.param$`gen:loc`$variance
+  phrase_id(lettuce_asreml$G.param$`gen:loc`$loc)
+
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
+    random =  ~ loc + vm(gen, lettuce_GRM) ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+  lettuce_asreml$G.param[[2]][[2]]$facnam
+
 #   pseudo_var <- rnorm(nrow(lettuce_phenotypes))
 #   pseudo_var2 <- rnorm(nrow(lettuce_phenotypes))
 #
