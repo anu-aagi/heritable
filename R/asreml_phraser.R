@@ -80,12 +80,10 @@ phrase_vm <- function(G_params) {
     paste0("vm\\(", names(spec), "\\s*,\\s*([^,\\)]+)")
   )[, 2]
 
-  # Search in the environment
-  # TODO Should envi be ".GlobalEnv" ?
-  if(!exists(name_GRM, inherits = FALSE)){
-    cli::cli_abort("GRM used in model not found in Global Environment")
+  if(!exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)){
+    cli::cli_abort("GRM used in model not found in calling environment")
   } else {
-    GRM_source <- get(name_GRM, inherits = FALSE)
+    GRM_source <- get(name_GRM, envir = .GlobalEnv,  inherits = FALSE)
   }
   # Convert to appropriate matrix format
   if (is.data.frame(GRM_source) && ncol(GRM_source) == 3) {
@@ -102,7 +100,7 @@ phrase_vm <- function(G_params) {
     cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
   }
 
-  dimnames(GRM) <- G_params[["levels"]]
+  dimnames(GRM) <- c(list(G_params[["levels"]]), list(G_params[["levels"]]))
 
   GRM
   }
