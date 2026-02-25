@@ -1,0 +1,59 @@
+---
+title: "Contributing Guidlines for `heritable`"
+format: html
+---
+
+## Welcome!
+
+We are so excited that you are interested in contributing to `heritable`. In these contributing guidelines you'll find infomation on: 
+
+- Quickstart for contributors
+- Types of contributions 
+- Development workflow 
+- Code style
+- Documentation and tests
+- Dependencies + compatibility
+- Code of Conduct
+
+### Quickstart for contributors
+
+### Types of contributions
+
+- Bugs, documentation, tests, performance improvements, small features, datasets. 
+
+Take a look at the Github Issues for outstanding bugs and features. 
+
+#### What we are not looking for are
+What you don’t want via PR (e.g., big new features without prior discussion).
+
+Where to propose ideas (GitHub Issues/Discussions) and what info to include.
+
+### Development workflow 
+
+Branch and PR, test must all pass before the feature is merged in 
+
+Branch by feature so its digestible to review
+
+### Code style
+
+Pipeable, modularised functions, tidyverse
+
+### Documentation and tests
+
+Every function including internal helpers need docs using roxygen2. 
+
+Consider test-driven development 
+
+Fixtures of asreml model objects
+
+### Dependencies 
+
+asreml is properiarty
+
+### Code of Conduct
+
+We value open and respectful communication in successful collaborations. 
+
+We are humans before we are statisticians, before we are programmers, so communicate with each other kindly.
+
+
