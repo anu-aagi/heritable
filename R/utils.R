@@ -497,7 +497,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     ran_terms <- do.call(c, ran_terms)
 
     # Build variance
-    G_list <- sapply(seq_along(grp_names), function(x) {
+    G_list <- lapply(seq_along(grp_names), function(x) {
       phrase_G(model$G.param[[x]])
     })
     G <- Matrix::bdiag(G_list)
@@ -545,7 +545,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
       any(do.call(c, facnam))
     }) |> which()
 
-    G_list <- sapply(matched_grp, function(x) {
+    G_list <- lapply(matched_grp, function(x) {
       phrase_G(model$G.param[[x]])
     })
     G <- Matrix::bdiag(G_list)

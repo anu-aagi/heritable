@@ -8,6 +8,15 @@ test_that("Refactored asreml works",{
 
   lettuce_asreml <- asreml(
     fixed = y ~ rep,
+    random =  ~ loc + vm(gen, lettuce_GRM) ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+  lettuce_GRM <- lettuce_GRM
+  var_comp(lettuce_asreml, "gen")
+
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
     random =  ~ loc + gen + gen:loc ,
     data = lettuce_phenotypes_na_impute,
     trace = FALSE,
