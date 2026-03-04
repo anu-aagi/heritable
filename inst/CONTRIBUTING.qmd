@@ -45,12 +45,15 @@ The main packages we use for development are `usethis`, `devtools`, `testthat`, 
 
 To learn more about branching and pull requests, check out the [GitHub Flow](https://guides.github.com/introduction/flow/) guide.
 
-This allows us to keep the main branch stable and makes it easier to review and merge changes. Pll requests also allow for discussion and feedback on proposed changes before they are merged into the main codebase.
-
+This allows us to keep the main branch stable and makes it easier to review and merge changes. Pull requests also allow for discussion and feedback on proposed changes before they are merged into the main codebase.
 
 ### Code style
 
-Pipeable, modularised functions, tidyverse
+Code style is important for readability and maintainability. We generally follow the tidyverse style guide as outlined in [styler](https://styler.r-lib.org/articles/styler.html).
+
+We understand it may not always be possible to follow a particular style perfectly. To encourage contributions, we encourage you to try and  maintainers/reviewers can support the PR process. At times, we may use `styler` to automatically format code.
+
+We like **modularity** and readability over long, complex functions. If you find yourself writing a function that is getting too long or doing too many things, consider breaking it up into smaller helper functions.
 
 ### Documentation and tests
 
