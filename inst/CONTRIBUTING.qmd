@@ -17,22 +17,36 @@ We are so excited that you are interested in contributing to `heritable`. In the
 
 ### Quickstart for contributors
 
+1. Fork the repository and clone it to your local machine.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes, write tests for changes and commit them with clear messages.
+4. Push your branch to your forked repository.
+5. Open a pull request against the main repository's `main` branch.
+
 ### Types of contributions
 
-- Bugs, documentation, tests, performance improvements, small features, datasets. 
+Contributions can be in the form of:
+- Bug fixes
+- Addition or edits to documentation,
+- Addition or refinement of tests, 
+- Performance improvements
 
 Take a look at the Github Issues for outstanding bugs and features. 
 
-#### What we are not looking for are
-What you don’t want via PR (e.g., big new features without prior discussion).
+If you have a specific request, please open an issue. Provide a minimal, reproducible example to help us understand the problem.
 
-Where to propose ideas (GitHub Issues/Discussions) and what info to include.
+If your idea is not fully formed, open a [discussion](https://github.com/anu-aagi/heritable/discussions). We can all help flesh it out before breaking it up into actionable issues.
 
-### Development workflow 
+### Development toolkit and workflow 
 
-Branch and PR, test must all pass before the feature is merged in 
+The main packages we use for development are `usethis`, `devtools`, `testthat`, `roxygen2`. We follow the best practices for R package development as outlined in [R Packages](https://r-pkgs.org/).
 
-Branch by feature so its digestible to review
+. We follow a feature branch workflow where each new feature or bug fix is developed in its own branch.
+
+To learn more about branching and pull requests, check out the [GitHub Flow](https://guides.github.com/introduction/flow/) guide.
+
+This allows us to keep the main branch stable and makes it easier to review and merge changes. Pll requests also allow for discussion and feedback on proposed changes before they are merged into the main codebase.
+
 
 ### Code style
 
