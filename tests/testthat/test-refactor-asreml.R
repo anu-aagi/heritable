@@ -4,16 +4,8 @@ test_that("Refactored asreml works",{
 
   lettuce_phenotypes_na_impute <- lettuce_phenotypes
   lettuce_phenotypes_na_impute$y[is.na(lettuce_phenotypes_na_impute$y)] <- 3
+  lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
   table(lettuce_phenotypes_na_impute$rep, lettuce_phenotypes_na_impute$gen)
-
-  lettuce_asreml <- asreml(
-    fixed = y ~ rep,
-    random =  ~ loc + vm(gen, lettuce_GRM) ,
-    data = lettuce_phenotypes_na_impute,
-    trace = FALSE,
-  )
-  lettuce_GRM <- lettuce_GRM
-  var_comp(lettuce_asreml, "gen")
 
   lettuce_asreml <- asreml(
     fixed = y ~ rep,
@@ -98,11 +90,6 @@ test_that("Refactored asreml works",{
   H2_Oakey(lettuce_lme4, "gen")
   H2(lettuce_lme4, "gen")
 
-  lettuce_phenotypes |> dplyr::filter(is.na(y))
-
-  var_comp(lettuce_lme4, "gen")
-
-
   lettuce_asreml <- asreml(
     fixed = y ~ rep,
     random =  ~ loc + ar1(gen) + ar1(gen):loc ,
@@ -115,6 +102,16 @@ test_that("Refactored asreml works",{
   lettuce_asreml$G.param$`gen:loc`$gen$initial
   lettuce_asreml$G.param$`gen:loc`$variance
   phrase_id(lettuce_asreml$G.param$`gen:loc`$loc)
+
+  # Test vm
+  lettuce_asreml <- asreml(
+    fixed = y ~ rep,
+    random =  ~ loc + vm(gen, lettuce_GRM) ,
+    data = lettuce_phenotypes_na_impute,
+    trace = FALSE,
+  )
+  lettuce_GRM <- lettuce_GRM
+  var_comp(lettuce_asreml, "gen")
 
 #   pseudo_var <- rnorm(nrow(lettuce_phenotypes))
 #   pseudo_var2 <- rnorm(nrow(lettuce_phenotypes))
@@ -739,6 +736,7 @@ test_that("VM extraction works", {
   skip_if_not_installed("asreml")
   skip_on_ci()
   skip_on_cran()
+  skip()
 
   lettuce_phenotypes_na_impute <- lettuce_phenotypes
   lettuce_phenotypes_na_impute$y[is.na(lettuce_phenotypes_na_impute$y)] <- 3

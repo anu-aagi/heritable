@@ -67,6 +67,18 @@ check_model_convergence <- function(model) {
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
 
 
+#' Check whether the fitted model contains random terms not grouped by `target`
+#' @keywords internal
+check_all_random_terms_match_target <- function(model, target) {
+  matched_grp <- pull_terms_without_specials(model)$random == target
+  if(!all(matched_grp)){
+    FALSE
+  } else {
+    TRUE
+  }
+}
+
+
 # Target level checks
 # Check if only one target has been supplied
 #' @keywords internal
@@ -217,7 +229,7 @@ check_model_specification.asreml <- function(model, target, type){
   if(target %in% ran_trms){
     if(type == "broad_sense"){
       if(sum(ran_trms == target)!=1){
-        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified once.Heritability calculation can be misleading.")
+        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified once. Heritability calculation can be misleading.")
       } else {
         simple_model <- !any(ran_trms == target & spec != "id")
         if(!simple_model){
@@ -237,11 +249,14 @@ check_model_specification.lmerMod <- function(model, target, type){
   if(target %in% ran_trms){
     if(type == "broad_sense"){
       if(sum(ran_trms == target)!=1){
-        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified only once. Heritability calculation can be misleading.")
+        cli::cli_warn("Duplicated random intercept detected for the target {.code {target}}. Heritability calculation can be misleading.")
       } else {
-        simple_model <- any(ran_trms_with_special == paste0("1 | ",target))
+        grp_name <- attr(ran_trms_with_special, "grouping_variable")
+        simple_intercept  <- attr(ran_trms_with_special, "simple_intercept")
+        contain_intercept  <- attr(ran_trms_with_special, "contain_intercept")
+        simple_model <- all(simple_intercept[contain_intercept & grp_name== target])
         if(!simple_model){
-          cli::cli_warn("The target {.code {target}} should be modelled as a random intercept: {.code (1 | {target})}. Heritability calculation can be misleading.")
+          cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code (1 | {target})}. Heritability calculation can be misleading.")
         }
       }
     }

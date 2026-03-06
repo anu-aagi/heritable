@@ -29,14 +29,28 @@ pull_terms.asreml <- function(model) {
 
 #' @keywords internal
 pull_terms.lmerMod <- function(model) {
-  model_formula <- formula(model)
-  term_labels <- attr(terms(model_formula), "term.labels")
-  ran_trms_formula <-
-    stringr::str_extract_all(deparse1(model_formula), "(?<=\\()[^|()]+\\|+[^|()]+(?=\\))")[[1]]
-  fixed_trms <- setdiff(term_labels, ran_trms_formula)
-  ran_trms <- sapply(
-    reformulas::findbars(model_formula), deparse
-  )
+  fixed_trms <- reformulas::nobars(formula(model)) |>
+    terms() |>
+    attr("term.labels")
+  mmList <- lme4::getME(model, "mmList")
+  ran_trms <- names(mmList)
+
+  attr(ran_trms, "grouping_variable") <- sapply(ran_trms, function(trm) {
+    stringr::str_split(trm, " \\| ")[[1]] |> utils::tail(n = 1)
+  }, USE.NAMES = FALSE)
+
+  design_trms <- lapply(ran_trms, function(trm) {
+    trm <- stringr::str_split(trm, " \\| ")[[1]] |> utils::head(n = 1)
+    as.formula(paste("~ ", trm)) |> terms()
+  })
+
+  attr(ran_trms, "simple_intercept") <- sapply(design_trms, function(trm) {
+    length(attr(trm, "term.labels"))  == 0
+  })
+
+  attr(ran_trms, "contain_intercept") <- sapply(design_trms, function(trm) {
+    attr(trm, "intercept")  == 1
+  })
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -52,12 +66,32 @@ pull_terms <- function(model) {
 #' @keywords internal
 pull_terms_without_specials.lmerMod <- function(model) {
   model_terms <- pull_terms(model)
-  model_terms$random <- sapply(
+  contain_intercept <- attr(model_terms$random, "contain_intercept")
+  model_terms$random <- lapply(
     model_terms$random,
     function(frm) {
-      stringr::str_extract(frm, "(?<=\\|\\ ).+")
+      terms <- stringr::str_split(frm, " \\| ")[[1]]
+      grp <- utils::tail(terms, 1)
+      design <- utils::head(terms, 1)
+      design <- as.formula(paste("~ ", design)) |> terms()
+      design_terms <- attr(design, "term.labels")
+      contain_intercept <- attr(design, "intercept") == 1
+
+      if(length(design_terms) == 0){
+        grp
+      } else if(contain_intercept){
+        c(grp, paste(design_terms, grp, sep = "|"))
+      } else {
+        paste(design_terms, grp, sep = "|")
+      }
     }
-  ) |> unname()
+  )
+  model_terms$random <- do.call(c,model_terms$random)
+  attr(model_terms$random, "grouping_variable") <-
+    sapply(model_terms$random, function(trm) {
+      stringr::str_split(trm, " \\| ")[[1]] |> utils::tail(n = 1)
+    }, USE.NAMES = FALSE)
+
   model_terms
 }
 
@@ -176,20 +210,15 @@ fit_counterpart_model.asreml <- function(model, target) {
 
   # when target is in random
   if (target %in% ran_trms_without_specials) {
-    if (target %in% ran_trms) {
-      model_counter <- update(model,
-        fixed = as.formula(paste(". ~ . +", target)),
-        random =  as.formula(paste("~ . -", target)),
-        trace = FALSE
-      )
-    } else {
-      target_spcl <- ran_trms[which(ran_trms_without_specials == target)]
-      model_counter <- update(model,
-        fixed = as.formula(paste(". ~ . +", target)),
-        random =  as.formula(paste("~ . -", target_spcl)),
-        trace = FALSE
-      )
-    }
+
+    target_spcl <- ran_trms[which(ran_trms_without_specials == target)]
+    target_ran_frms <- paste(target_spcl, collapse = "-")
+    model_counter <- update(model,
+      fixed = as.formula(paste(". ~ . +", target)),
+      random =  as.formula(paste("~ . -", target_ran_frms)),
+      trace = FALSE
+    )
+
   } else if (target %in% fixed_trms) { # when target is in fixed
     model_counter <- update(model,
       fixed = as.formula(paste(". ~ . -", target)),
@@ -209,14 +238,13 @@ fit_counterpart_model.asreml <- function(model, target) {
 fit_counterpart_model.lmerMod <- function(model, target) {
   # get the terms from model object
   trms <- pull_terms_without_specials(model)
-  trms <- lapply(trms, unique)
   fixed_trms <- trms$fixed
   ran_trms <- trms$random
 
   # If target is in random effects
   if (target %in% ran_trms) {
     # check whether there is only a single RE
-    if (length(ran_trms) == 1) {
+    if (length(unique(ran_trms)) == 1) {
       # Fit a lm instead
       fixed_formula <- reformulas::nobars(formula(model))
       fixed_formula <- update(fixed_formula, paste(". ~ . +", ran_trms))
@@ -224,15 +252,31 @@ fit_counterpart_model.lmerMod <- function(model, target) {
       model_data <- model@frame %||% model.frame(model)
       refit_model <- lm(fixed_formula, data = model_data)
     } else {
-      ran_frms <- reformulas::findbars(formula(model))
-      contains_target <- sapply(ran_frms, function(frm) {
-        frm <- stringr::str_split(deparse1(frm), " \\| ")[[1]] |> utils::tail(n = 1)
-      }) == target
-      target_ran_frms <- sapply(ran_frms[contains_target], function(frm) {
-        paste0("(", deparse1(frm), ")")
-      })
-      target_ran_frms <- paste(target_ran_frms, collapse = "-")
-      refit_model <- update(model, as.formula(paste(". ~ . - ", target_ran_frms, " + ", target)))
+      ran_trms <- pull_terms(model)$random
+      grp_name <- attr(ran_trms, "grouping_variable")
+      simple_intercept  <- attr(ran_trms, "simple_intercept")
+      contain_intercept <- attr(ran_trms, "contain_intercept")
+
+      # Get interaction terms that contain intercept and use the target as
+      # the grouping variable.
+      interaction_trm <- !simple_intercept & grp_name == target & attr(ran_trms, "contain_intercept")
+      keep_trm <- !(simple_intercept & grp_name == target)
+      if(any(interaction_trm)){
+        design_trms <- lapply(ran_trms[interaction_trm], function(trm) {
+          trm <- stringr::str_split(trm, " \\| ")[[1]] |> utils::head(n = 1)
+          as.formula(paste("~ ", trm)) |> terms() |> attr("term.labels")
+        })
+        new_trm <- sapply(design_trms, function(trm) {
+          paste("0 +", paste(trm, collapse = "+"), "|", target)
+        })
+        ran_trms[interaction_trm] <- new_trm
+      }
+      frm <- paste(". ~", paste(trms$fixed, collapse = "+"), "+",
+             target, "+",
+             paste( paste("(", ran_trms[keep_trm], ")"), sep = "+")
+      )
+
+      refit_model <- update(model, as.formula(frm))
       check_model_convergence(refit_model)
     }
   } else if (target %in% fixed_trms) { # If target is in fixed effects
@@ -357,7 +401,8 @@ var_diff <- function(V) {
 #' @noRd
 #' @keywords internal
 var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
-                             marginal = TRUE, stratification = NULL) {
+                             calc_V = TRUE,
+                             marginal = TRUE, stratification = NULL,...) {
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -373,7 +418,9 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   if (is.null(stratification)) {
     m <- mapper$m
     main <- mapper$main
-    if (sum(main) != 0 && !marginal) {
+    if (sum(!main) == 0) {
+      main <- TRUE
+    } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
       m <- m[main, , drop = FALSE]
       cli::cli_inform(
@@ -382,8 +429,6 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
-      main <- TRUE
-    } else if (sum(!main) == 0) {
       main <- TRUE
     } else {
       cli::cli_inform(
@@ -410,26 +455,47 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   dimnames(G_g) <- list(gnames, gnames)
   n_g <- length(gnames)
 
-  if (calc_C22) {
+  if (calc_V || calc_C22) {
     R <- diag(nrow(X)) * sigma2
     V <- R + Z %*% G %*% t(Z)
     Vinv <- solve(V)
-    P <- Vinv - Vinv %*% X %*% solve(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
-    C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
-    dimnames(C22) <- list(colnames(Z), colnames(Z))
-    C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
-    dimnames(C22_g) <- list(gnames, gnames)
+
+    if(calc_C22) {
+      P <- Vinv - Vinv %*% X %*% solve(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+      C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+      dimnames(C22) <- list(colnames(Z), colnames(Z))
+      C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
+      dimnames(C22_g) <- list(gnames, gnames)
+    } else {
+      C22_g <- NULL
+    }
+
+    if(!calc_V) {
+      V <- NULL
+      G <- NULL
+      Z <- NULL
+      idx <- NULL
+    } else {
+      idx <- g
+    }
+
   } else {
+    V <- NULL
+    G <- NULL
+    Z <- NULL
+    idx <- NULL
     C22_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames, main = main)
+  list(n_g = n_g, G_g = G_g, C22_g = C22_g,
+       V = V, G = G, Z = Z, idx = idx, gnames = gnames, main = main)
 }
 
 #' @noRd
 #' @keywords internal
 var_comp.asreml <- function(model, target, calc_C22 = TRUE,
-                            marginal = TRUE, stratification = NULL) {
+                            calc_V = TRUE,
+                            marginal = TRUE, stratification = NULL,...) {
   model <- check_deisgn_exsits(model)
   design <- model$design
 
@@ -440,7 +506,9 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
   if (is.null(stratification)) {
     m <- mapper$m
     main <- mapper$main
-    if (sum(main) != 0 && !marginal) {
+    if (sum(!main) == 0) {
+      main <- TRUE
+    } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
       m <- m[main, , drop = FALSE]
       cli::cli_inform(
@@ -449,8 +517,6 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
-      main <- TRUE
-    } else if (sum(!main) == 0) {
       main <- TRUE
     } else {
       cli::cli_inform(
@@ -475,7 +541,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
   gnames <- colnames(m)
   n_g <- length(gnames)
 
-  if (calc_C22) {
+  if (calc_V || calc_C22) {
     # Get random terms
     grp_names <- sapply(model$G.param, function(x) {
       facnam <- lapply(x[-1], function(y) y[["facnam"]])
@@ -532,12 +598,27 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
       Matrix::Matrix()
 
     V <- R + Z %*% G %*% t(Z)
-    Vinv <- ginv_sym_sparse(V)
-    P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
-    C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
-    dimnames(C22) <- list(colnames(Z), colnames(Z))
-    C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
-    dimnames(C22_g) <- list(gnames, gnames)
+
+    if(calc_C22) {
+      Vinv <- ginv_sym_sparse(V)
+      P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+      C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+      dimnames(C22) <- list(colnames(Z), colnames(Z))
+      C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
+      dimnames(C22_g) <- list(gnames, gnames)
+    } else {
+      C22_g <- NULL
+    }
+
+    if(!calc_V) {
+      V <- NULL
+      G <- NULL
+      Z <- NULL
+      idx <- NULL
+    } else {
+      idx <- g
+    }
+
   } else {
     # Build variance
     matched_grp <- sapply(model$G.param, function(x) {
@@ -567,16 +648,22 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     G_g <- crossprod(m, G[rownames(m), rownames(m), drop = FALSE]) %*% m
     dimnames(G_g) <- list(gnames, gnames)
 
+    V <- NULL
+    G <- NULL
+    Z <- NULL
+    idx <- NULL
     C22_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g, gnames = gnames, main = main)
+  list(n_g = n_g, G_g = G_g, C22_g = C22_g,
+       V = V, G = G, Z = Z, idx = idx, gnames = gnames, main = main)
 }
 
 #' @keywords internal
 #' @noRd
 var_comp <- function(model, target, calc_C22 = TRUE,
-                     marginal = TRUE, stratification = NULL) {
+                     calc_V = TRUE,
+                     marginal = TRUE, stratification = NULL,...) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)

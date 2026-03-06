@@ -140,7 +140,6 @@ test_that("Refactored lme4 works",{
 
 
 # require(stringr)
-# require(asreml)
 # devtools::document()
 # lettuce_subset <- lettuce_phenotypes |>
 #   dplyr::filter(loc == "L2")
@@ -522,7 +521,6 @@ test_that("Refactored lme4 works",{
 
 # terms(formula(y ~ (1|x*z)))
 
-# require(asreml)
 # lettuce_asreml <- asreml(
 #   fixed = y ~ rep * as.factor(pseudo_var),
 #   random =  ~ gen + ar1(gen) ,

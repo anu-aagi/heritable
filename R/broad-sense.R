@@ -84,7 +84,7 @@ H2.default <- function(model,
 
   # Check correct model specification.
   if(options$check %||% TRUE){
-    check_model_specification(model, target, "broad-sense")
+    check_model_specification(model, target, "broad_sense")
   }
 
   # Check design exists
