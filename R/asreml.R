@@ -411,7 +411,7 @@ H2_Standard.asreml <- function(model,
   extra <- !contain_target # Other covariates
 
   # Either no extra term or no interaction
-  simple <- !any(extra) & !any(interaction)
+  simple <- (!any(extra) & !any(interaction)) | !is.null(stratification)
 
   if(simple){
     # Get genotype variance

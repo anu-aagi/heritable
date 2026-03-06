@@ -273,7 +273,7 @@ fit_counterpart_model.lmerMod <- function(model, target) {
       }
       frm <- paste(". ~", paste(trms$fixed, collapse = "+"), "+",
              target, "+",
-             paste( paste("(", ran_trms[keep_trm], ")"), sep = "+")
+             paste( paste0("(", ran_trms[keep_trm], ")"), collapse = " + ")
       )
 
       refit_model <- update(model, as.formula(frm))
@@ -618,7 +618,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     } else {
       idx <- g
     }
-
+    # The Z here is different from design, as design may omit terms.
   } else {
     # Build variance
     matched_grp <- sapply(model$G.param, function(x) {
@@ -976,7 +976,12 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
 
   # Split grouping-variable names per matched term, e.g. "gen:rep" -> c("gen","rep")
   grp_names_split <- stringr::str_split(grp_names, ":")
+  design_names_split <- lapply(mm_names, function(trm) {
+    trm <- stringr::str_split(trm, " \\| ")[[1]] |> utils::head(n = 1)
+    as.formula(paste("~ ", trm)) |> terms() |> attr("term.labels")
+  })
   required_var <- do.call(c, grp_names_split[matched_grp]) |> unique()
+  required_var <- c(required_var, do.call(c, design_names_split[matched_grp])) |> unique()
   missing_trms <- required_var[!required_var %in% trms]
   missing_trms <- missing_trms[missing_trms != target]
   if (length(required_var) == 1) {

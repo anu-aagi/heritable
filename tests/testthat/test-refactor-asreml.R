@@ -1,118 +1,235 @@
 test_that("Refactored asreml works",{
-  skip_if_not_installed("lme4")
+  skip_if_not_installed("asreml")
   skip()
 
-  lettuce_phenotypes_na_impute <- lettuce_phenotypes
-  lettuce_phenotypes_na_impute$y[is.na(lettuce_phenotypes_na_impute$y)] <- 3
-  lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
-  table(lettuce_phenotypes_na_impute$rep, lettuce_phenotypes_na_impute$gen)
+  # truth <- list()
+  # methods <- c("Cullis", "Oakey", "Delta", "Standard")
+  #
+  # # Model 1
+  # model <- asreml(
+  #   fixed = y ~ rep,
+  #   random =  ~ loc + gen + gen:loc ,
+  #   data = lettuce_phenotypes,
+  #   trace = FALSE,
+  # )
+  # truth[["marginal"]] <- H2(model, "gen", methods,
+  #                              options = list(check = FALSE))
+  # truth[["partial"]] <- H2(model, "gen", methods,
+  #                             marginal = FALSE, options = list(check = FALSE))
+  # truth[["stra_L1_R1"]] <- H2(model, "gen", methods,
+  #                                    stratification = data.frame("loc" = "L1", "rep" = "R1"),
+  #                                    options = list(check = FALSE))
+  # truth[["stra_L2_R1"]] <- H2(model, "gen", methods,
+  #                                    stratification = data.frame("loc" = "L2", "rep" = "R1"),
+  #                                    options = list(check = FALSE))
+  #
+  # saveRDS(truth, test_path("fixtures/refactor_asreml_result.rds"))
 
-  lettuce_asreml <- asreml(
+  truth <- readRDS(test_path("fixtures/refactor_asreml_result.rds"))
+  methods <- c("Cullis", "Oakey", "Delta", "Standard")
+
+  # Test model 1, with unstructured environmental variance.
+  asreml.options(design=TRUE)
+  model <- asreml(
     fixed = y ~ rep,
     random =  ~ loc + gen + gen:loc ,
-    data = lettuce_phenotypes_na_impute,
+    data = lettuce_phenotypes,
     trace = FALSE,
   )
 
-  lettuce_lme4 <- lmer(
-    y~  rep + (1|loc) +  (1|gen) +  (1|gen:loc),
-    data = lettuce_phenotypes_na_impute
+  expect_all_true(
+    truth[["marginal"]] == H2(model, "gen", methods,
+                                 options = list(check = FALSE))
   )
 
-  H2_Cullis(lettuce_asreml, "gen")
-  H2_Cullis(lettuce_lme4, "gen")
-  H2_Cullis(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
-  H2_Cullis(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
-  H2_Cullis(lettuce_asreml, "gen", marginal = FALSE)
-  H2_Cullis(lettuce_lme4, "gen", marginal = FALSE)
-
-
-  H2_Oakey(lettuce_asreml, "gen")
-  H2_Oakey(lettuce_lme4, "gen")
-  H2_Oakey(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
-  H2_Oakey(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
-  H2_Oakey(lettuce_asreml, "gen", marginal = FALSE)
-  H2_Oakey(lettuce_lme4, "gen", marginal = FALSE)
-
-  H2_Standard(lettuce_asreml, "gen")
-  H2_Standard(lettuce_lme4, "gen")
-  H2_Standard(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
-  H2_Standard(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
-  H2_Standard(lettuce_asreml, "gen", marginal = FALSE)
-  H2_Standard(lettuce_lme4, "gen", marginal = FALSE)
-
-  H2_Delta(lettuce_asreml, "gen")
-  H2_Delta(lettuce_lme4, "gen")
-  H2_Delta(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
-  H2_Delta(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
-  H2_Delta(lettuce_asreml, "gen", marginal = FALSE)
-  H2_Delta(lettuce_lme4, "gen", marginal = FALSE)
-
-  # Test counterpart
-  H2_Delta(lettuce_asreml, "gen", marginal = FALSE, type = "BLUE")
-  H2_Delta(lettuce_asreml, "gen", marginal = FALSE, type = "BLUP")
-  H2_Delta(lettuce_lme4, "gen", marginal = FALSE, type = "BLUE")
-  H2_Delta(lettuce_lme4, "gen", marginal = FALSE, type = "BLUP")
-
-
-  H2(lettuce_asreml, "gen")
-  H2(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
-  H2(lettuce_asreml, "gen", marginal = FALSE)
-  H2(lettuce_lme4, "gen")
-
-
-  # Test simple
-  lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
-  table(lettuce_subset$gen)
-  table(lettuce_phenotypes_na_impute$gen)
-
-  lettuce_asreml <- asreml(
-    fixed = y ~ rep,
-    random =  ~ gen ,
-    data = lettuce_phenotypes_na_impute,
-    trace = FALSE,
-  )
-  H2_Delta(lettuce_asreml, "gen", type = "BLUP")
-  H2_Piepho(lettuce_asreml, "gen")
-  H2_Standard(lettuce_asreml, "gen")
-  H2_Cullis(lettuce_asreml, "gen")
-  H2_Oakey(lettuce_asreml, "gen")
-  H2(lettuce_asreml, "gen")
-
-  lettuce_lme4 <- lmer(
-    y~  rep +  (1|gen),
-    data = lettuce_phenotypes_na_impute
-  )
-  H2_Delta(lettuce_lme4, "gen", type = "BLUP")
-  H2_Piepho(lettuce_lme4, "gen")
-  H2_Standard(lettuce_lme4, "gen")
-  H2_Cullis(lettuce_lme4, "gen")
-  H2_Oakey(lettuce_lme4, "gen")
-  H2(lettuce_lme4, "gen")
-
-  lettuce_asreml <- asreml(
-    fixed = y ~ rep,
-    random =  ~ loc + ar1(gen) + ar1(gen):loc ,
-    data = lettuce_phenotypes_na_impute,
-    trace = FALSE,
+  expect_all_true(
+    truth[["partial"]] == H2(model, "gen", methods,
+                                marginal = FALSE, options = list(check = FALSE))
   )
 
-  lettuce_asreml$G.param
-  phrase_G(lettuce_asreml$G.param$`gen:loc`)
-  lettuce_asreml$G.param$`gen:loc`$gen$initial
-  lettuce_asreml$G.param$`gen:loc`$variance
-  phrase_id(lettuce_asreml$G.param$`gen:loc`$loc)
+  expect_all_true(
 
-  # Test vm
-  lettuce_asreml <- asreml(
-    fixed = y ~ rep,
-    random =  ~ loc + vm(gen, lettuce_GRM) ,
-    data = lettuce_phenotypes_na_impute,
-    trace = FALSE,
+    truth[["stra_L1_R1"]] == H2(model, "gen", methods,
+                                   stratification = data.frame("loc" = "L1", "rep" = "R1"),
+                                   options = list(check = FALSE))
   )
-  lettuce_GRM <- lettuce_GRM
-  var_comp(lettuce_asreml, "gen")
 
+  expect_all_true(
+    truth[["stra_L2_R1"]] == H2(model, "gen", methods,
+                                   stratification = data.frame("loc" = "L2", "rep" = "R2"),
+                                   options = list(check = FALSE))
+  )
+
+  # Test design matrix reconstruction
+  target_trms <- map_target_terms(model, "gen")$idx
+  mf <- model$mf
+  design <- model$design
+
+  stra <- subset(mf, loc == "L1" & rep == "R1")
+  idx <- with(mf, which(loc == "L1" & rep == "R1"))
+  Z <- build_new_Z(model, "gen", new_data = data.frame("loc" = "L1", "rep" = "R1"))
+  common_col <- intersect(colnames(Z), colnames(design))
+  expect_equal(
+    max(design[idx,common_col ]  - Z[stra$gen,common_col]
+    ), 0
+  )
+
+  stra <- subset(mf, loc == "L2" & rep == "R2")
+  idx <- with(mf, which(loc == "L2" & rep == "R2"))
+  Z <- build_new_Z(model, "gen", new_data = data.frame("loc" = "L2", "rep" = "R2"))
+  common_col <- intersect(colnames(Z), colnames(design))
+  expect_equal(
+    max(design[idx,common_col ]  - Z[stra$gen,common_col]
+    ), 0
+  )
+
+  stra <- subset(mf, loc == "L3" & rep == "R3")
+  idx <- with(mf, which(loc == "L3" & rep == "R3"))
+  Z <- build_new_Z(model, "gen", new_data = data.frame("loc" = "L3", "rep" = "R3"))
+  common_col <- intersect(colnames(Z), colnames(design))
+  expect_equal(
+    max(design[idx,common_col ]  - Z[stra$gen,common_col]
+    ), 0
+  )
+
+
+#
+#   lettuce_phenotypes_na_impute <- lettuce_phenotypes
+#   lettuce_phenotypes_na_impute$y[is.na(lettuce_phenotypes_na_impute$y)] <- 3
+#   lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
+#   table(lettuce_phenotypes_na_impute$rep, lettuce_phenotypes_na_impute$gen)
+#
+#   lettuce_asreml <- asreml(
+#     fixed = y ~ rep,
+#     random =  ~ loc + gen + gen:loc ,
+#     data = lettuce_phenotypes_na_impute,
+#     trace = FALSE,
+#   )
+#
+#   lettuce_lme4 <- lmer(
+#     y~  rep + (1|loc) +  (1|gen) +  (1|gen:loc),
+#     data = lettuce_phenotypes_na_impute
+#   )
+#   H2(lettuce_asreml, "gen")
+#   H2(lettuce_lme4, "gen")
+#   H2(lettuce_asreml, "gen", marginal = FALSE)
+#   H2(lettuce_lme4, "gen", marginal = FALSE)
+#   H2(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+#   H2(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+#   H2(lettuce_asreml, "gen", stratification = data.frame(loc = "L2"))
+#   H2(lettuce_lme4, "gen", stratification = data.frame(loc = "L2"))
+#
+#   lettuce_lme4 <- lmer(
+#     y~  rep + (1|gen) + (0+loc|gen),
+#     data = lettuce_phenotypes
+#   )
+#   H2_Standard(lettuce_lme4, "gen", marginal = FALSE)
+#   H2_Cullis(lettuce_lme4, "gen", marginal = FALSE)
+#
+#   lettuce_lme4 <- lmer(
+#     y~  rep + (1|gen) + (1|gen:loc),
+#     data = lettuce_phenotypes
+#   )
+#   H2_Standard(lettuce_lme4, "gen", marginal = FALSE)
+#   H2_Cullis(lettuce_lme4, "gen", marginal = FALSE)
+#   H2(lettuce_lme4, "gen", stratification = data.frame(loc = "L2"))
+#   H2(lettuce_lme4, "gen")
+#
+#
+#   H2_Cullis(lettuce_asreml, "gen")
+#   H2_Cullis(lettuce_lme4, "gen")
+#   H2_Cullis(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Cullis(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Cullis(lettuce_asreml, "gen", marginal = FALSE)
+#   H2_Cullis(lettuce_lme4, "gen", marginal = FALSE)
+#
+#
+#   H2_Oakey(lettuce_asreml, "gen")
+#   H2_Oakey(lettuce_lme4, "gen")
+#   H2_Oakey(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Oakey(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Oakey(lettuce_asreml, "gen", marginal = FALSE)
+#   H2_Oakey(lettuce_lme4, "gen", marginal = FALSE)
+#
+#   H2_Standard(lettuce_asreml, "gen")
+#   H2_Standard(lettuce_lme4, "gen")
+#   H2_Standard(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Standard(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Standard(lettuce_asreml, "gen", marginal = FALSE)
+#   H2_Standard(lettuce_lme4, "gen", marginal = FALSE)
+#
+#   H2_Delta(lettuce_asreml, "gen")
+#   H2_Delta(lettuce_lme4, "gen")
+#   H2_Delta(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Delta(lettuce_lme4, "gen", stratification = data.frame(loc = "L1"))
+#   H2_Delta(lettuce_asreml, "gen", marginal = FALSE)
+#   H2_Delta(lettuce_lme4, "gen", marginal = FALSE)
+#
+#   # Test counterpart
+#   H2_Delta(lettuce_asreml, "gen", marginal = FALSE, type = "BLUE")
+#   H2_Delta(lettuce_asreml, "gen", marginal = FALSE, type = "BLUP")
+#   H2_Delta(lettuce_lme4, "gen", marginal = FALSE, type = "BLUE")
+#   H2_Delta(lettuce_lme4, "gen", marginal = FALSE, type = "BLUP")
+#
+#
+#  H2(lettuce_asreml, "gen")
+#  H2(lettuce_asreml, "gen", stratification = data.frame(loc = "L1"))
+#  H2(lettuce_asreml, "gen", marginal = FALSE)
+#  H2(lettuce_lme4, "gen")
+#
+#
+#   # Test simple
+#   lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
+#   table(lettuce_subset$gen)
+#   table(lettuce_phenotypes_na_impute$gen)
+#
+#   lettuce_asreml <- asreml(
+#     fixed = y ~ rep,
+#     random =  ~ gen ,
+#     data = lettuce_phenotypes_na_impute,
+#     trace = FALSE,
+#   )
+#   H2_Delta(lettuce_asreml, "gen", type = "BLUP")
+#   H2_Piepho(lettuce_asreml, "gen")
+#   H2_Standard(lettuce_asreml, "gen")
+#   H2_Cullis(lettuce_asreml, "gen")
+#   H2_Oakey(lettuce_asreml, "gen")
+#   H2(lettuce_asreml, "gen")
+#
+#   lettuce_lme4 <- lmer(
+#     y~  rep +  (1|gen),
+#     data = lettuce_phenotypes_na_impute
+#   )
+#   H2_Delta(lettuce_lme4, "gen", type = "BLUP")
+#   H2_Piepho(lettuce_lme4, "gen")
+#   H2_Standard(lettuce_lme4, "gen")
+#   H2_Cullis(lettuce_lme4, "gen")
+#   H2_Oakey(lettuce_lme4, "gen")
+#   H2(lettuce_lme4, "gen")
+#
+#   lettuce_asreml <- asreml(
+#     fixed = y ~ rep,
+#     random =  ~ loc + ar1(gen) + ar1(gen):loc ,
+#     data = lettuce_phenotypes_na_impute,
+#     trace = FALSE,
+#   )
+#
+#   lettuce_asreml$G.param
+#   phrase_G(lettuce_asreml$G.param$`gen:loc`)
+#   lettuce_asreml$G.param$`gen:loc`$gen$initial
+#   lettuce_asreml$G.param$`gen:loc`$variance
+#   phrase_id(lettuce_asreml$G.param$`gen:loc`$loc)
+#
+#   # Test vm
+#   lettuce_asreml <- asreml(
+#     fixed = y ~ rep,
+#     random =  ~ loc + vm(gen, lettuce_GRM) ,
+#     data = lettuce_phenotypes_na_impute,
+#     trace = FALSE,
+#   )
+#   lettuce_GRM <- lettuce_GRM
+#   var_comp(lettuce_asreml, "gen")
+#
 #   pseudo_var <- rnorm(nrow(lettuce_phenotypes))
 #   pseudo_var2 <- rnorm(nrow(lettuce_phenotypes))
 #

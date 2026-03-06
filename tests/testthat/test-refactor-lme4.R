@@ -16,19 +16,19 @@ test_that("Refactored lme4 works",{
   #                                    stratification = data.frame("loc" = "L1", "rep" = "R1"),
   #                                    options = list(check = FALSE))
   # truth[["m1_stra_L2_R1"]] <- H2(model1, "gen", methods,
-  #                                    stratification = data.frame("loc" = "L2", "rep" = "R2"),
+  #                                    stratification = data.frame("loc" = "L2", "rep" = "R1"),
   #                                    options = list(check = FALSE))
   #
   # model2 <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
   # truth[["m2_marginal"]] <- H2(model2, "gen", methods,
-  #                              options = list(check = FALSE))
+  #                               options = list(check = FALSE))
   # truth[["m2_partial"]] <- H2(model2, "gen", methods,
   #                             marginal = FALSE, options = list(check = FALSE))
   # truth[["m2_stra_L1_R1"]] <- H2(model2, "gen", methods,
   #                                stratification = data.frame("loc" = "L1", "rep" = "R1"),
   #                                options = list(check = FALSE))
   # truth[["m2_stra_L2_R1"]] <- H2(model2, "gen", methods,
-  #                                stratification = data.frame("loc" = "L2", "rep" = "R2"),
+  #                                stratification = data.frame("loc" = "L2", "rep" = "R1"),
   #                                options = list(check = FALSE))
   #
   # saveRDS(truth, test_path("fixtures/refactor_lme4_result.rds"))
@@ -58,7 +58,7 @@ test_that("Refactored lme4 works",{
 
   expect_all_true(
     truth[["m1_stra_L2_R1"]] == H2(model1, "gen", methods,
-                                       stratification = data.frame("loc" = "L2", "rep" = "R2"),
+                                       stratification = data.frame("loc" = "L2", "rep" = "R1"),
                                        options = list(check = FALSE))
   )
 
@@ -84,7 +84,7 @@ test_that("Refactored lme4 works",{
 
   expect_all_true(
     truth[["m2_stra_L2_R1"]] == H2(model2, "gen", methods,
-                                   stratification = data.frame("loc" = "L2", "rep" = "R2"),
+                                   stratification = data.frame("loc" = "L2", "rep" = "R1"),
                                    options = list(check = FALSE))
   )
 
