@@ -2,38 +2,40 @@ test_that("Refactored asreml works",{
   skip_if_not_installed("asreml")
   skip()
 
-  # truth <- list()
-  # methods <- c("Cullis", "Oakey", "Delta", "Standard")
-  #
-  # # Model 1
-  # model <- asreml(
-  #   fixed = y ~ rep,
-  #   random =  ~ loc + gen + gen:loc ,
-  #   data = lettuce_phenotypes,
-  #   trace = FALSE,
-  # )
-  # truth[["marginal"]] <- H2(model, "gen", methods,
-  #                              options = list(check = FALSE))
-  # truth[["partial"]] <- H2(model, "gen", methods,
-  #                             marginal = FALSE, options = list(check = FALSE))
-  # truth[["stra_L1_R1"]] <- H2(model, "gen", methods,
-  #                                    stratification = data.frame("loc" = "L1", "rep" = "R1"),
-  #                                    options = list(check = FALSE))
-  # truth[["stra_L2_R1"]] <- H2(model, "gen", methods,
-  #                                    stratification = data.frame("loc" = "L2", "rep" = "R1"),
-  #                                    options = list(check = FALSE))
-  #
-  # saveRDS(truth, test_path("fixtures/refactor_asreml_result.rds"))
+  truth <- list()
+  methods <- c("Cullis", "Oakey", "Delta", "Standard")
+  lettuce_subset <- subset(lettuce_phenotypes, !is.na(y))
+
+  # Model 1
+  model <- asreml(
+    fixed = y ~ rep,
+    random =  ~ loc + gen + gen:loc ,
+    data = lettuce_subset,
+    trace = FALSE,
+  )
+  truth[["marginal"]] <- H2(model, "gen", methods,
+                               options = list(check = FALSE))
+  truth[["partial"]] <- H2(model, "gen", methods,
+                              marginal = FALSE, options = list(check = FALSE))
+  truth[["stra_L1_R1"]] <- H2(model, "gen", methods,
+                                     stratification = data.frame("loc" = "L1", "rep" = "R1"),
+                                     options = list(check = FALSE))
+  truth[["stra_L2_R1"]] <- H2(model, "gen", methods,
+                                     stratification = data.frame("loc" = "L2", "rep" = "R1"),
+                                     options = list(check = FALSE))
+
+  saveRDS(truth, test_path("fixtures/refactor_asreml_result.rds"))
 
   truth <- readRDS(test_path("fixtures/refactor_asreml_result.rds"))
   methods <- c("Cullis", "Oakey", "Delta", "Standard")
+  lettuce_subset <- subset(lettuce_phenotypes, !is.na(y))
 
   # Test model 1, with unstructured environmental variance.
   asreml.options(design=TRUE)
   model <- asreml(
     fixed = y ~ rep,
     random =  ~ loc + gen + gen:loc ,
-    data = lettuce_phenotypes,
+    data = lettuce_subset,
     trace = FALSE,
   )
 
@@ -91,6 +93,32 @@ test_that("Refactored asreml works",{
     max(design[idx,common_col ]  - Z[stra$gen,common_col]
     ), 0
   )
+
+  # Test method concordance
+  model_lme4 <- lmer(
+    y~  rep + (1|loc) +  (1|gen) +  (1|gen:loc),
+    data = lettuce_subset
+  )
+  expect_all_true(
+    abs(H2(model, "gen", methods, options = list(check = FALSE)) -
+      H2(model_lme4, "gen", methods, options = list(check = FALSE))) < 1e-5
+  )
+
+  expect_all_true(
+    abs(H2(model, "gen", methods, marginal = FALSE, options = list(check = FALSE)) -
+          H2(model_lme4, "gen", methods, marginal = FALSE, options = list(check = FALSE))) < 1e-5
+  )
+
+  expect_all_true(
+    abs(H2(model, "gen", methods, stratification = data.frame(loc = "L1"), options = list(check = FALSE)) -
+          H2(model_lme4, "gen", methods, stratification = data.frame(loc = "L1"), options = list(check = FALSE))) < 1e-5
+  )
+
+  expect_all_true(
+    abs(H2(model, "gen", methods, stratification = data.frame(loc = "L1"), options = list(check = FALSE)) -
+          H2(model_lme4, "gen", methods, stratification = data.frame(loc = "L1"), options = list(check = FALSE))) < 1e-5
+  )
+
 
 
 #
