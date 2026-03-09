@@ -186,16 +186,15 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
 #' @keywords internal
 check_GRM_in_environment <- function(model, target) {
   vpars <- names(model$vparameters)
-  env <- attr(model$formulae$random, ".Environment")
   w <- grepl(paste0("^vm\\(", target), vpars)
-  if (sum(w) == 1) {
+  if (sum(w) > 0) {
     target_vm <- vpars[w]
     #name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
     name_GRM <- stringr::str_match(
       vpars[w],
       paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
     )[,2]
-    if (exists(name_GRM, envir = env, inherits = FALSE)) {
+    if (exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)) {
       return(TRUE)
     }
   }

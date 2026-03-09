@@ -24,6 +24,13 @@
 #     data = lettuce_phenotypes,
 #     trace = FALSE,
 #   )
+#   var_comp(model, "gen", source = lettuce_GRM)
+#   check_GRM_in_environment(model, "gen")
+#   lettuce_GRM <- lettuce_GRM
+#   H2_Cullis(model, "gen", source = lettuce_GRM)
+#   H2_Cullis(model, "gen") # Beautiful
+#   h2_Oakey(model, "gen")
+#   h2(model,"gen")
 #
 #
 # })

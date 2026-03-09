@@ -19,13 +19,13 @@
 #' The following methods are currently implemented for narrow-sense heritability `h2(method = "XX")`:
 #'
 #' - `"Oakey"`: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' - `"Delta"`: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{\operatorname{Var}(g_i - g_j)}}
 #'
 #' The following methods are currently implemented for broad-sense heritability `H2(method = "XX")`:
 #'
-#' - `"Cullis"`: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#' - `"Cullis"`: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 #' - `"Oakey"`: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' - `"Delta"`: \deqn{H^2_{\Delta ..} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
+#' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 #' - `"Piepho"`: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 #' - `"Standard"`: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
 #'
@@ -38,16 +38,17 @@
 #' - Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
 #' - Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative genetics (4th ed.). Longman.
 #' @seealso [H2_Cullis()], [H2_Oakey()], [H2_Delta()], [H2_Piepho()], [H2_Standard()], [`h2_Oakey()`], [`h2_Delta()`]
-#' @noRd
-h2 <- function(model, target, method = c("Oakey", "Delta"), source, options, ...) {
+#' @export
+h2 <- function(model, target, method = c("Oakey"), source  = NULL, options = NULL, ...) {
   UseMethod("h2")
 }
 
 #' @noRd
+#' @export
 h2.default <- function(
     model,
     target,
-    method = c("Delta"),
+    method = c("Oakey"),
     source = NULL,
     options = NULL,
     ...) {
@@ -55,14 +56,26 @@ h2.default <- function(
 
   initial_checks(model, target, options = options)
 
+  # Consider remove this
   check_GRM_exists(model, target, source = source)
+
+  # Check correct model specification.
+  if(options$check %||% TRUE){
+    check_model_specification(model, target, "narrow_sense")
+  }
+
+  # Check design exists
+  model <- check_deisgn_exsits(model)
+
+  # Build variance component
+  vc <- var_comp(model, target = target, source = source, ...)
 
   h2_values <- sapply(method, function(m) {
     switch(m,
            # Cullis = h2_Cullis(model, target, options = list(check = FALSE)),
-           # Oakey = h2_Oakey(model, target, options = list(check = FALSE)),
+           Oakey = h2_Oakey(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
            # Piepho = h2_Piepho(model, target, options = list(check = FALSE)),
-           Delta = h2_Delta(model, target, options = list(check = FALSE)),
+           # Delta = h2_Delta(model, target, options = list(check = FALSE)),
            # Standard = h2_Standard(model, target, options = list(check = FALSE)),
            cli::cli_abort(
              "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
@@ -100,9 +113,8 @@ h2.default <- function(
 #' @returns Numeric
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
-#' @noRd
-#' @keywords internal
-h2_Oakey <- function(model, target, source, options) {
+#' @export
+h2_Oakey <- function(model, target, source = NULL, options  = NULL, ...) {
   UseMethod("h2_Oakey")
 }
 

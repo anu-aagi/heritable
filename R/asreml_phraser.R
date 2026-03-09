@@ -1,4 +1,4 @@
-phrase_G <- function(G_params) {
+phrase_G <- function(G_params, ...) {
   terms <- names(G_params[-1])
   specs <- sapply(G_params[-1], function(x) x[["model"]])
   known_specs <- c("id", "diag", "ar1", "vm")
@@ -16,13 +16,13 @@ phrase_G <- function(G_params) {
     if (spec == "id") G_list[[trm]] <- phrase_id(G_params[[trm]])
     if (spec == "diag") G_list[[trm]] <- phrase_diag(G_params[[trm]])
     if (spec == "ar1") G_list[[trm]] <- phrase_ar1(G_params[[trm]])
-    if (spec == "vm") G_list[[trm]] <- phrase_vm(G_params[[trm]])
+    if (spec == "vm") G_list[[trm]] <- phrase_vm(G_params[[trm]], ...)
   }
 
   Reduce(function(X, Y) Matrix::kronecker(X, Y), G_list) * v
 }
 
-phrase_id <- function(G_params) {
+phrase_id <- function(G_params, ...) {
   spec <- G_params[["model"]]
   if (spec != "id") {
     cli::cli_abort("Wrong phrase used.")
@@ -36,7 +36,7 @@ phrase_id <- function(G_params) {
   G
 }
 
-phrase_diag <- function(G_params) {
+phrase_diag <- function(G_params, ...) {
   spec <- G_params[["model"]]
   if (spec != "diag") {
     cli::cli_abort("Wrong phrase used.")
@@ -50,7 +50,7 @@ phrase_diag <- function(G_params) {
   G
 }
 
-phrase_ar1 <- function(G_params) {
+phrase_ar1 <- function(G_params, ...) {
   spec <- G_params[["model"]]
   if (spec != "ar1") {
     cli::cli_abort("Wrong phrase used.")
@@ -67,24 +67,32 @@ phrase_ar1 <- function(G_params) {
   G
 }
 
-phrase_vm <- function(G_params) {
+phrase_vm <- function(G_params, source = NULL, ...) {
   spec <- G_params[["model"]]
   if (spec != "vm") {
     cli::cli_abort("Wrong phrase used.")
   }
   # Identify vm parameter
   vm_par <- G_params[["facnam"]]
+
+  # Parameter estimation
+
+  # TODO: capture when there is SingG argument.
   # Capture the name of the GRM object
   name_GRM <- stringr::str_match(
     vm_par,
     paste0("vm\\(", names(spec), "\\s*,\\s*([^,\\)]+)")
   )[, 2]
 
-  if(!exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)){
-    cli::cli_abort("GRM used in model not found in calling environment")
-  } else {
+  if (!is.null(source)){
+    GRM_source <- source
+  } else if (exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)){
     GRM_source <- get(name_GRM, envir = .GlobalEnv,  inherits = FALSE)
+  } else {
+    cli::cli_abort("GRM used in model was neither provided nor found in the global environment.")
   }
+
+  # TODO: inverted GRM source will not be inverted back, debug in the future.
   # Convert to appropriate matrix format
   if (is.data.frame(GRM_source) && ncol(GRM_source) == 3) {
     # TODO: Make be singular
@@ -103,5 +111,5 @@ phrase_vm <- function(G_params) {
   dimnames(GRM) <- c(list(G_params[["levels"]]), list(G_params[["levels"]]))
 
   GRM
-  }
+}
 

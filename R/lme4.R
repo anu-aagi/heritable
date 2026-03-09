@@ -35,7 +35,7 @@ H2_Standard.lmerMod <- function(model,
   if(simple){
     # Get genotype variance
     if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)$G_g
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -51,11 +51,11 @@ H2_Standard.lmerMod <- function(model,
 
     # Get genotype variance
     if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification)
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
     } else {
       V <- vc$V
       if(is.null(V)){
-        vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification)
+        vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
       }
     }
     V <- vc$V
@@ -100,7 +100,7 @@ H2_Cullis.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -134,7 +134,7 @@ H2_Oakey.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -164,7 +164,7 @@ H2_Piepho.lmerMod <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
   if(!vc$main){
     cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
@@ -212,10 +212,10 @@ H2_Delta_pairwise.lmerMod <- function(model,
   # Check if target is random or fixed
   if (type == "BLUE") {
     H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options,
-                                               marginal, stratification, vc)
+                                               marginal, stratification, vc, ...)
   } else if (type == "BLUP") {
     H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options,
-                                               marginal, stratification, vc)
+                                               marginal, stratification, vc, ...)
   }
 
   return(H2_Delta)
@@ -227,7 +227,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
                                            options = NULL,
                                            marginal = TRUE,
                                            stratification = NULL,
-                                           vc = NULL) {
+                                           vc = NULL, ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -242,7 +242,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
 
   # Extract vc_g and vc_e
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
   if(!vc$main){
     cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
@@ -292,7 +292,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
                                            options = NULL,
                                            marginal = TRUE,
                                            stratification = NULL,
-                                           vc = NULL) {
+                                           vc = NULL, ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -306,7 +306,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g

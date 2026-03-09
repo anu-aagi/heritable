@@ -27,32 +27,52 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
   H2_Cullis_parameters(vd_BLUP_avg, vc_g)
 }
 
-#' @keywords internal
-h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL) {
+#' Calculate Oakey's heritability from asreml model
+#' @export
+#' @noRd
+#' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Oakey.asreml(lettuce_asreml, target = "gen")
+#' }
+h2_Oakey.asreml <- function(model,
+                            target = NULL,
+                            options = NULL,
+                            marginal = TRUE,
+                            stratification = NULL,
+                            vc = NULL,
+                            source = NULL,
+                            ...) {
   initial_checks(model, target, options)
 
-  if(check_GRM_exists(model, target, source)){
-    vm <- target_vm_term_asreml(model, target)
-    n_g <- model$noeff[[vm$target_vm]]
-    Gg_inv <- 1 / (model$vparameters[[vm$target_vm]] * model$sigma2) * vm$GRMinv
-    vcov_g <- predict(model,
-                      classify = target,
-                      only = target,
-                      vcov = TRUE,
-                      trace = FALSE
-    )$vcov
+  # Consider remove this
+  check_GRM_exists(model, target, source = source)
 
-    names_clean <- stringr::str_remove(
-      rownames(model$coefficients$random),
-      "vm\\(.+\\)_"
-    )
-
-    dimnames(vcov_g) <- list(names_clean, names_clean)
-
-    vcov_g <- vcov_g[rownames(Gg_inv),colnames(Gg_inv)]
-
-    H2_Oakey_parameters(Gg_inv, vcov_g)
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense")
   }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE,
+                   marginal, stratification, source = source, ...)
+  }
+  G_g_inv <- ginv_sym_sparse(vc$G_g)
+
+  # Parametrise is the same for broad sense and narrow sense.
+  return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
 }
 
 #' @keywords internal
@@ -118,7 +138,7 @@ H2_Cullis.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -165,7 +185,7 @@ H2_Oakey.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -208,7 +228,7 @@ H2_Piepho.asreml <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
   if(!vc$main){
     cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
@@ -271,10 +291,10 @@ H2_Delta_pairwise.asreml <- function(model,
   # Check if target is random or fixed
   if (type == "BLUE") {
     H2_Delta <- H2_Delta_BLUE_pairwise.asreml(model, target, options,
-                                               marginal, stratification, vc)
+                                               marginal, stratification, vc, ...)
   } else if (type == "BLUP") {
     H2_Delta <- H2_Delta_BLUP_pairwise.asreml(model, target, options,
-                                               marginal, stratification, vc)
+                                               marginal, stratification, vc, ...)
   }
 
   return(H2_Delta)
@@ -286,7 +306,7 @@ H2_Delta_BLUP_pairwise.asreml<- function(model,
                                            options = NULL,
                                            marginal = TRUE,
                                            stratification = NULL,
-                                           vc = NULL) {
+                                           vc = NULL, ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -300,7 +320,7 @@ H2_Delta_BLUP_pairwise.asreml<- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g
@@ -324,7 +344,7 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
-                                         vc = NULL) {
+                                         vc = NULL, ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -339,7 +359,7 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
 
   # Extract vc_g and vc_e
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
   if(!vc$main){
     cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
@@ -416,7 +436,7 @@ H2_Standard.asreml <- function(model,
   if(simple){
     # Get genotype variance
     if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)$G_g
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -431,11 +451,11 @@ H2_Standard.asreml <- function(model,
   } else {
     # Get genotype variance
     if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification)
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
     } else {
       V <- vc$V
       if(is.null(V)){
-        vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification)
+        vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
       }
     }
     V <- vc$V

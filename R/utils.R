@@ -495,7 +495,8 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 #' @keywords internal
 var_comp.asreml <- function(model, target, calc_C22 = TRUE,
                             calc_V = TRUE,
-                            marginal = TRUE, stratification = NULL,...) {
+                            marginal = TRUE, stratification = NULL,
+                            source = NULL, ...) {
   model <- check_deisgn_exsits(model)
   design <- model$design
 
@@ -564,7 +565,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
 
     # Build variance
     G_list <- lapply(seq_along(grp_names), function(x) {
-      phrase_G(model$G.param[[x]])
+      phrase_G(model$G.param[[x]], source = source)
     })
     G <- Matrix::bdiag(G_list)
     G <- G * model$sigma2
@@ -627,7 +628,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     }) |> which()
 
     G_list <- lapply(matched_grp, function(x) {
-      phrase_G(model$G.param[[x]])
+      phrase_G(model$G.param[[x]], source = source)
     })
     G <- Matrix::bdiag(G_list)
     G <- G * model$sigma2
