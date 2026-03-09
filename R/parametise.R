@@ -162,50 +162,11 @@ h2_Standard_parameters <- function(G_g, V, C) {
 
   # Sample contrast var(y_i.. - y_j..) = den_ij
   # = (C_i - C_j)' V (C_i - C_j) = S_ii + S_jj - 2 S_ij
-  delta_y <- outer(diag(S), diag(S), "+") - 2 * S
+  delta_y <- var_diff(S)
 
   # genotype contrast var(g_i - g_j) = num_ij = G_ii + G_jj
-  delta_g <- outer(diag(G_g), diag(G_g), "+") - 2 * G_g
+  delta_g <- var_diff(G_g)
   # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
 
   mean((delta_g/delta_y)[lower.tri(delta_y)])
-}
-
-
-#' @noRd
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#' @export
-h2_Delta_parameters <- function(G_g, vd_matrix, type = c("BLUP", "BLUE")) {
-  type <- match.arg(type)
-  vd <- diag(G_g)
-  n_g <- nrow(G_g)
-  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
-
-  if (type == "BLUP") {
-    1 - vd_matrix / denom
-  } else {
-    1 / (1 + vd_matrix / denom)
-  }
-}
-
-
-#' @noRd
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#' @keywords internal
-h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
-vd <- diag(G_g)
-n_g <- nrow(G_g)
- denom <- var_diff(G_g)
-#denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
-1 - vd_matrix / denom
-}
-
-#' @noRd
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#' @keywords internal
-h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
-  vd <- diag(G_g)
-  n_g <- nrow(G_g)
-  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
-  1 / (1 + vd_matrix / denom)
 }

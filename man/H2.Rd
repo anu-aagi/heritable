@@ -33,6 +33,7 @@ The following methods are currently implemented for narrow-sense heritability \c
 \itemize{
 \item \code{"Oakey"}: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
 \item \code{"Delta"}: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{\operatorname{Var}(g_i - g_j)}}
+\item \code{"Standard"}: \deqn{H^2_{Standard} = \frac{\operatorname{Var}(g_i - g_j)}{\operatorname{Var}(y_i.. - y_j..)}}
 }
 
 The following methods are currently implemented for broad-sense heritability \code{H2(method = "XX")}:

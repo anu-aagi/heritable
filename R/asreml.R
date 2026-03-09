@@ -1,31 +1,73 @@
+#' Calculate standard heritability from asreml model
+#' @export
 #' @noRd
-#' @keywords internal
-h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
-
+#' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' h2_Standard.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' }
+h2_Standard.asreml <- function(model,
+                               target = NULL,
+                               options = NULL,
+                               marginal = TRUE,
+                               stratification = NULL,
+                               vc = NULL,
+                               source = source,
+                               ...) {
   initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Consider remove this
+    check_GRM_exists(model, target, source = source)
+
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense")
+  }
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     return(NA)
   }
 
-  vm <- target_vm_term_asreml(model, target)
+  model <- check_deisgn_exsits(model, build_design = FALSE)
+  mf <- model$mf
 
-  n_g <-  model$noeff[[vm$target_vm]]
-  vc_g <- model$vparameters[[vm$target_vm]] * model$sigma2 * semivariance(vm$GRM)
+  # Get genotype variance
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
+                   marginal, stratification, source = source, ...)
+  } else {
+    V <- vc$V
+    if(is.null(V)){
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
+                     marginal, stratification, source = source, ...)
+    }
+  }
+  V <- vc$V
+  Z <- vc$Z
+  G <- vc$G
+  idx <- vc$idx
+
+  g <- mf[[target]]
+  gnames <- levels(g)
+  Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+  C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+  W <- t(C) %*% Z[,idx]
+  G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+  h2_Standard <- h2_Standard_parameters(G_g, V, C)
 
 
-  vdBLUP_mat <- predict(model,
-                        classify = target,
-                        only = target,
-                        sed = TRUE,
-                        trace = FALSE,
-  )$sed^2
-
-  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
-
-  H2_Cullis_parameters(vd_BLUP_avg, vc_g)
+  return(h2_Standard)
 }
+
 
 #' Calculate Oakey's heritability from asreml model
 #' @export
@@ -40,7 +82,7 @@ h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
 #'                                  trace = FALSE
 #'                                  )
 #'
-#' H2_Oakey.asreml(lettuce_asreml, target = "gen")
+#' h2_Oakey.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
 #' }
 h2_Oakey.asreml <- function(model,
                             target = NULL,
@@ -52,10 +94,10 @@ h2_Oakey.asreml <- function(model,
                             ...) {
   initial_checks(model, target, options)
 
-  # Consider remove this
-  check_GRM_exists(model, target, source = source)
-
   if (options$check %||% TRUE) {
+    # Consider remove this
+    check_GRM_exists(model, target, source = source)
+
     # Check correct model specification.
     check_model_specification(model, target, "narrow_sense")
   }
@@ -75,31 +117,149 @@ h2_Oakey.asreml <- function(model,
   return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
 }
 
+#' Calculate pairwise heritability from asreml model
+#' @export
+#' @noRd
+#' @return Numeric
+#' @examples
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' h2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP", source = lettuce_GRM)
+#' }
+h2_Delta_pairwise.asreml <- function(model,
+                                     target = NULL,
+                                     type = c("BLUP", "BLUE"),
+                                     options = NULL,
+                                     marginal = TRUE,
+                                     stratification = NULL,
+                                     vc = NULL,
+                                     source = NULL,
+                                     ...) {
+  initial_checks(model, target, options)
+  type <- match.arg(type)
+
+  if (options$check %||% TRUE) {
+    # Consider remove this
+    check_GRM_exists(model, target, source = source)
+
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Check if target is random or fixed
+  if (type == "BLUE") {
+    h2_Delta <- h2_Delta_BLUE_pairwise.asreml(model, target, options,
+                                              marginal, stratification, vc, source, ...)
+  } else if (type == "BLUP") {
+    h2_Delta <- h2_Delta_BLUP_pairwise.asreml(model, target, options,
+                                              marginal, stratification, vc, source, ...)
+  }
+
+  return(h2_Delta)
+}
+
 #' @keywords internal
-h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type = NULL, options = NULL) {
+h2_Delta_BLUP_pairwise.asreml<- function(model,
+                                         target = NULL,
+                                         options = NULL,
+                                         marginal = TRUE,
+                                         stratification = NULL,
+                                         vc = NULL,
+                                         source = NULL, ...) {
   initial_checks(model, target, options)
 
-  if(check_GRM_exists(model, target, source)){
+  if (options$check %||% TRUE) {
+    # Consider remove this
+    check_GRM_exists(model, target, source = source)
 
-  vm <- target_vm_term_asreml(model, target)
-  n_g <- model$noeff[[vm$target_vm]]
-  Gg <- model$vparameters[[vm$target_vm]] * model$sigma2 * solve(vm$GRMinv)
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense")
+  }
 
-  if (type == "BLUP") {
-    gpred <- predict(model, classify = target, sed = TRUE, trace = FALSE)
-    Vd_g <- gpred$sed^2 # Variance of difference
-    genotype_names <- gpred$pvals[[target]] # list of genotype names
-    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    h2_Delta_BLUP_parameters(Gg, Vd_g)
-  } else if (type == "BLUE") {
-    model_fix <- fit_counterpart_model.asreml(model, target)
-    gpred <- predict(model_fix, classify = target, sed = TRUE, trace = FALSE)
-    Vd_g <- gpred$sed^2 # Variance of difference
-    genotype_names <- gpred$pvals[[target]] # list of genotype names
-    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    h2_Delta_BLUE_parameters(Gg, Vd_g)
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
   }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, source = source, ...)
   }
+  G_g <- vc$G_g
+  C22_g <- vc$C22_g
+
+  # Compute variance of difference from G
+  delta_g <- var_diff(G_g)
+
+  # Compute variance of difference from PEV
+  delta_pev <- var_diff(C22_g)
+  diag(delta_pev) <- NA
+
+  # H2 Delta BLUP, same parameterisation as the broad sense.
+  h2_Delta_BLUP <- H2_Delta_parameters(delta_g, delta_pev, "BLUP")
+
+  dimnames(h2_Delta_BLUP) <- dimnames(delta_g)
+
+  h2_Delta_BLUP
+}
+
+#' @keywords internal
+h2_Delta_BLUE_pairwise.asreml<- function(model,
+                                         target = NULL,
+                                         options = NULL,
+                                         marginal = TRUE,
+                                         stratification = NULL,
+                                         vc = NULL,
+                                         source = NULL, ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Consider remove this
+    check_GRM_exists(model, target, source = source)
+
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Extract vc_g and vc_e
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, source = source, ...)
+  }
+  if(!vc$main){
+    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+    return(NA)
+  }
+  G_g <- vc$G_g
+  gnames <- vc$gnames
+
+  conterpart <- fit_counterpart_model(model, target)
+
+  # Get delta
+  delta_g <- var_diff(G_g)
+
+  delta <- predict(conterpart, classify = target, sed = TRUE, trace = FALSE)$sed^2
+  diag(delta) <- NA
+
+  # H2 Delta BLUE
+  h2_Delta_BLUE <- H2_Delta_parameters(s2_g, delta, "BLUE")
+
+  dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
+
+  h2_Delta_BLUE
 }
 
 #' Calculate Cullis's heritability from asreml model

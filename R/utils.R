@@ -390,11 +390,7 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
 #' @keywords internal
 #' @importFrom Matrix Diagonal Matrix t diag crossprod tcrossprod
 var_diff <- function(V) {
-  d <- diag(V)
-  delta <- -2 * V
-  delta <- delta + d
-  delta <- sweep(delta, 2, d, "+")
-  delta
+  Matrix(outer(diag(V), diag(V), "+") - 2 * V)
 }
 
 

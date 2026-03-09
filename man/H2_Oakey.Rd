@@ -25,7 +25,7 @@ Compute heritability for genotype means using the variance–covariance matrix o
 as described by Oakey et al. (2006).
 }
 \details{
-\deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+\deqn{h^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
 where:
 \itemize{
 \item \eqn{n_g} is the number of genotypes
@@ -38,4 +38,7 @@ See pages 813 and 818 of the reference for full derivation and explanation for O
 }
 \references{
 Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
+}
+\seealso{
+\code{\link[=H2_Oakey]{H2_Oakey()}}
 }
