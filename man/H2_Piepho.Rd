@@ -5,7 +5,12 @@
 \title{Calculate Piepho's heritability from model object
 Compute Piepho's heritability using variance differences between genotype BLUEs}
 \usage{
-H2_Piepho(model, target, options, ...)
+H2_Piepho(model,
+                 target,
+                 options,
+                 marginal = TRUE,
+                 stratification = NULL,
+                 ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
@@ -13,6 +18,15 @@ H2_Piepho(model, target, options, ...)
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+
+\item{marginal}{Logical; if \code{TRUE}, construct marginal (strata-averaged)
+mappings so that each genotype receives a single averaged effect per term.
+If \code{FALSE}, mappings will only consider the main genotype effect and ignore the
+iteracting terms.}
+
+\item{stratification}{A one-row data frame defining the stratum in which
+genotype effects should be evaluated. The columns must correspond
+to model terms that interact with \code{target}.}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }

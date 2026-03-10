@@ -24,11 +24,8 @@ h2_Standard.asreml <- function(model,
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
-    # Consider remove this
-    check_GRM_exists(model, target, source = source)
-
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed
@@ -95,11 +92,8 @@ h2_Oakey.asreml <- function(model,
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
-    # Consider remove this
-    check_GRM_exists(model, target, source = source)
-
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed
@@ -144,11 +138,8 @@ h2_Delta_pairwise.asreml <- function(model,
   type <- match.arg(type)
 
   if (options$check %||% TRUE) {
-    # Consider remove this
-    check_GRM_exists(model, target, source = source)
-
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed
@@ -180,11 +171,8 @@ h2_Delta_BLUP_pairwise.asreml<- function(model,
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
-    # Consider remove this
-    check_GRM_exists(model, target, source = source)
-
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed
@@ -224,11 +212,8 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
-    # Consider remove this
-    check_GRM_exists(model, target, source = source)
-
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed

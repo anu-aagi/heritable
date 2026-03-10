@@ -4,6 +4,8 @@ H2 <- function(model,
                target,
                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
                options = NULL,
+               marginal = TRUE,
+               stratification = NULL,
                ...
                ) {
   UseMethod("H2")
@@ -16,6 +18,8 @@ H2.default <- function(model,
                        target,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
                        options = NULL,
+                       marginal = TRUE,
+                       stratification = NULL,
                        ...
                        ) {
   method <- match.arg(method, several.ok = TRUE)
@@ -31,7 +35,11 @@ H2.default <- function(model,
   model <- check_deisgn_exsits(model)
 
   # Build variance component
-  vc <- var_comp(model, target = target, ...)
+  vc <- var_comp(model,
+                 target = target,
+                 marginal = marginal,
+                 stratification = stratification,
+                 ...)
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
@@ -59,6 +67,8 @@ H2.default <- function(model,
 H2_Standard <- function(model,
                         target,
                         options = NULL,
+                        marginal = TRUE,
+                        stratification = NULL,
                         ...) {
   UseMethod("H2_Standard")
 }
@@ -67,7 +77,12 @@ H2_Standard <- function(model,
 #' @description Compute "generalised heritability" for unbalanced experimental designs.
 #' See Cullis, Smith and Coombes (2006) for derivation.
 #' @inheritParams H2
-#' @usage H2_Cullis(model, target, options, ...)
+#' @usage H2_Cullis(model,
+#'                  target,
+#'                  options,
+#'                  marginal = TRUE,
+#'                  stratification = NULL,
+#'                  ...)
 #' @return Numeric value
 #' @details The equation for Cullis heritability is as follow
 #'
@@ -99,6 +114,8 @@ H2_Standard <- function(model,
 H2_Cullis <- function(model,
                       target,
                       options = NULL,
+                      marginal = TRUE,
+                      stratification = NULL,
                       ...) {
   UseMethod("H2_Cullis")
 }
@@ -108,13 +125,20 @@ H2_Cullis <- function(model,
 H2_Oakey <- function(model,
                      target,
                      options = NULL,
+                     marginal = TRUE,
+                     stratification = NULL,
                      ...) {
   UseMethod("H2_Oakey")
 }
 
 #' Calculate Piepho's heritability from model object
 #' Compute Piepho's heritability using variance differences between genotype BLUEs
-#' @usage H2_Piepho(model, target, options, ...)
+#' @usage H2_Piepho(model,
+#'                  target,
+#'                  options,
+#'                  marginal = TRUE,
+#'                  stratification = NULL,
+#'                  ...)
 #' @inheritParams H2
 #' @details The equation for Piepho's heritability is as follows:
 #'
@@ -148,6 +172,8 @@ H2_Oakey <- function(model,
 H2_Piepho <- function(model,
                       target,
                       options = NULL,
+                      marginal = TRUE,
+                      stratification = NULL,
                       ...) {
   UseMethod("H2_Piepho")
 }
@@ -160,6 +186,8 @@ H2_Delta <- function(
     type = c("BLUP", "BLUE"),
     aggregate = c("arithmetic", "harmonic"),
     options = NULL,
+    marginal = TRUE,
+    stratification = NULL,
     ...) {
   UseMethod("H2_Delta")
 }
@@ -171,11 +199,20 @@ H2_Delta.default <- function(model,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
                              options = NULL,
+                             marginal = TRUE,
+                             stratification = NULL,
                              ...) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
-  H2D_ij <- H2_Delta_pairwise(model, target, type = type, options = options, ...)
+  H2D_ij <- H2_Delta_pairwise(model,
+                              target,
+                              type = type,
+                              options = options,
+                              marginal =  marginal,
+                              stratification = stratification,
+                              ...)
+
   if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
     return(NA)
   }
@@ -193,6 +230,8 @@ H2_Delta_by_genotype <- function(model,
                                  target,
                                  type = c("BLUP", "BLUE"),
                                  options = NULL,
+                                 marginal = TRUE,
+                                 stratification = NULL,
                                  ...) {
   UseMethod("H2_Delta_by_genotype")
 }
@@ -203,8 +242,17 @@ H2_Delta_by_genotype.default <- function(model,
                                          target,
                                          type = c("BLUP", "BLUE"),
                                          options = NULL,
+                                         marginal = TRUE,
+                                         stratification = NULL,
                                          ...) {
-  H2D_ij <- H2_Delta_pairwise(model, target, type, options, ...)
+  H2D_ij <- H2_Delta_pairwise(model,
+                              target,
+                              type = type,
+                              options = options,
+                              marginal =  marginal,
+                              stratification = stratification,
+                              ...)
+
   if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
     return(NA)
   }
@@ -226,6 +274,8 @@ H2_Delta_pairwise <- function(model,
                               target,
                               type =  c("BLUP", "BLUE"),
                               options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
                               ...) {
   UseMethod("H2_Delta_pairwise")
 }

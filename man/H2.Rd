@@ -11,12 +11,16 @@ h2(model,
    method = c("Oakey", "Delta", "Standard"),
    source = NULL,
    options = NULL,
+   marginal = TRUE,
+   stratification = NULL,
    ...)
 
 H2(model,
    target,
    method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
    options = NULL,
+   marginal = TRUE,
+   stratification = NULL,
    ...
    )
 }
@@ -30,6 +34,15 @@ H2(model,
 \item{source}{The known inverse or relationship matrix used in \code{model} fitted using \code{asreml::vm()}}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+
+\item{marginal}{Logical; if \code{TRUE}, construct marginal (strata-averaged)
+mappings so that each genotype receives a single averaged effect per term.
+If \code{FALSE}, mappings will only consider the main genotype effect and ignore the
+iteracting terms.}
+
+\item{stratification}{A one-row data frame defining the stratum in which
+genotype effects should be evaluated. The columns must correspond
+to model terms that interact with \code{target}.}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }

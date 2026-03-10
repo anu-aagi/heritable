@@ -12,6 +12,8 @@ h2_Delta(model,
          type = c("BLUP", "BLUE"),
          aggregate = c("arithmetic", "harmonic"),
          options = NULL,
+         marginal = TRUE,
+         stratification = NULL,
          ...)
 
 H2_Delta(model,
@@ -19,6 +21,8 @@ H2_Delta(model,
          type = c("BLUP", "BLUE"),
          aggregate = c("arithmetic", "harmonic"),
          options = NULL,
+         marginal = TRUE,
+         stratification = NULL,
          ...)
 }
 \arguments{
@@ -33,6 +37,15 @@ H2_Delta(model,
 \item{aggregate}{character, when taking means in the calculation, should harmonic or arithmetic mean be used?}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+
+\item{marginal}{Logical; if \code{TRUE}, construct marginal (strata-averaged)
+mappings so that each genotype receives a single averaged effect per term.
+If \code{FALSE}, mappings will only consider the main genotype effect and ignore the
+iteracting terms.}
+
+\item{stratification}{A one-row data frame defining the stratum in which
+genotype effects should be evaluated. The columns must correspond
+to model terms that interact with \code{target}.}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }

@@ -81,8 +81,15 @@ phrase_vm <- function(G_params, source = NULL, ...) {
   # Capture the name of the GRM object
   name_GRM <- stringr::str_match(
     vm_par,
-    paste0("vm\\(", names(spec), "\\s*,\\s*([^,\\)]+)")
-  )[, 2]
+    "source\\s*=\\s*([^\\s,\\)]+)"
+  )[,2]
+
+  if(is.na(name_GRM)){
+    name_GRM <- stringr::str_match(
+      vm_par,
+      "vm\\([^,]+,\\s*([^\\s,\\)]+)"
+    )[,2]
+  }
 
   if (!is.null(source)){
     GRM_source <- source
@@ -98,12 +105,15 @@ phrase_vm <- function(G_params, source = NULL, ...) {
     # TODO: Make be singular
     # Sparse triplet format - convert to matrix
     GRM <- sp2Matrix(GRM_source)
-  } else if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
-    # Already inverse or ginv object
-    GRM <- GRM_source
+    if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
+      GRM <- ginv_sym_sparse(GRM)
+    }
   } else if (is.matrix(GRM_source) || inherits(GRM_source, "Matrix")) {
     # Regular matrix or Matrix object
     GRM <- GRM_source
+    if (inherits(GRM_source, "ginv") || isTRUE(attr(GRM_source, "INVERSE"))) {
+      GRM <- ginv_sym_sparse(GRM)
+    }
   } else {
     cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
   }

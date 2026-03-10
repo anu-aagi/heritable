@@ -1245,7 +1245,7 @@ ginv_sym_sparse <- function(A, tol = 1e-10) {
 
   e <- eigen(as.matrix(A), symmetric = TRUE)
 
-  d_inv <- ifelse(e$values > tol, 1 / e$values, 0)
+  d_inv <- ifelse(abs(e$values) > tol, 1 / e$values, 0)
 
   e$vectors %*% (d_inv * t(e$vectors))
 }

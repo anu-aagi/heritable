@@ -11,11 +11,15 @@ h2_Delta_by_genotype(model,
                      source = NULL,
                      type = c("BLUP", "BLUE"),
                      options = NULL,
+                     marginal = TRUE,
+                     stratification = NULL,
                      ...)
 H2_Delta_by_genotype(model,
                      target,
                      type = c("BLUP", "BLUE"),
                      options = NULL,
+                     marginal = TRUE,
+                     stratification = NULL,
                      ...)
 }
 \arguments{
@@ -28,6 +32,15 @@ H2_Delta_by_genotype(model,
 \item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+
+\item{marginal}{Logical; if \code{TRUE}, construct marginal (strata-averaged)
+mappings so that each genotype receives a single averaged effect per term.
+If \code{FALSE}, mappings will only consider the main genotype effect and ignore the
+iteracting terms.}
+
+\item{stratification}{A one-row data frame defining the stratum in which
+genotype effects should be evaluated. The columns must correspond
+to model terms that interact with \code{target}.}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }

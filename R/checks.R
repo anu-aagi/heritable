@@ -184,36 +184,47 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
 ########################### Method specific check ##############################
 # Helper function to check if GRM exists in environment
 #' @keywords internal
-check_GRM_in_environment <- function(model, target) {
-  vpars <- names(model$vparameters)
-  w <- grepl(paste0("^vm\\(", target), vpars)
-  if (sum(w) > 0) {
-    target_vm <- vpars[w]
-    #name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
+check_GRM_exists <- function(model, target, source = NULL, return = FALSE) {
+  trms <- do.call(c,
+          lapply(model$G.param, function(x) {
+            facnam <- lapply(x[-1], function(y) y[["facnam"]])
+            do.call(c, facnam) |> unname()
+          })  |> unname()
+  )
+
+  contain_target <- grepl(paste0("^vm\\([^,]*\\b", target, "\\b"), trms)
+  trms <- trms[contain_target]
+
+  if (length(trms) > 0) {
     name_GRM <- stringr::str_match(
-      vpars[w],
-      paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
+      trms,
+      "source\\s*=\\s*([^\\s,\\)]+)"
     )[,2]
-    if (exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)) {
-      return(TRUE)
+    na_idx <- is.na(name_GRM)
+
+    name_GRM[na_idx] <- stringr::str_match(
+      trms[na_idx],
+      "vm\\([^,]+,\\s*([^\\s,\\)]+)"
+    )[,2]
+
+    if(!all(name_GRM == name_GRM[1])){
+      cli::cli_abort("Multiple known relationship matrices have been specified.")
+    }
+
+    if(!is.null(source)){
+      return(
+        if(return) source else TRUE
+      )
+    } else if (exists(name_GRM[1], envir = .GlobalEnv, inherits = FALSE)) {
+      return(
+        if(return) get(name_GRM[1], envir = .GlobalEnv, inherits = FALSE) else TRUE
+      )
+    } else {
+      # Source doesn't exist and not supplied
+      cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
     }
   }
-  FALSE
-}
-
-#' Check if GRM is supplied if not search environment
-#' @keywords internal
-check_GRM_exists <- function(model, target, source = NULL){
-  # Is source supplied?
-  if(!is.null(source)){
-    TRUE
-  } else if (check_GRM_in_environment(model, target)) {
-    # Is it in the environment?
-    TRUE
-  } else {
-    # Source doesn't exist and not supplied
-    cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
-  }
+  if(return) NULL else TRUE
 }
 
 #' Check target term specification for borad-sense heritability
@@ -221,10 +232,17 @@ check_GRM_exists <- function(model, target, source = NULL){
 #' For asreml, target as a random effect can only be specified once as target
 #' @keywords internal
 #' @noRd
-check_model_specification.asreml <- function(model, target, type){
+check_model_specification.asreml <- function(model, target,
+                                             type = c("broad_sense", "narrow_sense"),
+                                             source = NULL,
+                                             ...){
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
   spec <- attr(ran_trms_with_special, "spec")
+
+  # Check GRM exists
+  check_GRM_exists(model, target, source)
+
   if(target %in% ran_trms){
     if(type == "broad_sense"){
       if(sum(ran_trms == target)!=1){
@@ -241,7 +259,9 @@ check_model_specification.asreml <- function(model, target, type){
 
 #' @keywords internal
 #' @noRd
-check_model_specification.lmerMod <- function(model, target, type){
+check_model_specification.lmerMod <- function(model, target,
+                                              type = c("broad_sense", "narrow_sense"),
+                                              ...){
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
 
@@ -265,7 +285,9 @@ check_model_specification.lmerMod <- function(model, target, type){
 
 #' @keywords internal
 #' @noRd
-check_model_specification <- function(model, target, type) {
+check_model_specification <- function(model, target,
+                                      type = c("broad_sense", "narrow_sense"),
+                                      ...) {
   UseMethod("check_model_specification")
 }
 .S3method("check_model_specification", "asreml", check_model_specification.asreml)

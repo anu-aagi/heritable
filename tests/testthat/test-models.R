@@ -18,28 +18,51 @@
 #     trace = FALSE,
 #   )
 #
+#
+#
+#
+#
+M <- as.matrix(lettuce_markers[, -1] + 1)
+N <- nrow(M)
+pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)
+pm <- pmin(pmax(pm, 1e-6), 1 - 1e-6) # guard against 0 or 1
+W <- sweep(M, 2, 2 * pm, "-")
+W <- sweep(W, 2, sqrt(2 * pm * (1 - pm)), "/")
+G <- tcrossprod(W) / ncol(M)
+Ginv <- MASS::ginv(G)
+dimnames(G) <- dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
+attr(Ginv, "INVERSE") <- TRUE
+
+
+model <- asreml(
+  fixed = y ~ rep,
+  random =  ~ loc +vm(gen, lettuce_GRM) + gen:loc ,
+  data = lettuce_phenotypes,
+  trace = FALSE,
+)
+
+lettuce_GRM <- lettuce_GRM
+h2(model,"gen")
+rm(lettuce_GRM)
+h2(model,"gen")
+h2(model, "gen", source = lettuce_GRM)
+#
+#
 # model <- asreml(
 #   fixed = y ~ rep,
-#   random =  ~ loc + vm(gen, lettuce_GRM) + gen:loc ,
+#   random =  ~ loc +vm(gen, Ginv) + gen:loc ,
 #   data = lettuce_phenotypes,
 #   trace = FALSE,
 # )
-# var_comp(model, "gen", source = lettuce_GRM)
-# check_GRM_in_environment(model, "gen")
-# lettuce_GRM <- lettuce_GRM
-# H2_Cullis(model, "gen", source = lettuce_GRM)
-# H2_Cullis(model, "gen") # Beautiful
-# h2_Oakey(model, "gen")
-# h2(model,"gen")
-# h2_Delta_BLUP_pairwise.asreml(model, "gen", source = lettuce_GRM)
-# h2_Delta(model, "gen", source = lettuce_GRM)
 #
+# h2(model, "gen", source = G)
 #
-# lettuce_GRM <- lettuce_GRM
-# h2(model,"gen")
-# rm(lettuce_GRM)
-# h2(model,"gen")
-# h2(model, "gen", source = lettuce_GRM)
+# model <- asreml(
+#   fixed = y ~ rep,
+#   random =  ~ loc +vm(gen, G, "PSD") + gen:loc ,
+#   data = lettuce_phenotypes,
+#   trace = FALSE,
+# )
 #
 #
 #

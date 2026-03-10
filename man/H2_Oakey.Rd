@@ -6,8 +6,19 @@
 \alias{H2_Oakey,}
 \title{Calculate Oakey's heritability from model object}
 \usage{
-h2_Oakey(model, target, source = NULL, options = NULL, ...)
-H2_Oakey(model, target, options = NULL, ...)
+h2_Oakey(model,
+            target,
+            source = NULL,
+            options = NULL,
+            marginal = TRUE,
+            stratification = NULL,
+            ...)
+H2_Oakey(model,
+            target,
+            options = NULL,
+            marginal = TRUE,
+            stratification = NULL,
+            ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
@@ -17,6 +28,15 @@ H2_Oakey(model, target, options = NULL, ...)
 \item{source}{The known inverse or relationship matrix used in \code{model} fitted using \code{asreml::vm()}}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
+
+\item{marginal}{Logical; if \code{TRUE}, construct marginal (strata-averaged)
+mappings so that each genotype receives a single averaged effect per term.
+If \code{FALSE}, mappings will only consider the main genotype effect and ignore the
+iteracting terms.}
+
+\item{stratification}{A one-row data frame defining the stratum in which
+genotype effects should be evaluated. The columns must correspond
+to model terms that interact with \code{target}.}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }

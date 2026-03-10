@@ -9,6 +9,13 @@
 #' @param target The name of the random effect for which heritability is to be calculated.
 #' @param source The known inverse or relationship matrix used in `model` fitted using `asreml::vm()`
 #' @param options NULL by default, for internal checking of model object before calculations
+#' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
+#'   mappings so that each genotype receives a single averaged effect per term.
+#'   If `FALSE`, mappings will only consider the main genotype effect and ignore the
+#'   iteracting terms.
+#' @param stratification A one-row data frame defining the stratum in which
+#'   genotype effects should be evaluated. The columns must correspond
+#'   to model terms that interact with `target`.
 #' @param ... Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.
 #' @usage
 #' h2(model,
@@ -16,12 +23,16 @@
 #'    method = c("Oakey", "Delta", "Standard"),
 #'    source = NULL,
 #'    options = NULL,
+#'    marginal = TRUE,
+#'    stratification = NULL,
 #'    ...)
 #'
 #' H2(model,
 #'    target,
 #'    method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
 #'    options = NULL,
+#'    marginal = TRUE,
+#'    stratification = NULL,
 #'    ...
 #'    )
 #' @name H2
@@ -70,8 +81,10 @@
 h2 <- function(model,
                target,
                method = c("Oakey", "Delta", "Standard"),
-               source  = NULL,
+               source = NULL,
                options = NULL,
+               marginal = TRUE,
+               stratification = NULL,
                ...) {
   UseMethod("h2")
 }
@@ -83,24 +96,28 @@ h2.default <- function(model,
                        method = c("Oakey", "Delta", "Standard"),
                        source = NULL,
                        options = NULL,
+                       marginal = TRUE,
+                       stratification = NULL,
                        ...) {
   method <- match.arg(method, several.ok = TRUE)
 
   initial_checks(model, target, options = options)
 
-  # Consider remove this
-  check_GRM_exists(model, target, source = source)
-
   # Check correct model specification.
   if(options$check %||% TRUE){
-    check_model_specification(model, target, "narrow_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check design exists
   model <- check_deisgn_exsits(model)
 
   # Build variance component
-  vc <- var_comp(model, target = target, source = source, ...)
+  vc <- var_comp(model,
+                 target = target,
+                 source = source,
+                 marginal = marginal,
+                 stratification = stratification,
+                 ...)
 
   h2_values <- sapply(method, function(m) {
     switch(m,
@@ -126,8 +143,19 @@ h2.default <- function(model,
 #' @description Compute standard heritability using the classic ratio method of
 #' genotypic and phenotypic variance. See Falconer & Mackay (1996)
 #' @usage
-#' h2_Standard(model, target, source, options = NULL, ...)
-#' H2_Standard(model, target, options = NULL, ...)
+#' h2_Standard(model,
+#'             target,
+#'             source = NULL,
+#'             options = NULL,
+#'             marginal = TRUE,
+#'             stratification = NULL,
+#'             ...)
+#' H2_Standard(model,
+#'             target,
+#'             options = NULL,
+#'             marginal = TRUE,
+#'             stratification = NULL,
+#'             ...)
 #' @inheritParams H2
 #' @name H2_Standard
 #' @aliases H2_Standard, h2_Standard
@@ -171,6 +199,8 @@ h2_Standard <- function(model,
                         target,
                         source = NULL,
                         options = NULL,
+                        marginal = TRUE,
+                        stratification = NULL,
                         ...) {
   UseMethod("h2_Standard")
 }
@@ -192,8 +222,19 @@ h2_Standard <- function(model,
 #'
 #' See pages 813 and 818 of the reference for full derivation and explanation for Oakey's heritability
 #' @usage
-#' h2_Oakey(model, target, source = NULL, options = NULL, ...)
-#' H2_Oakey(model, target, options = NULL, ...)
+#' h2_Oakey(model,
+#'             target,
+#'             source = NULL,
+#'             options = NULL,
+#'             marginal = TRUE,
+#'             stratification = NULL,
+#'             ...)
+#' H2_Oakey(model,
+#'             target,
+#'             options = NULL,
+#'             marginal = TRUE,
+#'             stratification = NULL,
+#'             ...)
 #' @returns Numeric
 #' @references
 #' Oakey, H., Verbyla, A., Pitchford, W., Cullis, B., & Kuchel, H. (2006). Joint modeling of additive and non-additive genetic line effects in single field trials. Theoretical and Applied Genetics, 113(5), 809–819. https://doi.org/10.1007/s00122-006-0333-z
@@ -208,6 +249,8 @@ h2_Oakey <- function(model,
                      target,
                      source = NULL,
                      options  = NULL,
+                     marginal = TRUE,
+                     stratification = NULL,
                      ...) {
   UseMethod("h2_Oakey")
 }
@@ -231,6 +274,8 @@ h2_Oakey <- function(model,
 #'          type = c("BLUP", "BLUE"),
 #'          aggregate = c("arithmetic", "harmonic"),
 #'          options = NULL,
+#'          marginal = TRUE,
+#'          stratification = NULL,
 #'          ...)
 #'
 #' H2_Delta(model,
@@ -238,6 +283,8 @@ h2_Oakey <- function(model,
 #'          type = c("BLUP", "BLUE"),
 #'          aggregate = c("arithmetic", "harmonic"),
 #'          options = NULL,
+#'          marginal = TRUE,
+#'          stratification = NULL,
 #'          ...)
 #' @returns Numeric
 #' @details
@@ -283,6 +330,8 @@ h2_Delta <- function(model,
                      type = c("BLUP", "BLUE"),
                      aggregate = c("arithmetic", "harmonic"),
                      options = NULL,
+                     marginal = TRUE,
+                     stratification = NULL,
                      ...) {
   UseMethod("h2_Delta")
 }
@@ -295,11 +344,21 @@ h2_Delta.default <- function(model,
                              type = c("BLUP", "BLUE"),
                              aggregate = c("arithmetic", "harmonic"),
                              options = NULL,
+                             marginal = TRUE,
+                             stratification = NULL,
                              ...) {
   aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
-  h2D_ij <- h2_Delta_pairwise(model, target, source = source, type = type, options = options, ...)
+  h2D_ij <- h2_Delta_pairwise(model,
+                              target,
+                              source = source,
+                              type = type,
+                              options = options,
+                              marginal =  marginal,
+                              stratification = stratification,
+                              ...)
+
   if (is.atomic(h2D_ij) && length(h2D_ij) == 1 && is.na(h2D_ij)) {
     return(NA)
   }
@@ -323,11 +382,15 @@ h2_Delta.default <- function(model,
 #'                      source = NULL,
 #'                      type = c("BLUP", "BLUE"),
 #'                      options = NULL,
+#'                      marginal = TRUE,
+#'                      stratification = NULL,
 #'                      ...)
 #' H2_Delta_by_genotype(model,
 #'                      target,
 #'                      type = c("BLUP", "BLUE"),
 #'                      options = NULL,
+#'                      marginal = TRUE,
+#'                      stratification = NULL,
 #'                      ...)
 #' @inheritParams H2_Delta
 #' @name H2_Delta_by_genotype
@@ -376,6 +439,8 @@ h2_Delta_by_genotype <- function(model,
                                  source = NULL,
                                  type = c("BLUP", "BLUE"),
                                  options = NULL,
+                                 marginal = TRUE,
+                                 stratification = NULL,
                                  ...) {
   UseMethod("h2_Delta_by_genotype")
 }
@@ -387,10 +452,19 @@ h2_Delta_by_genotype.default <- function(model,
                                          source = NULL,
                                          type = c("BLUP", "BLUE"),
                                          options = NULL,
+                                         marginal = TRUE,
+                                         stratification = NULL,
                                          ...) {
   type <- match.arg(type)
 
-  h2D_ij <- h2_Delta_pairwise(model, target, source = source, type = type, options = options, ...)
+  h2D_ij <- h2_Delta_pairwise(model,
+                              target,
+                              source = source,
+                              type = type,
+                              options = options,
+                              marginal =  marginal,
+                              stratification = stratification,
+                              ...)
 
   h2D_i <- as.matrix(h2D_ij) |>
     rowMeans(na.rm = TRUE) |>
@@ -415,11 +489,15 @@ h2_Delta_by_genotype.default <- function(model,
 #'                   source = NULL,
 #'                   type = c("BLUP", "BLUE"),
 #'                   options = NULL,
+#'                   marginal = TRUE,
+#'                   stratification = NULL,
 #'                   ...)
 #' H2_Delta_pairwise(model,
 #'                   target,
 #'                   type = c("BLUP", "BLUE"),
 #'                   options = NULL,
+#'                   marginal = TRUE,
+#'                   stratification = NULL,
 #'                   ...)
 #' @inheritParams H2_Delta
 #' @name H2_Delta_pairwise
@@ -450,6 +528,8 @@ h2_Delta_pairwise <- function(model,
                               source = NULL,
                               type = c("BLUP", "BLUE"),
                               options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
                               ...) {
   UseMethod("h2_Delta_pairwise")
 }
