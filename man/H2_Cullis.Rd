@@ -11,7 +11,7 @@ H2_Cullis(model, target, options, ...)
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{options}{NULL by default, for internal checking of model object before calculations.}
+\item{options}{NULL by default, for internal checking of model object before calculations}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
 }

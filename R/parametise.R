@@ -50,11 +50,11 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
 #'
 #' @export
- H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
-    H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
+H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
+  H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
 
-    return(H2_Cullis)
- }
+  return(H2_Cullis)
+}
 
 #' Calculate Oakey's heritability using variance parameters
 #'
@@ -118,37 +118,31 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' Calculate heritability of pairwise differences using variance parameters
 #' @description Compute broad-sense heritability of differences
 #' using the variance of differences between two BLUPs/BLUEs
-#' @aliases h2_Delta_parameters
-#' @usage
-#' h2_Delta_parameters(G_g, vd_matrix, type)
-#'
-#' H2_Delta_parameters(vc_g, vd_matrix, type)
-#'
 #' @details See [H2_Delta()] and reference for full derivation
 #'  and equation for heritability Delta
-#' @param G_g Numeric. Genotypic variance-covariance matrix.
-#' @param vc_g Numeric. Genotype variance component
-#' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
+#' @param delta_g Numeric. Genotypic variance-covariance matrix.
+#' @param delta_pev Matrix. Variance of pairwise differences among BLUES or BLUPs
 #' @param type Character. Either BLUES or BLUPS used to compute the variance of pairwise differences.
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
 #' @examples
-#' h2_Delta_parameters(G_g = diag(0.15, 2, 2), vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), type = "BLUP")
 #'
-#' H2_Delta_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), "BLUE")
+#' H2_Delta_parameters(delta_g = diag(0.15, 2, 2),
+#'                     delta_pev = matrix(c(NA,0.2,0.2,NA),2,2),
+#'                     type = "BLUP"
+#'                     )
 #'
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating
 #' Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar
 #' Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @export
-H2_Delta_parameters <- function(vc_g, vd_matrix, type = c("BLUP", "BLUE")) {
+H2_Delta_parameters <- function(delta_g, delta_pev, type = c("BLUP", "BLUE")) {
   type <- match.arg(type)
-  denom <- 2 * vc_g
 
   if (type == "BLUP") {
-    1 - vd_matrix / denom
+    1 - delta_pev / delta_g
   } else {
-    1 / (1 + vd_matrix / denom)
+    1 / (1 + delta_pev / delta_g)
   }
 }
 

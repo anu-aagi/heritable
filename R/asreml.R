@@ -14,12 +14,12 @@
 #' h2_Standard.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
 #' }
 h2_Standard.asreml <- function(model,
-                               target = NULL,
+                               target,
+                               source = NULL,
                                options = NULL,
                                marginal = TRUE,
                                stratification = NULL,
                                vc = NULL,
-                               source = source,
                                ...) {
   initial_checks(model, target, options)
 
@@ -85,12 +85,12 @@ h2_Standard.asreml <- function(model,
 #' h2_Oakey.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
 #' }
 h2_Oakey.asreml <- function(model,
-                            target = NULL,
+                            target,
+                            source = NULL,
                             options = NULL,
                             marginal = TRUE,
                             stratification = NULL,
                             vc = NULL,
-                            source = NULL,
                             ...) {
   initial_checks(model, target, options)
 
@@ -132,13 +132,13 @@ h2_Oakey.asreml <- function(model,
 #' h2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP", source = lettuce_GRM)
 #' }
 h2_Delta_pairwise.asreml <- function(model,
-                                     target = NULL,
+                                     target,
+                                     source = NULL,
                                      type = c("BLUP", "BLUE"),
                                      options = NULL,
                                      marginal = TRUE,
                                      stratification = NULL,
                                      vc = NULL,
-                                     source = NULL,
                                      ...) {
   initial_checks(model, target, options)
   type <- match.arg(type)
@@ -158,11 +158,11 @@ h2_Delta_pairwise.asreml <- function(model,
 
   # Check if target is random or fixed
   if (type == "BLUE") {
-    h2_Delta <- h2_Delta_BLUE_pairwise.asreml(model, target, options,
-                                              marginal, stratification, vc, source, ...)
+    h2_Delta <- h2_Delta_BLUE_pairwise.asreml(model, target, source, options,
+                                              marginal, stratification, vc, ...)
   } else if (type == "BLUP") {
-    h2_Delta <- h2_Delta_BLUP_pairwise.asreml(model, target, options,
-                                              marginal, stratification, vc, source, ...)
+    h2_Delta <- h2_Delta_BLUP_pairwise.asreml(model, target, source, options,
+                                              marginal, stratification, vc, ...)
   }
 
   return(h2_Delta)
@@ -170,12 +170,13 @@ h2_Delta_pairwise.asreml <- function(model,
 
 #' @keywords internal
 h2_Delta_BLUP_pairwise.asreml<- function(model,
-                                         target = NULL,
+                                         target,
+                                         source = NULL,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
                                          vc = NULL,
-                                         source = NULL, ...) {
+                                         ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -214,12 +215,12 @@ h2_Delta_BLUP_pairwise.asreml<- function(model,
 
 #' @keywords internal
 h2_Delta_BLUE_pairwise.asreml<- function(model,
-                                         target = NULL,
+                                         target,
+                                         source = NULL,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
-                                         vc = NULL,
-                                         source = NULL, ...) {
+                                         vc = NULL, ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -255,7 +256,7 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
   diag(delta) <- NA
 
   # H2 Delta BLUE
-  h2_Delta_BLUE <- H2_Delta_parameters(s2_g, delta, "BLUE")
+  h2_Delta_BLUE <- H2_Delta_parameters(delta_g, delta, "BLUE")
 
   dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
 
@@ -491,7 +492,7 @@ H2_Delta_BLUP_pairwise.asreml<- function(model,
   dimnames(delta) <- list(vc$gnames, vc$gnames)
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_parameters(s2_g, delta, "BLUP")
+  H2_Delta_BLUP <- H2_Delta_parameters(2*s2_g, delta, "BLUP")
 
   dimnames(H2_Delta_BLUP) <- dimnames(delta)
 
@@ -535,7 +536,7 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
   dimnames(delta) <- list(vc$gnames, vc$gnames)
 
   # H2 Delta BLUE
-  H2_Delta_BLUE <- H2_Delta_parameters(s2_g, delta, "BLUE")
+  H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
 
   dimnames(H2_Delta_BLUE) <- dimnames(delta)
 

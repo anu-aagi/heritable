@@ -281,7 +281,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
   diag(delta) <- NA
 
   # H2 Delta BLUE
-  H2_Delta_BLUE <- H2_Delta_parameters(s2_g, delta, "BLUE")
+  H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
 
   return(H2_Delta_BLUE)
 }
@@ -317,7 +317,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   dimnames(delta) <- list(vc$gnames, vc$gnames)
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_parameters(s2_g, delta, "BLUP")
+  H2_Delta_BLUP <- H2_Delta_parameters(2*s2_g, delta, "BLUP")
 
   dimnames(H2_Delta_BLUP) <- dimnames(delta)
 
