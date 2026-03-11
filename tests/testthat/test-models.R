@@ -9,6 +9,18 @@
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1+ 1+ loc || gen ) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1| gen), data = lettuce_subset)
+# model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+# system.time(
+#   confint(H2(model, "gen"), B = 20)
+# )
+# system.time(
+#   confint(H2(model, "gen"), B = 20, parallel = "multicore", ncpus = 10)
+# )
+# system.time(
+#   confint(H2(model, "gen"), B = 100, parallel = "snow", ncpus = 2)
+# )
+
+
 #
 # h2_Standard.lmerMod(model, "gen")
 # h2_Oakey.lmerMod(model, "gen")
@@ -21,6 +33,15 @@
 #   random =  ~ loc + gen + gen:loc ,
 #   data = lettuce_phenotypes,
 #   trace = FALSE,
+# )
+# system.time(
+#   confint(H2(model, "gen"), B = 20)
+# )
+# system.time(
+#   confint(H2(model, "gen"), B = 20, parallel = "multicore", ncpus = 10)
+# )
+# system.time(
+#   confint(H2(model, "gen"), B = 100, parallel = "snow", ncpus = 3)
 # )
 #
 #
@@ -45,6 +66,7 @@
 #   data = lettuce_phenotypes,
 #   trace = FALSE,
 # )
+# confint(h2(model, "gen", source = lettuce_GRM), B = 10)
 #
 # lettuce_GRM <- lettuce_GRM
 # h2(model,"gen")

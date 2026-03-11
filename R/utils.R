@@ -305,11 +305,23 @@ fit_counterpart_model <- function(model, target = NULL) {
 #' @noRd
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
-  attr(x, "model") <- NULL
-  attr(x, "target") <- NULL
   attr(x, "type") <- NULL
+  attr(x, "args") <- NULL
   print(unclass(x))
 }
+
+#' Print method for heritable_ci objects
+#'
+#' @param x An object of class "heritable_ci"
+#' @param digits Number of digits to print
+#' @param ... Additional arguments passed to print
+#' @noRd
+#' @export
+print.heritable_ci <- function(x, digits = getOption("digits"), ...) {
+  attr(x, "boot_mod") <- NULL
+  print(unclass(x))
+}
+
 
 #' @keywords internal
 build_precompiled_vignette <- function(input = "vignettes/heritable.Rmd.orig",
@@ -1249,3 +1261,4 @@ ginv_sym_sparse <- function(A, tol = 1e-10) {
 
   e$vectors %*% (d_inv * t(e$vectors))
 }
+
