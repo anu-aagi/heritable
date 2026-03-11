@@ -64,12 +64,20 @@ check_model_convergence.lmerMod <- function(model) {
   }
 }
 
+check_model_convergence.glmmTMB <- function(model) {
+  if (model$fit$convergence != 0) {
+    warning("The input model has not converged")
+  }
+}
+
 #' @keywords internal
 check_model_convergence <- function(model) {
   UseMethod("check_model_convergence")
 }
 .S3method("check_model_convergence", "asreml", check_model_convergence.asreml)
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
+.S3method("check_model_convergence", "glmmTMB", check_model_convergence.glmmTMB)
+
 
 
 # Target level checks
