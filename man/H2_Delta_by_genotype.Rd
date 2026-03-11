@@ -27,7 +27,9 @@ H2_Delta_by_genotype(model,
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
-\item{source}{The known inverse or relationship matrix used in \code{model} fitted using \code{asreml::vm()}}
+\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}.
+When not provided (NULL by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
+Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
 
@@ -42,7 +44,7 @@ iteracting terms.}
 genotype effects should be evaluated. The columns must correspond
 to model terms that interact with \code{target}.}
 
-\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
+\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled}
 }
 \value{
 Numeric

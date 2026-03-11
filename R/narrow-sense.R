@@ -7,7 +7,9 @@
 #' @param model Model object of class `lmerMod/merMod` or `asreml`
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
-#' @param source The known inverse or relationship matrix used in `model` fitted using `asreml::vm()`
+#' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`.
+#' When not provided (NULL by default), the GRM variable used for `vm` calling will be searched in the global environment.
+#' Ignored for broad-sense and `lmerMod` methods
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
 #'   mappings so that each genotype receives a single averaged effect per term.
@@ -16,7 +18,7 @@
 #' @param stratification A one-row data frame defining the stratum in which
 #'   genotype effects should be evaluated. The columns must correspond
 #'   to model terms that interact with `target`.
-#' @param ... Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.
+#' @param ... Additional arguments that specify heritability calculation when interactions with genotype effects are modelled
 #' @usage
 #' h2(model,
 #'    target,

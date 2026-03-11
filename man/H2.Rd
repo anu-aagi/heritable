@@ -31,7 +31,9 @@ H2(model,
 
 \item{method}{Character vector of name of method to calculate heritability. See details.}
 
-\item{source}{The known inverse or relationship matrix used in \code{model} fitted using \code{asreml::vm()}}
+\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}.
+When not provided (NULL by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
+Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 
@@ -44,7 +46,7 @@ iteracting terms.}
 genotype effects should be evaluated. The columns must correspond
 to model terms that interact with \code{target}.}
 
-\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
+\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled}
 }
 \value{
 A named numeric vector, length matching number of methods supplied

@@ -28,7 +28,7 @@ iteracting terms.}
 genotype effects should be evaluated. The columns must correspond
 to model terms that interact with \code{target}.}
 
-\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled.}
+\item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled}
 }
 \value{
 Numeric
