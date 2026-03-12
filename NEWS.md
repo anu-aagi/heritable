@@ -1,5 +1,5 @@
-# heritable 0.1.0
+# heritable 0.2.0
 
-* Initial CRAN submission.
-* Broad sense heritability for single environment models (`lme4` and `asreml`)
-* See https://anu-aagi.github.io/news/posts/2026-01-12/
+* Update Maintainer to Dr. Emi Tanaka
+* Refactoring `asreml` integration [#37](https://github.com/anu-aagi/heritable/issues/37), [#32](https://github.com/anu-aagi/heritable/issues/32)
+* Compute confidence intervals for `heritable` objects [#30](https://github.com/anu-aagi/heritable/issues/30)
