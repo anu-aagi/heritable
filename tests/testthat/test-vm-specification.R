@@ -3,8 +3,6 @@ test_that("Check GRM specification", {
   skip_on_cran()
   skip_on_ci()
 
-  require(asreml)
-
   M <- as.matrix(lettuce_markers[, -1] + 1)
   N <- nrow(M)
   pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)

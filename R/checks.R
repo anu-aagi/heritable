@@ -37,11 +37,6 @@ initial_checks <- function(model, target, options) {
     # Check if the target is specified as both fixed and random
     check_target_both(model, target)
 
-    # Check if G x E is fitted
-    if (options$check_gxe %||% FALSE){
-      check_G_by_E_exists(model, target)
-    }
-
   }
 }
 
@@ -78,6 +73,18 @@ check_model_convergence <- function(model) {
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
 .S3method("check_model_convergence", "glmmTMB", check_model_convergence.glmmTMB)
 
+
+
+#' Check whether the fitted model contains random terms not grouped by `target`
+#' @keywords internal
+check_all_random_terms_match_target <- function(model, target) {
+  matched_grp <- pull_terms_without_specials(model)$random == target
+  if(!all(matched_grp)){
+    FALSE
+  } else {
+    TRUE
+  }
+}
 
 
 # Target level checks
@@ -130,36 +137,57 @@ check_target_both <- function(model, target) {
   }
 }
 
-#' Check if G X E is fitted
+# Check if the design matrix exists, otherwise builds one.
 #' @keywords internal
-#' @noRd
-check_G_by_E_exists.asreml <- function(model, target){
-  ran_trms <- pull_terms_without_specials(model)$random
-  pattern <- paste0("(^|:)", target, "($|:)")
+check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
 
-  if(sum(grepl(pattern, ran_trms)) > 1){
-    cli::cli_abort("G x E models are currently not supported")
+  if(!inherits(model, "asreml")){
+    return(model)
   }
-}
 
-#' @keywords internal
-#' @noRd
-check_G_by_E_exists.lmerMod <- function(model, target) {
-  ran_trms <- pull_terms_without_specials(model)$random
-  pattern <- paste0("(^|:)", target, "($|:)")
-
-  if(sum(grepl(pattern, ran_trms)) > 1){
-    cli::cli_abort("G x E models are currently not supported")
+  if(build_design){
+    # Get the design matrix
+    design <- model$design
+    if (is.null(design)) {
+      cli::cli_inform("A design matrix was not found in the asreml object. Building a design matrix.")
+      build_design <- TRUE
+    } else {
+      build_design <- FALSE
+    }
   }
+
+  if(build_mf){
+    # Get the design matrix
+    mf <- model$mf
+    if (is.null(mf)) {
+      cli::cli_inform("A model frame was not found in the asreml object. Building a model frame.")
+      build_mf <- TRUE
+    } else {
+      build_mf <- FALSE
+    }
+  }
+
+  if(build_design && build_mf){
+    design_default <- asreml::asreml.options()$design
+    asreml::asreml.options(design = TRUE)
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    asreml::asreml.options(design = design_default)
+  }
+
+  if(!build_design && build_mf){
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+  }
+
+  if(build_design && !build_mf){
+    design_default <- asreml::asreml.options()$design
+    asreml::asreml.options(design = TRUE)
+    model <- asreml::update.asreml(model, model.frame = TRUE)
+    asreml::asreml.options(design = design_default)
+  }
+
+  model
 }
 
-#' @keywords internal
-#' @noRd
-check_G_by_E_exists <- function(model, target) {
-  UseMethod("check_G_by_E_exists")
-}
-.S3method("check_G_by_E_exists", "asreml", check_G_by_E_exists.asreml)
-.S3method("check_G_by_E_exists", "lmerMod", check_G_by_E_exists.lmerMod)
 
 ########################### Method specific check ##############################
 # Helper function to check if GRM exists in environment
@@ -205,15 +233,16 @@ check_GRM_exists <- function(model, target, source = NULL){
 check_model_specification.asreml <- function(model, target, type){
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
+  spec <- attr(ran_trms_with_special, "spec")
   if(target %in% ran_trms){
     if(type == "broad_sense"){
       if(sum(ran_trms == target)!=1){
-        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified once.Heritability calculation can be misleading.")
-      }
-
-      simple_model <- any(ran_trms_with_special == target)
-      if(!simple_model){
-        cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code ({target})}. Heritability calculation can be misleading.")
+        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified once. Heritability calculation can be misleading.")
+      } else {
+        simple_model <- !any(ran_trms == target & spec != "id")
+        if(!simple_model){
+          cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code id({target})}. Heritability calculation can be misleading.")
+        }
       }
     }
   }
@@ -223,19 +252,20 @@ check_model_specification.asreml <- function(model, target, type){
 #' @noRd
 check_model_specification.lmerMod <- function(model, target, type){
   ran_trms <- pull_terms_without_specials(model)$random
+  ran_trms_with_special <- pull_terms(model)$random
 
   if(target %in% ran_trms){
     if(type == "broad_sense"){
       if(sum(ran_trms == target)!=1){
-        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified only once. Heritability calculation can be misleading.")
-      }
-
-      simple_model <- any(sapply(reformulas::findbars(formula(model)),
-                                 function(frm) frm == paste0("1 | ",target)
-      )
-      )
-      if(!simple_model){
-        cli::cli_warn("The target {.code {target}} should be modelled as a random intercept: {.code (1 | {target})}. Heritability calculation can be misleading.")
+        cli::cli_warn("Duplicated random intercept detected for the target {.code {target}}. Heritability calculation can be misleading.")
+      } else {
+        grp_name <- attr(ran_trms_with_special, "grouping_variable")
+        simple_intercept  <- attr(ran_trms_with_special, "simple_intercept")
+        contain_intercept  <- attr(ran_trms_with_special, "contain_intercept")
+        simple_model <- all(simple_intercept[contain_intercept & grp_name== target])
+        if(!simple_model){
+          cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code (1 | {target})}. Heritability calculation can be misleading.")
+        }
       }
     }
   }
@@ -249,3 +279,20 @@ check_model_specification <- function(model, target, type) {
 }
 .S3method("check_model_specification", "asreml", check_model_specification.asreml)
 .S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
+
+#' Check if asreml is installed and load it
+#'
+#' Checks whether asreml is installed, errors if not, and loads it if present.
+#'
+#' @keywords internal
+#' @noRd
+
+check_and_load_asreml <- function() {
+  if (!requireNamespace("asreml", quietly = TRUE)) {
+    cli::cli_abort(
+      "The {.pkg asreml} package is required for this function.
+       Please install it before proceeding."
+    )
+  }
+  invisible(library("asreml", character.only = TRUE))
+}

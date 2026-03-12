@@ -84,17 +84,23 @@ H2.default <- function(model,
 
   # Check correct model specification.
   if(options$check %||% TRUE){
-    check_model_specification(model, target, "broad-sense")
+    check_model_specification(model, target, "broad_sense")
   }
+
+  # Check design exists
+  model <- check_deisgn_exsits(model)
+
+  # Build variance component
+  vc <- var_comp(model, target = target, ...)
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
     switch(m,
-      Cullis = H2_Cullis(model, target, options = list(check = FALSE), ...),
-      Oakey = H2_Oakey(model, target, options = list(check = FALSE), ...),
-      Piepho = H2_Piepho(model, target, options = list(check = FALSE), ...),
-      Delta = H2_Delta(model, target, options = list(check = FALSE), ...),
-      Standard = H2_Standard(model, target, options = list(check = FALSE), ...),
+      Cullis = H2_Cullis(model, target, options = list(check = FALSE), vc = vc, ...),
+      Oakey = H2_Oakey(model, target, options = list(check = FALSE), vc = vc, ...),
+      Piepho = H2_Piepho(model, target, options = list(check = FALSE), vc = vc, ...),
+      Delta = H2_Delta(model, target, options = list(check = FALSE), vc = vc, ...),
+      Standard = H2_Standard(model, target, options = list(check = FALSE), vc  = vc, ...),
       cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
     )
   })
@@ -352,6 +358,9 @@ H2_Delta.default <- function(model,
   type <- match.arg(type)
 
   H2D_ij <- H2_Delta_pairwise(model, target, type = type, options = options, ...)
+  if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
+    return(NA)
+  }
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
   switch(aggregate,
@@ -420,6 +429,9 @@ H2_Delta_by_genotype.default <- function(model,
                                          options = NULL,
                                          ...) {
   H2D_ij <- H2_Delta_pairwise(model, target, type, options, ...)
+  if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
+    return(NA)
+  }
 
   H2D_i <- as.matrix(H2D_ij) |>
     rowMeans(na.rm = TRUE) |>

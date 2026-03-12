@@ -1,11 +1,3 @@
-#' Get genotype variance component from asreml model
-#' @keywords internal
-#' @noRd
-#' @return Numeric, genotype variance component
-get_vc_g_asreml <- function(model, target) {
-  model$vparameters[[target]] * model$sigma2
-}
-
 #' @noRd
 #' @keywords internal
 h2_Cullis.asreml <- function(model, target = NULL, options = NULL) {
@@ -63,7 +55,7 @@ h2_Oakey.asreml <- function(model, target = NULL, source = NULL, options = NULL)
   }
 }
 
-#'@export
+#' @keywords internal
 h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type = NULL, options = NULL) {
   initial_checks(model, target, options)
 
@@ -106,29 +98,36 @@ h2_Delta_pairwise.asreml <- function(model, target = NULL, source = NULL, type =
 #'
 #' H2_Cullis.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Cullis.asreml <- function(model, target = NULL, options = NULL, ...) {
+H2_Cullis.asreml <- function(model,
+                              target = NULL,
+                              options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
+                              vc = NULL,
+                              ...) {
   initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     return(NA)
   }
 
-  # Get genotype variance
-  vc_g <- get_vc_g_asreml(model, target)
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+  }
+  s2_g <- mean(diag(vc$G_g))
+  n <- vc$n_g
+  C22_g <- vc$C22_g
 
-  vdBLUP_mat <- predict(model,
-    classify = target,
-    only = target,
-    sed = TRUE,
-    trace = FALSE
-  )$sed^2
+  # This is equivalent to delta <- var_diff(C22_g); delta_avg = mean(delta[lower.tri(delta)])
+  delta_avg <- (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
 
-  vd_BLUP_avg <- mean(vdBLUP_mat[upper.tri(vdBLUP_mat, diag = FALSE)])
-
-  H2_Cullis <- H2_Cullis_parameters(vd_BLUP_avg, vc_g)
-
-  return(H2_Cullis)
+  return(H2_Cullis_parameters(delta_avg, s2_g))
 }
 
 #' Calculate Oakey's heritability from asreml model
@@ -146,28 +145,31 @@ H2_Cullis.asreml <- function(model, target = NULL, options = NULL, ...) {
 #'
 #' H2_Oakey.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Oakey.asreml <- function(model, target = NULL, options = NULL, ...) {
+H2_Oakey.asreml <- function(model,
+                             target = NULL,
+                             options = NULL,
+                             marginal = TRUE,
+                             stratification = NULL,
+                             vc = NULL,
+                             ...) {
   initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     return(NA)
   }
 
-  n_g <- model$noeff[[target]]
-  vc_g <- get_vc_g_asreml(model, target)
-  vcov_g <- predict(model,
-    classify = target,
-    only = target,
-    vcov = TRUE,
-    trace = FALSE
-  )$vcov
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+  }
+  G_g_inv <- ginv_sym_sparse(vc$G_g)
 
-  Gg_inv <- diag(1 / vc_g, nrow = n_g, ncol = n_g)
-
-  H2_Oakey <- H2_Oakey_parameters(Gg_inv, vcov_g)
-
-  return(H2_Oakey)
+  return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
 }
 
 #' Calculate Piepho's heritability from asreml model
@@ -185,26 +187,48 @@ H2_Oakey.asreml <- function(model, target = NULL, options = NULL, ...) {
 #'
 #' H2_Piepho.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Piepho.asreml <- function(model, target = NULL, options = NULL, ...) {
+H2_Piepho.asreml <- function(model,
+                              target = NULL,
+                              options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
+                              vc = NULL,
+                              ...) {
   initial_checks(model, target, options)
 
-  model_fix <- fit_counterpart_model.asreml(model, target)
-  model_ran <- model
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
 
-  # Calculate the mean variance of a difference of two genotypic BLUEs
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
   # Get genotype variance
-  vc_g <- get_vc_g_asreml(model_ran, target)
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)
+  }
+  if(!vc$main){
+    cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+    return(NA)
+  }
+  G_g <- vc$G_g
+  s2_g <- mean(diag(G_g))
 
-  vdBLUE_mat <- predict(model_fix,
+  conterpart <- fit_counterpart_model(model, target)
+
+  delta <- predict(conterpart,
     classify = target,
     sed = TRUE,
     trace = FALSE
   )$sed^2
 
-  vdBLUE_avg <- mean(vdBLUE_mat[upper.tri(vdBLUE_mat, diag = FALSE)])
+  delta_avg <- mean(delta[upper.tri(delta, diag = FALSE)])
 
   # Calculate Piepho's H2
-  H2_Piepho <- H2_Piepho_parameters(vc_g, vdBLUE_avg)
+  H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
 
   return(H2_Piepho)
 }
@@ -223,24 +247,122 @@ H2_Piepho.asreml <- function(model, target = NULL, options = NULL, ...) {
 #'
 #' H2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options = NULL, ...) {
+H2_Delta_pairwise.asreml <- function(model,
+                                      target = NULL,
+                                      type = c("BLUP", "BLUE"),
+                                      options = NULL,
+                                      marginal = TRUE,
+                                      stratification = NULL,
+                                      vc = NULL,
+                                      ...) {
   initial_checks(model, target, options)
-  vc_g <- get_vc_g_asreml(model, target)
-  if (type == "BLUP") {
-    gpred <- predict(model, classify = target, sed = TRUE, trace = FALSE)
-    Vd_g <- gpred$sed^2 # Variance of difference
-    genotype_names <- gpred$pvals[[target]] # list of genotype names
-    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    H2_Delta_parameters(vc_g, Vd_g, type = type)
-  } else if (type == "BLUE") {
-    model_fix <- fit_counterpart_model.asreml(model, target)
-    gpred <- predict(model_fix, classify = target, sed = TRUE, trace = FALSE)
-    Vd_g <- gpred$sed^2 # Variance of difference
-    genotype_names <- gpred$pvals[[target]] # list of genotype names
-    dimnames(Vd_g) <- list(genotype_names, genotype_names) # name the covariance matrix
-    H2_Delta_parameters(vc_g, Vd_g, type = type)
+  type <- match.arg(type)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
   }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Check if target is random or fixed
+  if (type == "BLUE") {
+    H2_Delta <- H2_Delta_BLUE_pairwise.asreml(model, target, options,
+                                               marginal, stratification, vc)
+  } else if (type == "BLUP") {
+    H2_Delta <- H2_Delta_BLUP_pairwise.asreml(model, target, options,
+                                               marginal, stratification, vc)
+  }
+
+  return(H2_Delta)
 }
+
+#' @keywords internal
+H2_Delta_BLUP_pairwise.asreml<- function(model,
+                                           target = NULL,
+                                           options = NULL,
+                                           marginal = TRUE,
+                                           stratification = NULL,
+                                           vc = NULL) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification)
+  }
+  s2_g <- mean(diag(vc$G_g))
+  C22_g <- vc$C22_g
+
+  # Compute variance of difference from PEV
+  delta <- var_diff(C22_g)
+  diag(delta) <- NA
+  dimnames(delta) <- list(vc$gnames, vc$gnames)
+
+  # H2 Delta BLUP
+  H2_Delta_BLUP <- H2_Delta_parameters(s2_g, delta, "BLUP")
+
+  dimnames(H2_Delta_BLUP) <- dimnames(delta)
+
+  H2_Delta_BLUP
+}
+
+#' @keywords internal
+H2_Delta_BLUE_pairwise.asreml<- function(model,
+                                         target = NULL,
+                                         options = NULL,
+                                         marginal = TRUE,
+                                         stratification = NULL,
+                                         vc = NULL) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Extract vc_g and vc_e
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)
+  }
+  if(!vc$main){
+    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+    return(NA)
+  }
+  s2_g <- mean(diag(vc$G_g))
+
+  conterpart <- fit_counterpart_model(model, target)
+
+  # Get delta
+  delta <- predict(conterpart, classify = target, sed = TRUE, trace = FALSE)$sed^2
+  diag(delta) <- NA
+  dimnames(delta) <- list(vc$gnames, vc$gnames)
+
+  # H2 Delta BLUE
+  H2_Delta_BLUE <- H2_Delta_parameters(s2_g, delta, "BLUE")
+
+  dimnames(H2_Delta_BLUE) <- dimnames(delta)
+
+  H2_Delta_BLUE
+}
+
+
 
 #' Calculate standard heritability from asreml model
 #' @export
@@ -257,19 +379,79 @@ H2_Delta_pairwise.asreml <- function(model, target = NULL, type = NULL, options 
 #'
 #' H2_Standard.asreml(lettuce_asreml, target = "gen")
 #' }
-H2_Standard.asreml <- function(model, target = NULL, options = NULL, ...) {
+H2_Standard.asreml <- function(model,
+                                target = NULL,
+                                options = NULL,
+                                marginal = TRUE,
+                                stratification = NULL,
+                                vc = NULL,
+                                ...) {
   initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
 
   # Check if target is random or fixed
   if (!check_target_random(model, target)) {
     return(NA)
   }
-  vc_g <- get_vc_g_asreml(model, target)
-  vc_e <- model$sigma2
-  # TODO: may need to remove observations where phenotype is NA
-  n_r <- table(model$mf[[target]])
 
-  H2_Standard <- H2_Standard_parameters(vc_g, vc_e, n_r)
+  model <- check_deisgn_exsits(model, build_design = FALSE)
+  mf <- model$mf
+
+  # Check if all random terms contain the target.
+  trms <- pull_terms_without_specials(model)$random
+  contain_target <- sapply(trms, function(trm){
+    target %in% stringr::str_split(trm, ":")[[1]]
+  }, USE.NAMES = FALSE)
+  main <- trms == target # Target main effect
+  interaction <- trms != target & contain_target # Target interaction effect
+  extra <- !contain_target # Other covariates
+
+  # Either no extra term or no interaction
+  simple <- (!any(extra) & !any(interaction)) | !is.null(stratification)
+
+  if(simple){
+    # Get genotype variance
+    if(is.null(vc)){
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification)$G_g
+    } else {
+      G_g <- vc$G_g
+    }
+    s2_g <- mean(diag(G_g))
+
+    # Get residual variance
+    s2_eps <- model$sigma2
+
+    n_r <- table(mf[[target]])
+
+    H2_Standard <- H2_Standard_parameters(s2_g, s2_eps, n_r)
+  } else {
+    # Get genotype variance
+    if(is.null(vc)){
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification)
+    } else {
+      V <- vc$V
+      if(is.null(V)){
+        vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification)
+      }
+    }
+    V <- vc$V
+    Z <- vc$Z
+    G <- vc$G
+    idx <- vc$idx
+
+    g <- mf[[target]]
+    gnames <- levels(g)
+    Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+    C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+    W <- t(C) %*% Z[,idx]
+    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+    H2_Standard <- h2_Standard_parameters(G_g, V, C)
+  }
 
   return(H2_Standard)
 }

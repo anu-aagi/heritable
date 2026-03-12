@@ -151,19 +151,26 @@ H2_Delta_parameters <- function(vc_g, vd_matrix, type = c("BLUP", "BLUE")) {
     1 / (1 + vd_matrix / denom)
   }
 }
-#' @noRd
-#' @keywords internal
-H2_Delta_BLUP_parameters <- function(vc_g, vd_matrix) {
-  denom <- 2 * vc_g
-  1 - vd_matrix / denom
-}
 
 #' @noRd
+#' @return Narrow sense heritability for the standard method.
 #' @keywords internal
-H2_Delta_BLUE_parameters <- function(vc_g, vd_matrix) {
-  denom <- 2 * vc_g
-  1 / (1 + vd_matrix / denom)
+h2_Standard_parameters <- function(G_g, V, C) {
+
+  # S = C' V C  (g x g)
+  S <- crossprod(C, V %*% C)
+
+  # Sample contrast var(y_i.. - y_j..) = den_ij
+  # = (C_i - C_j)' V (C_i - C_j) = S_ii + S_jj - 2 S_ij
+  delta_y <- outer(diag(S), diag(S), "+") - 2 * S
+
+  # genotype contrast var(g_i - g_j) = num_ij = G_ii + G_jj
+  delta_g <- outer(diag(G_g), diag(G_g), "+") - 2 * G_g
+  # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
+
+  mean((delta_g/delta_y)[lower.tri(delta_y)])
 }
+
 
 #' @noRd
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
