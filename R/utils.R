@@ -70,9 +70,9 @@ pull_terms_without_specials.lmerMod <- function(model) {
   model_terms$random <- lapply(
     model_terms$random,
     function(frm) {
-      terms <- stringr::str_split(frm, " \\| ")[[1]]
-      grp <- utils::tail(terms, 1)
-      design <- utils::head(terms, 1)
+      trms <- stringr::str_split(frm, " \\| ")[[1]]
+      grp <- utils::tail(trms, 1)
+      design <- utils::head(trms, 1)
       design <- as.formula(paste("~ ", design)) |> terms()
       design_terms <- attr(design, "term.labels")
       contain_intercept <- attr(design, "intercept") == 1
@@ -80,9 +80,9 @@ pull_terms_without_specials.lmerMod <- function(model) {
       if(length(design_terms) == 0){
         grp
       } else if(contain_intercept){
-        c(grp, paste(design_terms, grp, sep = "|"))
+        c(grp, paste(design_terms, grp, sep = " | "))
       } else {
-        paste(design_terms, grp, sep = "|")
+        paste(design_terms, grp, sep = " | ")
       }
     }
   )
@@ -411,6 +411,7 @@ var_diff <- function(V) {
 var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
                              calc_V = TRUE,
                              marginal = TRUE, stratification = NULL,...) {
+
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -427,7 +428,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
     m <- mapper$m
     main <- mapper$main
     if (sum(!main) == 0) {
-      main <- TRUE
+      marginal <- FALSE
     } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
       m <- m[main, , drop = FALSE]
@@ -437,7 +438,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
-      main <- TRUE
+      marginal <- FALSE
     } else {
       cli::cli_inform(
         c(
@@ -445,7 +446,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "involving the target term."
         )
       )
-      main <- FALSE
+      marginal <- TRUE
     }
   } else {
     cli::cli_inform(
@@ -454,7 +455,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
         "Estimation is restricted to the defined strata."
       )
     )
-    main <- FALSE
+    marginal <- FALSE
     m <- build_new_Z(model, target, stratification) |> t()
   }
 
@@ -496,7 +497,8 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   }
 
   list(n_g = n_g, G_g = G_g, C22_g = C22_g,
-       V = V, G = G, Z = Z, idx = idx, gnames = gnames, main = main)
+       V = V, G = G, Z = Z, idx = idx, gnames = gnames,
+       marginal = marginal, stratification = stratification, target = target)
 }
 
 #' @noRd
@@ -505,6 +507,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
                             calc_V = TRUE,
                             marginal = TRUE, stratification = NULL,
                             source = NULL, ...) {
+
   model <- check_deisgn_exsits(model)
   design <- model$design
 
@@ -516,7 +519,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     m <- mapper$m
     main <- mapper$main
     if (sum(!main) == 0) {
-      main <- TRUE
+      marginal <- FALSE
     } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
       m <- m[main, , drop = FALSE]
@@ -526,7 +529,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
-      main <- TRUE
+      marginal <- FALSE
     } else {
       cli::cli_inform(
         c(
@@ -534,7 +537,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "involving the target term."
         )
       )
-      main <- FALSE
+      marginal <- TRUE
     }
   } else {
     cli::cli_inform(
@@ -543,7 +546,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
         "Estimation is restricted to the defined strata."
       )
     )
-    main <- FALSE
+    marginal <- FALSE
     m <- build_new_Z(model, target, stratification) |> t()
   }
 
@@ -665,7 +668,8 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
   }
 
   list(n_g = n_g, G_g = G_g, C22_g = C22_g,
-       V = V, G = G, Z = Z, idx = idx, gnames = gnames, main = main)
+       V = V, G = G, Z = Z, idx = idx, gnames = gnames,
+       marginal = marginal, stratification = stratification, target = target)
 }
 
 #' @keywords internal
@@ -1260,5 +1264,18 @@ ginv_sym_sparse <- function(A, tol = 1e-10) {
   d_inv <- ifelse(abs(e$values) > tol, 1 / e$values, 0)
 
   e$vectors %*% (d_inv * t(e$vectors))
+}
+
+
+.capture_all_args <- function(fun, env = parent.frame(), drop = NULL) {
+  fmls <- formals(fun)
+
+  args <- lapply(names(fmls), function(nm) {
+    get(nm, envir = env)
+  })
+  names(args) <- names(fmls)
+
+  args <- args[setdiff(names(args), drop)]
+  args
 }
 

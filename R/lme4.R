@@ -20,6 +20,17 @@ h2_Standard.lmerMod <- function(model,
     return(NA)
   }
 
+  if(!is.null(vc)){
+    marginal <- vc$marginal
+    stratification <- vc$stratification
+    target <- vc$target
+  }
+
+  if(!is.null(stratification)){
+    cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
+    return(NA)
+  }
+
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
@@ -185,7 +196,7 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE,
                    marginal, stratification, ...)
   }
-  if(!vc$main){
+  if(vc$marginal || !is.null(vc$stratification)){
     cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
     return(NA)
   }
@@ -252,20 +263,22 @@ H2_Standard.lmerMod <- function(model,
     return(NA)
   }
 
+  if(!is.null(vc)){
+    marginal <- vc$marginal
+    stratification <- vc$stratification
+    target <- vc$target
+  }
+
+  if(!is.null(stratification)){
+    cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
+    return(NA)
+  }
+
   # Check if all random terms contain the target.
   trms <- pull_terms_without_specials(model)$random
-  grp_names <- attr(trms,"grouping_variable")
-  contain_target <- sapply(grp_names, function(grp){
-    target %in% stringr::str_split(grp, ":")[[1]]
-  }, USE.NAMES = FALSE)
-  main <- trms == target # Target main effect
-  interaction <- trms != target & contain_target # Target interaction effect
-  extra <- !contain_target # Other covariates
 
-  # Either no extra term or no interaction
-  simple <- (!any(extra) & !any(interaction)) | !is.null(stratification)
-
-  if(simple){
+  # Only use the simple definition when there is only main genetic effect.
+  if(all(trms == target)){
     # Get genotype variance
     if(is.null(vc)){
       G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)$G_g

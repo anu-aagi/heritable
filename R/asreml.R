@@ -225,7 +225,7 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, source = source, ...)
   }
-  if(!vc$main){
+  if(vc$marginal || !is.null(vc$stratification)){
     cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
     return(NA)
   }
@@ -376,7 +376,7 @@ H2_Piepho.asreml <- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
-  if(!vc$main){
+  if(vc$marginal || !is.null(vc$stratification)){
     cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
     return(NA)
   }
@@ -507,7 +507,7 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
-  if(!vc$main){
+  if(vc$marginal || !is.null(vc$stratification)){
     cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
     return(NA)
   }
@@ -569,17 +569,9 @@ H2_Standard.asreml <- function(model,
 
   # Check if all random terms contain the target.
   trms <- pull_terms_without_specials(model)$random
-  contain_target <- sapply(trms, function(trm){
-    target %in% stringr::str_split(trm, ":")[[1]]
-  }, USE.NAMES = FALSE)
-  main <- trms == target # Target main effect
-  interaction <- trms != target & contain_target # Target interaction effect
-  extra <- !contain_target # Other covariates
 
-  # Either no extra term or no interaction
-  simple <- (!any(extra) & !any(interaction)) | !is.null(stratification)
-
-  if(simple){
+  # Only use the simple definition when there is only main genetic effect.
+  if(all(trms == target)){
     # Get genotype variance
     if(is.null(vc)){
       G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)$G_g

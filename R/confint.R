@@ -83,7 +83,7 @@ confint.heritable <- function(object,
   all_method <- args[["method"]]
   all_method <- all_method[!is.na(object)]
 
-  if(is.null(method)){
+  if(is.null(parm)){
     method <- all_method
   } else {
     method <- intersect(parm, all_method)
