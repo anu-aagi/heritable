@@ -20,11 +20,7 @@ h2_Standard.lmerMod <- function(model,
     return(NA)
   }
 
-  if(!is.null(vc)){
-    marginal <- vc$marginal
-    stratification <- vc$stratification
-    target <- vc$target
-  }
+  if(!is.null(vc)) stratification <- vc$stratification
 
   if(!is.null(stratification)){
     cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
@@ -35,12 +31,6 @@ h2_Standard.lmerMod <- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
                    marginal, stratification, ...)
-  } else {
-    V <- vc$V
-    if(is.null(V)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
-                     marginal, stratification, ...)
-    }
   }
   V <- vc$V
   Z <- vc$Z
@@ -263,11 +253,7 @@ H2_Standard.lmerMod <- function(model,
     return(NA)
   }
 
-  if(!is.null(vc)){
-    marginal <- vc$marginal
-    stratification <- vc$stratification
-    target <- vc$target
-  }
+  if(!is.null(vc)) stratification <- vc$stratification
 
   if(!is.null(stratification)){
     cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
@@ -298,12 +284,8 @@ H2_Standard.lmerMod <- function(model,
     # Get genotype variance
     if(is.null(vc)){
       vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
-    } else {
-      V <- vc$V
-      if(is.null(V)){
-        vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
-      }
     }
+
     V <- vc$V
     Z <- vc$Z
     G <- vc$G
@@ -412,7 +394,7 @@ H2_Piepho.lmerMod <- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
-  if(!vc$main){
+  if(vc$marginal || !is.null(vc$stratification)){
     cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
     return(NA)
   }
@@ -490,7 +472,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
   }
-  if(!vc$main){
+  if(vc$marginal || !is.null(vc$stratification)){
     cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
     return(NA)
   }

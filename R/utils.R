@@ -498,7 +498,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
 
   list(n_g = n_g, G_g = G_g, C22_g = C22_g,
        V = V, G = G, Z = Z, idx = idx, gnames = gnames,
-       marginal = marginal, stratification = stratification, target = target)
+       marginal = marginal, stratification = stratification)
 }
 
 #' @noRd
@@ -669,7 +669,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
 
   list(n_g = n_g, G_g = G_g, C22_g = C22_g,
        V = V, G = G, Z = Z, idx = idx, gnames = gnames,
-       marginal = marginal, stratification = stratification, target = target)
+       marginal = marginal, stratification = stratification)
 }
 
 #' @keywords internal
