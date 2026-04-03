@@ -45,7 +45,7 @@ h2_Standard.asreml <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
                    marginal, stratification, source = source, ...)
   }
   V <- vc$V
@@ -103,7 +103,7 @@ h2_Oakey.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE,
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
                    marginal, stratification, source = source, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
@@ -182,7 +182,7 @@ h2_Delta_BLUP_pairwise.asreml<- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, source = source, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, source = source, ...)
   }
   G_g <- vc$G_g
   C22_g <- vc$C22_g
@@ -222,27 +222,41 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
     return(NA)
   }
 
-  # Extract vc_g and vc_e
+  # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, source = source, ...)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, ...)
   }
-  if(vc$marginal || !is.null(vc$stratification)){
-    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
-    return(NA)
-  }
-  G_g <- vc$G_g
   gnames <- vc$gnames
 
-  conterpart <- fit_counterpart_model(model, target)
-
-  # Get delta
-  delta_g <- var_diff(G_g)
-
-  delta <- predict(conterpart, classify = target, sed = TRUE, trace = FALSE)$sed^2
+  delta <- var_diff(vc$C11_g)
+  dimnames(delta) <- list(gnames, gnames)
   diag(delta) <- NA
 
-  # H2 Delta BLUE
+  delta_g <- var_diff(vc$G_g)
   h2_Delta_BLUE <- H2_Delta_parameters(delta_g, delta, "BLUE")
+
+  # # Extract vc_g and vc_e
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, source = source, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # G_g <- vc$G_g
+  # gnames <- vc$gnames
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # # Get delta
+  # delta_g <- var_diff(G_g)
+  #
+  # delta <- predict(conterpart, classify = target, sed = TRUE, trace = FALSE)$sed^2
+  # diag(delta) <- NA
+  #
+  # # H2 Delta BLUE
+  # h2_Delta_BLUE <- H2_Delta_parameters(delta_g, delta, "BLUE")
 
   dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
 
@@ -285,7 +299,7 @@ H2_Cullis.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -332,7 +346,7 @@ H2_Oakey.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -375,27 +389,43 @@ H2_Piepho.asreml <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, ...)
   }
-  if(vc$marginal || !is.null(vc$stratification)){
-    cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
-    return(NA)
-  }
-  G_g <- vc$G_g
-  s2_g <- mean(diag(G_g))
+  gnames <- vc$gnames
 
-  conterpart <- fit_counterpart_model(model, target)
+  delta <- var_diff(vc$C11_g)
+  dimnames(delta) <- list(gnames, gnames)
+  diag(delta) <- NA
+  delta_avg <- mean(delta[upper.tri(delta)])
 
-  delta <- predict(conterpart,
-    classify = target,
-    sed = TRUE,
-    trace = FALSE
-  )$sed^2
-
-  delta_avg <- mean(delta[upper.tri(delta, diag = FALSE)])
-
-  # Calculate Piepho's H2
+  # s2_g / (s2_g + delta_avg / 2)
+  s2_g <- mean(diag(vc$G_g))
   H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+
+  # # Get genotype variance
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # G_g <- vc$G_g
+  # s2_g <- mean(diag(G_g))
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # delta <- predict(conterpart,
+  #   classify = target,
+  #   sed = TRUE,
+  #   trace = FALSE
+  # )$sed^2
+  #
+  # delta_avg <- mean(delta[upper.tri(delta, diag = FALSE)])
+  #
+  # # Calculate Piepho's H2
+  # H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
 
   return(H2_Piepho)
 }
@@ -467,7 +497,7 @@ H2_Delta_BLUP_pairwise.asreml<- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g
@@ -504,25 +534,40 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
     return(NA)
   }
 
-  # Extract vc_g and vc_e
+
+  # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, ...)
   }
-  if(vc$marginal || !is.null(vc$stratification)){
-    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
-    return(NA)
-  }
-  s2_g <- mean(diag(vc$G_g))
+  gnames <- vc$gnames
 
-  conterpart <- fit_counterpart_model(model, target)
-
-  # Get delta
-  delta <- predict(conterpart, classify = target, sed = TRUE, trace = FALSE)$sed^2
+  delta <- var_diff(vc$C11_g)
+  dimnames(delta) <- list(gnames, gnames)
   diag(delta) <- NA
-  dimnames(delta) <- list(vc$gnames, vc$gnames)
 
-  # H2 Delta BLUE
+  s2_g <- mean(diag(vc$G_g))
   H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
+
+  # # Extract vc_g and vc_e
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # s2_g <- mean(diag(vc$G_g))
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # # Get delta
+  # delta <- predict(conterpart, classify = target, sed = TRUE, trace = FALSE)$sed^2
+  # diag(delta) <- NA
+  # dimnames(delta) <- list(vc$gnames, vc$gnames)
+  #
+  # # H2 Delta BLUE
+  # H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
 
   dimnames(H2_Delta_BLUE) <- dimnames(delta)
 
@@ -565,13 +610,6 @@ H2_Standard.asreml <- function(model,
     return(NA)
   }
 
-  if(!is.null(vc)) stratification <- vc$stratification
-
-  if(!is.null(stratification)){
-    cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
-    return(NA)
-  }
-
   model <- check_deisgn_exsits(model, build_design = FALSE)
   mf <- model$mf
 
@@ -582,7 +620,7 @@ H2_Standard.asreml <- function(model,
   if(all(trms == target)){
     # Get genotype variance
     if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)$G_g
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -595,23 +633,44 @@ H2_Standard.asreml <- function(model,
 
     H2_Standard <- H2_Standard_parameters(s2_g, s2_eps, n_r)
   } else {
+
     # Get genotype variance
     if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE, marginal, stratification, ...)
     }
+
     V <- vc$V
     Z <- vc$Z
     G <- vc$G
     idx <- vc$idx
 
-    g <- mf[[target]]
-    gnames <- levels(g)
-    Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
-    C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
-    W <- t(C) %*% Z[,idx]
-    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+    if(vc$marginal || !is.null(vc$stratification)){
+      X <- vc$X
+      m <- vc$m
 
-    H2_Standard <- h2_Standard_parameters(G_g, V, C)
+      X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+      C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
+      C <- C[-seq_len(ncol(X)),]
+      C <- crossprod(C, m)
+      W <-  t(C) %*% Z[,idx]
+      G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+      # Check estimability
+      # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
+      # c <- c(rep(0, ), m[,1] - m[,3])
+      # plot(c - P %*% c)
+
+    } else {
+      g <- mf[[target]]
+      gnames <- levels(g)
+      Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+      C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+      W <- t(C) %*% Z[,idx]
+      G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+    }
+
+    H2_Standard <-  h2_Standard_parameters(G_g, V, C)
+
   }
 
   return(H2_Standard)

@@ -197,7 +197,6 @@ H2_Delta <- function(
     model,
     target,
     type = c("BLUP", "BLUE"),
-    aggregate = c("arithmetic", "harmonic"),
     options = NULL,
     marginal = TRUE,
     stratification = NULL,
@@ -210,12 +209,10 @@ H2_Delta <- function(
 H2_Delta.default <- function(model,
                              target,
                              type = c("BLUP", "BLUE"),
-                             aggregate = c("arithmetic", "harmonic"),
                              options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
                              ...) {
-  aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
   H2D_ij <- H2_Delta_pairwise(model,
@@ -231,9 +228,9 @@ H2_Delta.default <- function(model,
   }
   delta_values <- H2D_ij[upper.tri(H2D_ij)]
 
-  switch(aggregate,
-    "arithmetic" = mean(delta_values),
-    "harmonic" = length(delta_values) / sum(1 / delta_values)
+  switch(type,
+    "BLUP" = mean(delta_values),
+    "BLUE" = length(delta_values) / sum(1 / delta_values)
   )
 }
 

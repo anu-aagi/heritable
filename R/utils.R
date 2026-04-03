@@ -408,10 +408,9 @@ var_diff <- function(V) {
 
 #' @noRd
 #' @keywords internal
-var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
-                             calc_V = TRUE,
+var_comp.lmerMod <- function(model, target,
+                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                              marginal = TRUE, stratification = NULL,...) {
-
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -464,7 +463,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   dimnames(G_g) <- list(gnames, gnames)
   n_g <- length(gnames)
 
-  if (calc_V || calc_C22) {
+  if (calc_V || calc_C22 || calc_C11) {
     R <- diag(nrow(X)) * sigma2
     V <- R + Z %*% G %*% t(Z)
     Vinv <- solve(V)
@@ -479,11 +478,25 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
       C22_g <- NULL
     }
 
+    if(calc_C11){
+      Z_g <-  Z[, g, drop=FALSE]
+      V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
+      X_tilde <- cbind(X, Z_g)
+
+      C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      C11_g <- crossprod(m, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% m
+      dimnames(C11_g) <- list(gnames, gnames)
+    } else {
+      C11_g <- NULL
+    }
+
     if(!calc_V) {
       V <- NULL
       G <- NULL
       Z <- NULL
+      X <- NULL
       idx <- NULL
+      m <- NULL
     } else {
       idx <- g
     }
@@ -492,19 +505,24 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
     V <- NULL
     G <- NULL
     Z <- NULL
+    X <- NULL
     idx <- NULL
+    m <- NULL
     C22_g <- NULL
+    C11_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g,
-       V = V, G = G, Z = Z, idx = idx, gnames = gnames,
+  list(n_g = n_g, gnames = gnames,
+       G_g = G_g, C22_g = C22_g, C11_g = C11_g, V = V, G = G,
+       Z = Z, X = X,
+       idx = idx, m = m,
        marginal = marginal, stratification = stratification)
 }
 
 #' @noRd
 #' @keywords internal
-var_comp.asreml <- function(model, target, calc_C22 = TRUE,
-                            calc_V = TRUE,
+var_comp.asreml <- function(model, target,
+                            calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                             marginal = TRUE, stratification = NULL,
                             source = NULL, ...) {
 
@@ -513,6 +531,30 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
 
   mapper <- map_target_terms(model, target, marginal)
   g <- mapper$idx
+
+  # Get random terms
+  ran_terms <- lapply(model$G.param, function(x) {
+    facnam <- lapply(x[-1], function(y) {
+      y <- paste0(y[["facnam"]], "_", y[["levels"]])
+      factor(y, levels = y)
+    })
+    facnam <- do.call(
+      expand.grid,
+      c(rev(facnam), list(stringsAsFactors = FALSE))
+    )
+    facnam <- facnam[, rev(seq_len(ncol(facnam))), drop = FALSE]
+    facnam <- apply(facnam, 1, function(x) paste0(x, collapse = ":"))
+  })
+  ran_terms <- do.call(c, ran_terms)
+
+  # Build design matrix
+  N <- nrow(design)
+  Q <- length(ran_terms)
+  Z <- Matrix::Matrix(0, N, Q)
+  colnames(Z) <- ran_terms
+  common_col <- intersect(colnames(design), ran_terms)
+  Z[, common_col] <- design[, common_col]
+  X <- design[, !colnames(design) %in% ran_terms, drop = FALSE]
 
   # Get BLUP weight
   if (is.null(stratification)) {
@@ -553,35 +595,16 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
   gnames <- colnames(m)
   n_g <- length(gnames)
 
-  if (calc_V || calc_C22) {
-    # Get random terms
-    grp_names <- sapply(model$G.param, function(x) {
-      facnam <- lapply(x[-1], function(y) y[["facnam"]])
-      paste0(do.call(c, facnam), collapse = ":")
-    })
-
-    ran_terms <- lapply(model$G.param, function(x) {
-      facnam <- lapply(x[-1], function(y) {
-        y <- paste0(y[["facnam"]], "_", y[["levels"]])
-        factor(y, levels = y)
-      })
-      facnam <- do.call(
-        expand.grid,
-        c(rev(facnam), list(stringsAsFactors = FALSE))
-      )
-      facnam <- facnam[, rev(seq_len(ncol(facnam))), drop = FALSE]
-      facnam <- apply(facnam, 1, function(x) paste0(x, collapse = ":"))
-    })
-    ran_terms <- do.call(c, ran_terms)
+  if (calc_V || calc_C22 || calc_C11) {
+    n_comp <- length(model$G.param)
 
     # Build variance
-    G_list <- lapply(seq_along(grp_names), function(x) {
+    G_list <- lapply(seq_len(n_comp), function(x) {
       phrase_G(model$G.param[[x]], source = source)
     })
     G <- Matrix::bdiag(G_list)
     G <- G * model$sigma2
     dimnames(G) <- list(ran_terms, ran_terms)
-    Q <- ncol(G)
 
     # Identify missing terms.
     col_design <- colnames(design)
@@ -596,14 +619,6 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
 
     G_g <- crossprod(m, G[g, g, drop = FALSE]) %*% m
     dimnames(G_g) <- list(gnames, gnames)
-
-    # Build design matrix
-    N <- nrow(design)
-    Z <- Matrix::Matrix(0, N, Q)
-    colnames(Z) <- ran_terms
-    common_col <- intersect(colnames(design), ran_terms)
-    Z[, common_col] <- design[, common_col]
-    X <- design[, !colnames(design) %in% ran_terms]
 
     # Build R matrix
     R <- asremlPlus::estimateV.asreml(model, which.matrix = "R") |>
@@ -622,11 +637,25 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
       C22_g <- NULL
     }
 
+    if(calc_C11){
+      Z_g <-  Z[, g, drop=FALSE]
+      V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
+      X_tilde <- cbind(X, Z_g)
+
+      C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      C11_g <- crossprod(m, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% m
+      dimnames(C11_g) <- list(gnames, gnames)
+    } else {
+      C11_g <- NULL
+    }
+
     if(!calc_V) {
       V <- NULL
       G <- NULL
       Z <- NULL
+      X <- NULL
       idx <- NULL
+      m <- NULL
     } else {
       idx <- g
     }
@@ -663,19 +692,24 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     V <- NULL
     G <- NULL
     Z <- NULL
+    X <- NULL
     idx <- NULL
+    m <- NULL
     C22_g <- NULL
+    C11_g <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g,
-       V = V, G = G, Z = Z, idx = idx, gnames = gnames,
+  list(n_g = n_g, gnames = gnames,
+       G_g = G_g, C22_g = C22_g, C11_g = C11_g, V = V, G = G,
+       Z = Z, X = X,
+       idx = idx, m = m,
        marginal = marginal, stratification = stratification)
 }
 
 #' @keywords internal
 #' @noRd
-var_comp <- function(model, target, calc_C22 = TRUE,
-                     calc_V = TRUE,
+var_comp <- function(model, target,
+                     calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                      marginal = TRUE, stratification = NULL,...) {
   UseMethod("var_comp")
 }

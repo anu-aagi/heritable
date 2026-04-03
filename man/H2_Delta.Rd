@@ -10,7 +10,6 @@ h2_Delta(model,
          target,
          source = NULL,
          type = c("BLUP", "BLUE"),
-         aggregate = c("arithmetic", "harmonic"),
          options = NULL,
          marginal = TRUE,
          stratification = NULL,
@@ -19,7 +18,6 @@ h2_Delta(model,
 H2_Delta(model,
          target,
          type = c("BLUP", "BLUE"),
-         aggregate = c("arithmetic", "harmonic"),
          options = NULL,
          marginal = TRUE,
          stratification = NULL,
@@ -35,8 +33,6 @@ When not provided (NULL by default), the GRM variable used for \code{vm} calling
 Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
-
-\item{aggregate}{character, when taking means in the calculation, should harmonic or arithmetic mean be used?}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 

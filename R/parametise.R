@@ -83,7 +83,7 @@ H2_Oakey_parameters <- function(Gg_inv, C22_g) {
    M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
 
    eM <- eigen(M, symmetric = TRUE)
-   thres <- 1e-5
+   thres <- 1e-10
    H2_Oakey <- mean(eM$values[eM$values > thres])
    return(H2_Oakey)
 }
@@ -162,5 +162,5 @@ h2_Standard_parameters <- function(G_g, V, C) {
   delta_g <- var_diff(G_g)
   # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
 
-  mean((delta_g/delta_y)[lower.tri(delta_y)])
+  1/mean((delta_y/delta_g)[lower.tri(delta_y)])
 }

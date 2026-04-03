@@ -1,10 +1,38 @@
 # test_that("Refactored asreml works",{
 #   skip()
+# lettuce_phenotypes <- subset(heritable::lettuce_phenotypes, !is.na(y))
+# model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+# model <-  lme4::lmer(y ~  rep + (1 | gen ) + (1 | loc), data = lettuce_phenotypes)
 #
-# lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
+# getME(model, "X")
+# H2(model, "gen", marginal = TRUE, type = "BLUE")
+# H2(model, "gen", marginal = TRUE, stratification = data.frame(loc = "L2"))
+# h2(model, "gen", marginal = TRUE, type = "BLUE")
+#
+# vc <- var_comp(model, "gen", marginal = TRUE, calc_V = TRUE, calc_C22 = FALSE)
+# V <- vc$V
+# Z <- vc$Z
+# G <- vc$G
+# idx <- vc$idx
+# X <- vc$X
+# y <- vc$y
+# m <- vc$m
+#
+# X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+# P <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
+# P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
+# c <- c(0,0,0, m[,1] - m[,3])
+# c - P %*% c
+#
+#
+# lettuce_subset <- subset(heritable::lettuce_phenotypes, loc == "L2")
+# model <-  lme4::lmer(y ~  rep + (1 | gen), data = lettuce_subset)
+# H2(model, "gen", marginal = TRUE, type = "BLUE")
+# h2(model, "gen", marginal = TRUE, type = "BLUE")
+
 #
 # model <-  lme4::lmer(y ~  rep + (0+ loc | gen ) + (1| gen), data = lettuce_phenotypes)
-#model <-  lme4::lmer(y ~  rep + (loc | gen ) + (1| gen), data = lettuce_phenotypes)
+# model <-  lme4::lmer(y ~  rep + (loc | gen ) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1+ 1+ loc || gen ) + (1| gen), data = lettuce_phenotypes)
@@ -27,14 +55,20 @@
 # h2_Delta_pairwise.lmerMod(model, "gen", type = "BLUE")
 # h2_Delta_pairwise.lmerMod(model, "gen", type = "BLUP")
 #
-# lettuce_phenotypes <- subset(lettuce_phenotypes, !is.na(y))
-#
+
 # model <- asreml(
 #   fixed = y ~ rep,
 #   random =  ~ loc + gen + gen:loc ,
 #   data = lettuce_phenotypes,
 #   trace = FALSE,
 # )
+#
+# H2(model, "gen", marginal = TRUE)
+# H2(model, "gen", marginal = TRUE, stratification = data.frame(loc = "L3"))
+#
+
+
+
 # system.time(
 #   confint(H2(model, "gen"), B = 20)
 # )
@@ -44,8 +78,6 @@
 # system.time(
 #   confint(H2(model, "gen"), B = 100, parallel = "snow", ncpus = 3)
 # )
-# H2(model, "gen", marginal = f)
-# H2(model, "gen", marginal = TRUE)
 # var_comp(model, "gen", marginal = TRUE, stratification = data.frame(loc = "L1"))
 #
 #

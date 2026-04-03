@@ -281,14 +281,12 @@ h2_Oakey <- function(model,
 #' @name H2_Delta
 #' @aliases H2_Delta, h2_Delta
 #' @param type character, whether heritability is calculated using BLUEs or BLUPs
-#' @param aggregate character, when taking means in the calculation, should harmonic or arithmetic mean be used?
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @usage
 #' h2_Delta(model,
 #'          target,
 #'          source = NULL,
 #'          type = c("BLUP", "BLUE"),
-#'          aggregate = c("arithmetic", "harmonic"),
 #'          options = NULL,
 #'          marginal = TRUE,
 #'          stratification = NULL,
@@ -297,7 +295,6 @@ h2_Oakey <- function(model,
 #' H2_Delta(model,
 #'          target,
 #'          type = c("BLUP", "BLUE"),
-#'          aggregate = c("arithmetic", "harmonic"),
 #'          options = NULL,
 #'          marginal = TRUE,
 #'          stratification = NULL,
@@ -344,7 +341,6 @@ h2_Delta <- function(model,
                      target,
                      source = NULL,
                      type = c("BLUP", "BLUE"),
-                     aggregate = c("arithmetic", "harmonic"),
                      options = NULL,
                      marginal = TRUE,
                      stratification = NULL,
@@ -358,12 +354,10 @@ h2_Delta.default <- function(model,
                              target,
                              source = NULL,
                              type = c("BLUP", "BLUE"),
-                             aggregate = c("arithmetic", "harmonic"),
                              options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
                              ...) {
-  aggregate <- match.arg(aggregate)
   type <- match.arg(type)
 
   h2D_ij <- h2_Delta_pairwise(model,
@@ -380,9 +374,9 @@ h2_Delta.default <- function(model,
   }
   delta_values <- h2D_ij[upper.tri(h2D_ij)]
 
-  switch(aggregate,
-         "arithmetic" = mean(delta_values),
-         "harmonic" = length(delta_values) / sum(1 / delta_values)
+  switch(type,
+         "BLUP" = mean(delta_values),
+         "BLUE" = length(delta_values) / sum(1 / delta_values)
   )
 }
 

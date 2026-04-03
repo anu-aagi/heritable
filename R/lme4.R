@@ -29,7 +29,7 @@ h2_Standard.lmerMod <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE,
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
                    marginal, stratification, ...)
   }
   V <- vc$V
@@ -37,14 +37,36 @@ h2_Standard.lmerMod <- function(model,
   G <- vc$G
   idx <- vc$idx
 
-  g <- stats::model.frame(model)[[target]]
-  gnames <- levels(g)
-  Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
-  C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
-  W <- t(C) %*% Z[,idx]
-  G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+  if(vc$marginal || !is.null(vc$stratification)){
+    X <- vc$X
+    y <- vc$y
+    m <- vc$m
 
-  h2_Standard <- h2_Standard_parameters(G_g, V, C)
+    X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+    C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
+    C <- C[-seq_len(ncol(X)),]
+    C <- crossprod(C, m)
+    W <-  t(C) %*% Z[,idx]
+    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+    h2_Standard <-  h2_Standard_parameters(G_g, V, C)
+
+    # Check estimability
+    # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
+    # c <- c(rep(0, ), m[,1] - m[,3])
+    # plot(c - P %*% c)
+
+  } else {
+    g <- stats::model.frame(model)[[target]]
+    gnames <- levels(g)
+    Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+    C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+    W <- t(C) %*% Z[,idx] # C^T Z G Z C
+    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+    h2_Standard <- h2_Standard_parameters(G_g, V, C)
+
+  }
 
   return(h2_Standard)
 }
@@ -73,7 +95,7 @@ h2_Oakey.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE,
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
                    marginal, stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
@@ -140,7 +162,7 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE,
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
                    marginal, stratification, ...)
   }
   G_g <- vc$G_g
@@ -181,51 +203,69 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
     return(NA)
   }
 
-  # Extract vc_g and vc_e
+  # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE,
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
                    marginal, stratification, ...)
   }
-  if(vc$marginal || !is.null(vc$stratification)){
-    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
-    return(NA)
-  }
-  G_g <- vc$G_g
   gnames <- vc$gnames
-  n_g <- vc$n_g
 
-  # Get delta
-  delta_g <- var_diff(G_g)
-
-  # Calculate mean variance of a difference between genotypes
-  conterpart <- fit_counterpart_model(model, target)
-
-  # Take pairwise differences and turn into variance-covariance matrix
-  frm <- as.formula(paste("pairwise ~", target))
-  EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
-  EMM_fit <- data.frame(EMM_fit) # Get variance
-  EMM_fit$var <- EMM_fit$SE^2
-
-  # Start with empty variance matrix for differences
-  delta <- matrix(0, nrow = n_g, ncol = n_g)
+  delta <- var_diff(vc$C11_g)
   dimnames(delta) <- list(gnames, gnames)
-
-  # Fill in the pairwise variance of differences
-  for (i in 1:nrow(EMM_fit)) {
-    # Extract genotype names from contrast column
-    pair <- strsplit(as.character(EMM_fit$contrast[i]), " - ")[[1]]
-    g1 <- pair[1]
-    g2 <- pair[2]
-
-    delta[g1, g2] <- EMM_fit$var[i]
-    delta[g2, g1] <- EMM_fit$var[i] # symmetric
-  }
-
-  delta <- Matrix::Matrix(delta)
   diag(delta) <- NA
 
-  # H2 Delta BLUE
+  delta_g <- var_diff(vc$G_g)
   h2_Delta_BLUE <- H2_Delta_parameters(delta_g, delta, "BLUE")
+
+  # # Extract vc_g and vc_e
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE,
+  #                  marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # G_g <- vc$G_g
+  # gnames <- vc$gnames
+  # n_g <- vc$n_g
+  #
+  # # Get delta
+  # delta_g <- var_diff(G_g)
+  #
+  # # Calculate mean variance of a difference between genotypes
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # # Take pairwise differences and turn into variance-covariance matrix
+  # frm <- as.formula(paste("pairwise ~", target))
+  # EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
+  # EMM_fit <- data.frame(EMM_fit) # Get variance
+  # EMM_fit$var <- EMM_fit$SE^2
+  #
+  # # Start with empty variance matrix for differences
+  # delta <- matrix(0, nrow = n_g, ncol = n_g)
+  # dimnames(delta) <- list(gnames, gnames)
+  #
+  # # Fill in the pairwise variance of differences
+  # for (i in 1:nrow(EMM_fit)) {
+  #   # Extract genotype names from contrast column
+  #   pair <- strsplit(as.character(EMM_fit$contrast[i]), " - ")[[1]]
+  #   g1 <- pair[1]
+  #   g2 <- pair[2]
+  #
+  #   delta[g1, g2] <- EMM_fit$var[i]
+  #   delta[g2, g1] <- EMM_fit$var[i] # symmetric
+  # }
+  #
+  # delta <- Matrix::Matrix(delta)
+  # diag(delta) <- NA
+  #
+  # # H2 Delta BLUE
+  # h2_Delta_BLUE <- H2_Delta_parameters(delta_g, delta, "BLUE")
+  #
+  # dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
+  #
+  # h2_Delta_BLUE
 
   dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
 
@@ -253,13 +293,6 @@ H2_Standard.lmerMod <- function(model,
     return(NA)
   }
 
-  if(!is.null(vc)) stratification <- vc$stratification
-
-  if(!is.null(stratification)){
-    cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
-    return(NA)
-  }
-
   # Check if all random terms contain the target.
   trms <- pull_terms_without_specials(model)$random
 
@@ -267,7 +300,7 @@ H2_Standard.lmerMod <- function(model,
   if(all(trms == target)){
     # Get genotype variance
     if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)$G_g
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -283,7 +316,7 @@ H2_Standard.lmerMod <- function(model,
 
     # Get genotype variance
     if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, marginal, stratification, ...)
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE, marginal, stratification, ...)
     }
 
     V <- vc$V
@@ -291,14 +324,35 @@ H2_Standard.lmerMod <- function(model,
     G <- vc$G
     idx <- vc$idx
 
-    g <- stats::model.frame(model)[[target]]
-    gnames <- levels(g)
-    Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
-    C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
-    W <- t(C) %*% Z[,idx]
-    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+    if(vc$marginal || !is.null(vc$stratification)){
+      X <- vc$X
+      m <- vc$m
 
-    H2_Standard <- h2_Standard_parameters(G_g, V, C)
+      X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+      C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
+      C <- C[-seq_len(ncol(X)),]
+      C <- crossprod(C, m)
+      W <-  t(C) %*% Z[,idx]
+      G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+      H2_Standard <-  h2_Standard_parameters(G_g, V, C)
+
+      # Check estimability
+      # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
+      # c <- c(rep(0, ), m[,1] - m[,3])
+      # plot(c - P %*% c)
+
+    } else {
+      g <- stats::model.frame(model)[[target]]
+      gnames <- levels(g)
+      Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+      C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+      W <- t(C) %*% Z[,idx] # C^T Z G Z C
+      G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+      H2_Standard <- h2_Standard_parameters(G_g, V, C)
+
+    }
 
   }
 
@@ -328,7 +382,7 @@ H2_Cullis.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -362,7 +416,7 @@ H2_Oakey.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -392,24 +446,42 @@ H2_Piepho.lmerMod <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, ...)
   }
-  if(vc$marginal || !is.null(vc$stratification)){
-    cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
-    return(NA)
-  }
-  G_g <- vc$G_g
-  s2_g <- mean(diag(G_g))
+  gnames <- vc$gnames
 
-  conterpart <- fit_counterpart_model(model, target)
-
-  # Get mean variance of a difference between genotypes
-  frm <- as.formula(paste("pairwise ~", target))
-  EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
-  delta_avg <- mean(data.frame(EMM_fit)$SE^2) # Get variance
+  delta <- var_diff(vc$C11_g)
+  dimnames(delta) <- list(gnames, gnames)
+  diag(delta) <- NA
+  delta_avg <- mean(delta[upper.tri(delta)])
 
   # s2_g / (s2_g + delta_avg / 2)
+  s2_g <- mean(diag(vc$G_g))
   H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+
+  ## Conterpart method
+
+  # Get genotype variance
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # G_g <- vc$G_g
+  # s2_g <- mean(diag(G_g))
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # # Get mean variance of a difference between genotypes
+  # frm <- as.formula(paste("pairwise ~", target))
+  # EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
+  # delta_avg <- mean(data.frame(EMM_fit)$SE^2) # Get variance
+  #
+  # # s2_g / (s2_g + delta_avg / 2)
+  # H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
 
   return(H2_Piepho)
 }
@@ -468,48 +540,66 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
     return(NA)
   }
 
-  # Extract vc_g and vc_e
+  # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, ...)
   }
-  if(vc$marginal || !is.null(vc$stratification)){
-    cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
-    return(NA)
-  }
-  s2_g <- mean(diag(vc$G_g))
-
-  conterpart <- fit_counterpart_model(model, target)
-
-  # Calculate mean variance of a difference between genotypes
-  frm <- as.formula(paste("pairwise ~", target))
-  EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
-  EMM_fit <- data.frame(EMM_fit) # Get variance
-  EMM_fit$var <- EMM_fit$SE^2
-
-  # Take pairwise differences and turn into variance-covariance matrix
   gnames <- vc$gnames
-  n_g <- vc$n_g
 
-  # Start with empty variance matrix for differences
-  delta <- matrix(0, nrow = n_g, ncol = n_g)
+  delta <- var_diff(vc$C11_g)
   dimnames(delta) <- list(gnames, gnames)
-
-  # Fill in the pairwise variance of differences
-  for (i in 1:nrow(EMM_fit)) {
-    # Extract genotype names from contrast column
-    pair <- strsplit(as.character(EMM_fit$contrast[i]), " - ")[[1]]
-    g1 <- pair[1]
-    g2 <- pair[2]
-
-    delta[g1, g2] <- EMM_fit$var[i]
-    delta[g2, g1] <- EMM_fit$var[i] # symmetric
-  }
-
-  delta <- Matrix::Matrix(delta)
   diag(delta) <- NA
 
-  # H2 Delta BLUE
+  s2_g <- mean(diag(vc$G_g))
   H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
+
+  # Counterpart approach
+  #
+  # # Extract vc_g and vc_e
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Delta (BLUE) heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # s2_g <- mean(diag(vc$G_g))
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # # Calculate mean variance of a difference between genotypes
+  # frm <- as.formula(paste("pairwise ~", target))
+  # EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
+  # EMM_fit <- data.frame(EMM_fit) # Get variance
+  # EMM_fit$var <- EMM_fit$SE^2
+  #
+  # # Take pairwise differences and turn into variance-covariance matrix
+  # gnames <- vc$gnames
+  # n_g <- vc$n_g
+  #
+  # # Start with empty variance matrix for differences
+  # delta <- matrix(0, nrow = n_g, ncol = n_g)
+  # dimnames(delta) <- list(gnames, gnames)
+  #
+  # # Fill in the pairwise variance of differences
+  # for (i in 1:nrow(EMM_fit)) {
+  #   # Extract genotype names from contrast column
+  #   pair <- strsplit(as.character(EMM_fit$contrast[i]), " - ")[[1]]
+  #   g1 <- pair[1]
+  #   g2 <- pair[2]
+  #
+  #   delta[g1, g2] <- EMM_fit$var[i]
+  #   delta[g2, g1] <- EMM_fit$var[i] # symmetric
+  # }
+  #
+  # delta <- Matrix::Matrix(delta)
+  # diag(delta) <- NA
+
+  # H2 Delta BLUE
+  # H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
+
+  dimnames(H2_Delta_BLUE) <- dimnames(delta)
 
   return(H2_Delta_BLUE)
 }
@@ -534,7 +624,7 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g
