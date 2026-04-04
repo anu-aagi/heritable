@@ -2,9 +2,10 @@
 #   skip()
 # lettuce_phenotypes <- subset(heritable::lettuce_phenotypes, !is.na(y))
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
-# model <-  lme4::lmer(y ~  rep + (1 | gen ) + (1 | loc), data = lettuce_phenotypes)
+# H2(model, "gen", marginal = FALSE)
+# H2(model, "gen", marginal = TRUE)
+# H2(model, "gen", stratification = data.frame(loc = "L1"))
 #
-# getME(model, "X")
 # H2(model, "gen", marginal = TRUE, type = "BLUE")
 # H2(model, "gen", marginal = TRUE, stratification = data.frame(loc = "L2"))
 # h2(model, "gen", marginal = TRUE, type = "BLUE")
