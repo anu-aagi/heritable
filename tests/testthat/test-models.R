@@ -2,9 +2,31 @@
 #   skip()
 # lettuce_phenotypes <- subset(heritable::lettuce_phenotypes, !is.na(y))
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+# model <-  lme4::lmer(y ~  rep + (1 | gen), data = lettuce_phenotypes)
+# model <-  lme4::lmer(y ~  rep + (1 | gen) + (1|gen:loc), data = lettuce_phenotypes)
+#
+# # when i fit a conterpart model of
+# model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+# # should it be
+# model <-  lme4::lmer(y ~  rep + gen + gen:loc + (1 | loc), data = lettuce_phenotypes)
+# # or
+# model <-  lme4::lmer(y ~  rep + gen + gen:loc + loc, data = lettuce_phenotypes)
+#
+# # if i want base line heritability, should the conterpart model be
+# model <-  lme4::lmer(y ~  rep + gen + gen:loc + (1 | loc), data = lettuce_phenotypes)
+# # or
+# model <-  lme4::lmer(y ~  rep + gen + (1 | loc:gen) + (1 | loc), data = lettuce_phenotypes)
+#
+#
 # H2(model, "gen", marginal = FALSE)
 # H2(model, "gen", marginal = TRUE)
 # H2(model, "gen", stratification = data.frame(loc = "L1"))
+#
+# lettuce_subset <- subset(heritable::lettuce_phenotypes, loc == "L1")
+# model <-  lme4::lmer(y ~  rep + (1 | gen), data = lettuce_subset)
+# H2(model, "gen", marginal = FALSE)
+
+
 #
 # H2(model, "gen", marginal = TRUE, type = "BLUE")
 # H2(model, "gen", marginal = TRUE, stratification = data.frame(loc = "L2"))

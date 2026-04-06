@@ -342,6 +342,25 @@ H2_Standard.lmerMod <- function(model,
       # c <- c(rep(0, ), m[,1] - m[,3])
       # plot(c - P %*% c)
 
+      # Validate stratified heritability using the following model
+      # model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+      #
+      # g <- stats::model.frame(model)[[target]]
+      # gnames <- levels(g)
+      # Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+      # Z_g <- Z_g * (stats::model.frame(model)[["loc"]] == "L3")
+      # C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+      # C[is.na(C)] <- 0
+      # W <- t(C) %*% Z[,idx] # C^T Z G Z C
+      # G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+      # S <- crossprod(C, V %*% C)
+      # delta_y <- var_diff(S)
+      # delta_g <- var_diff(G_g)
+      # 1/mean((delta_y/delta_g)[lower.tri(delta_y)], na.rm=TRUE)
+      #
+      # this yields the same result as using the above code.
+
+
     } else {
       g <- stats::model.frame(model)[[target]]
       gnames <- levels(g)
