@@ -153,11 +153,17 @@ asreml_Spcls <- c(
 )
 
 #' @keywords internal
+pull_terms_without_specials.glmmTMB <- function(model) {
+  pull_terms.glmmTMB(model)
+}
+
+#' @keywords internal
 pull_terms_without_specials <- function(model) {
   UseMethod("pull_terms_without_specials")
 }
 .S3method("pull_terms_without_specials", "asreml", pull_terms_without_specials.asreml)
 .S3method("pull_terms_without_specials", "lmerMod", pull_terms_without_specials.lmerMod)
+.S3method("pull_terms_without_specials", "glmmTMB", pull_terms_without_specials.glmmTMB)
 
 
 #' @keywords internal
