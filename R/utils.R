@@ -56,11 +56,24 @@ pull_terms.lmerMod <- function(model) {
 }
 
 #' @keywords internal
+pull_terms.glmmTMB <- function(model) {
+  fixed_trms <- terms(model) |>
+    attr("term.labels")
+
+  ran_trms <- glmmTMB::VarCorr(model) |>
+    _$cond |>
+    names()
+
+  return(list(fixed = fixed_trms, random = ran_trms))
+}
+
+#' @keywords internal
 pull_terms <- function(model) {
   UseMethod("pull_terms")
 }
 .S3method("pull_terms", "asreml", pull_terms.asreml)
 .S3method("pull_terms", "lmerMod", pull_terms.lmerMod)
+.S3method("pull_terms", "glmmTMB", pull_terms.glmmTMB)
 
 
 #' @keywords internal
