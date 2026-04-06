@@ -296,3 +296,9 @@ check_and_load_asreml <- function() {
   }
   invisible(library("asreml", character.only = TRUE))
 }
+
+#' @keywords internal
+check_glmmTMB_family <- function(model) {
+  if (model$modelInfo$family$family != "gaussian")
+    cli::cli_abort("Only the Gaussian response distribution is currently supported!")
+}
