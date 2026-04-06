@@ -345,3 +345,9 @@ check_model_specification <- function(model, target,
 }
 .S3method("check_model_specification", "asreml", check_model_specification.asreml)
 .S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
+
+#' @keywords internal
+check_glmmTMB_family <- function(model) {
+  if (model$modelInfo$family$family != "gaussian")
+    cli::cli_abort("Only the Gaussian response distribution is currently supported!")
+}
