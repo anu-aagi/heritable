@@ -8,7 +8,7 @@
 \usage{
 h2(model,
    target,
-   method = c("Oakey", "Delta", "Standard"),
+   method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
    source = NULL,
    options = NULL,
    marginal = TRUE,
@@ -17,7 +17,7 @@ h2(model,
 
 H2(model,
    target,
-   method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
+   method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
    options = NULL,
    marginal = TRUE,
    stratification = NULL,
@@ -61,7 +61,9 @@ A case-specific wrapper for calculating broad / narrow sense heritability.
 \details{
 The following methods are currently implemented for narrow-sense heritability \code{h2(method = "XX")}:
 \itemize{
+\item \code{"Cullis"}: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 \item \code{"Oakey"}: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+\item \code{"Piepho"}: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 \item \code{"Delta"}: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{\operatorname{Var}(g_i - g_j)}}
 \item \code{"Standard"}: \deqn{H^2_{Standard} = \frac{\operatorname{Var}(g_i - g_j)}{\operatorname{Var}(y_i.. - y_j..)}}
 }
@@ -70,8 +72,8 @@ The following methods are currently implemented for broad-sense heritability \co
 \itemize{
 \item \code{"Cullis"}: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 \item \code{"Oakey"}: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-\item \code{"Delta"}: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 \item \code{"Piepho"}: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+\item \code{"Delta"}: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 \item \code{"Standard"}: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
 }
 

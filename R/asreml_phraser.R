@@ -1,7 +1,7 @@
 phrase_G <- function(G_params, ...) {
   terms <- names(G_params[-1])
   specs <- sapply(G_params[-1], function(x) x[["model"]])
-  known_specs <- c("id", "diag", "ar1", "vm")
+  known_specs <- c("id", "idv", "diag", "ar1", "vm")
   unknown_specs <- unique(specs[!specs %in% known_specs])
   if (length(unknown_specs) > 0) {
     cli::cli_abort("Don't know how to phrase {.code {unknown_specs}} yet.")
@@ -14,6 +14,7 @@ phrase_G <- function(G_params, ...) {
   for (trm in terms) {
     spec <- G_params[[trm]][["model"]]
     if (spec == "id") G_list[[trm]] <- phrase_id(G_params[[trm]])
+    if (spec == "idv") G_list[[trm]] <- phrase_idv(G_params[[trm]])
     if (spec == "diag") G_list[[trm]] <- phrase_diag(G_params[[trm]])
     if (spec == "ar1") G_list[[trm]] <- phrase_ar1(G_params[[trm]])
     if (spec == "vm") G_list[[trm]] <- phrase_vm(G_params[[trm]], ...)
@@ -32,6 +33,21 @@ phrase_id <- function(G_params, ...) {
   n_g <- length(G_params[["levels"]])
 
   G <- Matrix::Diagonal(n = n_g)
+  dimnames(G) <- list(grp, grp)
+  G
+}
+
+phrase_idv <- function(G_params, ...) {
+  spec <- G_params[["model"]]
+  if (spec != "idv") {
+    cli::cli_abort("Wrong phrase used.")
+  }
+
+  grp <- G_params[["levels"]]
+  n_g <- length(G_params[["levels"]])
+
+  G <- Matrix::Diagonal(n = n_g)
+  G <- G * G_params[["initial"]]
   dimnames(G) <- list(grp, grp)
   G
 }

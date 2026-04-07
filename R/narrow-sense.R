@@ -22,7 +22,7 @@
 #' @usage
 #' h2(model,
 #'    target,
-#'    method = c("Oakey", "Delta", "Standard"),
+#'    method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
 #'    source = NULL,
 #'    options = NULL,
 #'    marginal = TRUE,
@@ -31,7 +31,7 @@
 #'
 #' H2(model,
 #'    target,
-#'    method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
+#'    method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
 #'    options = NULL,
 #'    marginal = TRUE,
 #'    stratification = NULL,
@@ -43,15 +43,17 @@
 #' @details
 #'
 #' The following methods are currently implemented for narrow-sense heritability `h2(method = "XX")`:
+#' - `"Cullis"`: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 #' - `"Oakey"`: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
+#' - `"Piepho"`: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 #' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{\operatorname{Var}(g_i - g_j)}}
 #' - `"Standard"`: \deqn{H^2_{Standard} = \frac{\operatorname{Var}(g_i - g_j)}{\operatorname{Var}(y_i.. - y_j..)}}
 #'
 #' The following methods are currently implemented for broad-sense heritability `H2(method = "XX")`:
 #' - `"Cullis"`: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
 #' - `"Oakey"`: \deqn{H^2_{Oakey} = \frac{\sum_{i = n_z+1}^{n_g} \lambda_i}{\sum_{n_g}^{\lambda_i\neq 0}}}
-#' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 #' - `"Piepho"`: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 #' - `"Standard"`: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
 #'
 #' For further details of a specific method - take a look at helpfile for each subfunctions `?H2_Cullis`
@@ -82,7 +84,7 @@
 #' @export
 h2 <- function(model,
                target,
-               method = c("Oakey", "Delta", "Standard"),
+               method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
                source = NULL,
                options = NULL,
                marginal = TRUE,
@@ -95,7 +97,7 @@ h2 <- function(model,
 #' @export
 h2.default <- function(model,
                        target,
-                       method = c("Oakey", "Delta", "Standard"),
+                       method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
                        source = NULL,
                        options = NULL,
                        marginal = TRUE,
@@ -123,7 +125,9 @@ h2.default <- function(model,
 
   h2_values <- sapply(method, function(m) {
     switch(m,
+           Cullis = h2_Cullis(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
            Oakey = h2_Oakey(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
+           Piepho = h2_Piepho(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
            Delta = h2_Delta(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
            Standard = h2_Standard(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
            cli::cli_abort(
@@ -542,4 +546,122 @@ h2_Delta_pairwise <- function(model,
                               stratification = NULL,
                               ...) {
   UseMethod("h2_Delta_pairwise")
+}
+
+
+#' Calculate Cullis' heritability from model object
+#' @description Compute "generalised heritability" for unbalanced experimental designs.
+#' See Cullis, Smith and Coombes (2006) for derivation.
+#' @inheritParams H2
+#' @name H2_Cullis
+#' @aliases H2_Cullis, h2_Cullis
+#' @usage
+#' H2_Cullis(model,
+#'           target,
+#'           options = NULL,
+#'           marginal = TRUE,
+#'           stratification = NULL,
+#'           ...)
+#' h2_Cullis(model,
+#'           target,
+#'           source = NULL,
+#'           options = NULL,
+#'           marginal = TRUE,
+#'           stratification = NULL,
+#'           ...)
+#' @return Numeric value
+#' @details The equation for Cullis heritability is as follow
+#'
+#' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
+#'
+#' where:
+#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
+#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
+#' @references
+#' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+#' @export
+#' @examples
+#' # lme4 model
+#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Cullis(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Cullis(lettuce_asreml, target = "gen")
+#' }
+
+h2_Cullis <- function(model,
+                      target,
+                      source = NULL,
+                      options = NULL,
+                      marginal = TRUE,
+                      stratification = NULL,
+                      ...) {
+  UseMethod("h2_Cullis")
+}
+
+
+#' Calculate Piepho's heritability from model object
+#' Compute Piepho's heritability using variance differences between genotype BLUEs
+#' @usage
+#' H2_Piepho(model,
+#'           target,
+#'           options = NULL,
+#'           marginal = TRUE,
+#'           stratification = NULL,
+#'           ...)
+#' h2_Piepho(model,
+#'           target,
+#'           source = NULL,
+#'           options = NULL,
+#'           marginal = TRUE,
+#'           stratification = NULL,
+#'           ...)
+#' @inheritParams H2
+#' @name H2_Piepho
+#' @aliases H2_Piepho, h2_Piepho
+#' @details The equation for Piepho's heritability is as follows:
+#'
+#' \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
+#'
+#' where:
+#' - \eqn{\overline{PEV_{BLUE_g}}} is the prediction error variance matrix for genotype BLUEs
+#' - \eqn{\sigma^2_g} is the variance attributed to differences between genotype
+#'
+#' See reference for full derivation and details.
+#' @returns Numeric
+#' @export
+#' @references
+#' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
+#' @examples
+#' # lme4 model
+#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Piepho(lettuce_lme4, target = "gen")
+#'
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ gen,
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Piepho(lettuce_asreml, target = "gen")
+#' }
+h2_Piepho <- function(model,
+                      target,
+                      source = NULL,
+                      options = NULL,
+                      marginal = TRUE,
+                      stratification = NULL,
+                      ...) {
+  UseMethod("h2_Piepho")
 }

@@ -6,7 +6,7 @@
 #' # asreml model (Requires license)
 #' \dontrun{
 #' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
-#'                                  random = ~ gen,
+#'                                  random = ~ vm(gen, lettuce_GRM),
 #'                                  data = lettuce_subset,
 #'                                  trace = FALSE
 #'                                  )
@@ -75,7 +75,7 @@ h2_Standard.asreml <- function(model,
 #' # asreml model (Requires license)
 #' \dontrun{
 #' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
-#'                                  random = ~ gen,
+#'                                  random = ~ vm(gen, lettuce_GRM),
 #'                                  data = lettuce_subset,
 #'                                  trace = FALSE
 #'                                  )
@@ -119,7 +119,7 @@ h2_Oakey.asreml <- function(model,
 #' @examples
 #' \dontrun{
 #' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
-#'                                  random = ~ gen,
+#'                                  random = ~ vm(gen, lettuce_GRM),
 #'                                  data = lettuce_subset,
 #'                                  trace = FALSE
 #'                                  )
@@ -261,6 +261,135 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
   dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
 
   h2_Delta_BLUE
+}
+
+#' Calculate Cullis's heritability from asreml model
+#' @export
+#' @noRd
+#' @importFrom stats predict
+#' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ vm(gen, lettuce_GRM),
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' h2_Cullis.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' }
+h2_Cullis.asreml <- function(model,
+                             target = NULL,
+                             source = NULL,
+                             options = NULL,
+                             marginal = TRUE,
+                             stratification = NULL,
+                             vc = NULL,
+                             ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE,
+                   calc_C11 = FALSE, marginal, stratification, source = source, ...)
+  }
+  s2_g <- mean(diag(vc$G_g))
+  n <- vc$n_g
+  C22_g <- vc$C22_g
+
+  # This is equivalent to delta <- var_diff(C22_g); delta_avg = mean(delta[lower.tri(delta)])
+  delta_avg <- (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
+
+  return(H2_Cullis_parameters(delta_avg, s2_g))
+}
+
+
+#' Calculate Piepho's heritability from asreml model
+#' @export
+#' @noRd
+#' @return Numeric
+#' @examples
+#' # asreml model (Requires license)
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ vm(gen, lettuce_GRM),
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' h2_Piepho.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' }
+h2_Piepho.asreml <- function(model,
+                             target = NULL,
+                             source = NULL,
+                             options = NULL,
+                             marginal = TRUE,
+                             stratification = NULL,
+                             vc = NULL,
+                             ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Get genotype variance
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, source = source, ...)
+  }
+  gnames <- vc$gnames
+
+  delta <- var_diff(vc$C11_g)
+  dimnames(delta) <- list(gnames, gnames)
+  diag(delta) <- NA
+  delta_avg <- mean(delta[upper.tri(delta)])
+
+  # s2_g / (s2_g + delta_avg / 2)
+  s2_g <- mean(diag(vc$G_g))
+  H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+
+  # # Get genotype variance
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # G_g <- vc$G_g
+  # s2_g <- mean(diag(G_g))
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # delta <- predict(conterpart,
+  #   classify = target,
+  #   sed = TRUE,
+  #   trace = FALSE
+  # )$sed^2
+  #
+  # delta_avg <- mean(delta[upper.tri(delta, diag = FALSE)])
+  #
+  # # Calculate Piepho's H2
+  # H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+
+  return(H2_Piepho)
 }
 
 #' Calculate Cullis's heritability from asreml model

@@ -274,6 +274,107 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
 
 #' @noRd
 #' @export
+h2_Cullis.lmerMod <- function(model,
+                              target = NULL,
+                              source = NULL,
+                              options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
+                              vc = NULL,
+                              ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+  }
+  s2_g <- mean(diag(vc$G_g))
+  n <- vc$n_g
+  C22_g <- vc$C22_g
+
+  # This is equivalent to delta <- var_diff(C22_g); delta_avg = mean(delta[lower.tri(delta)])
+  delta_avg <- (2 / (n * (n - 1))) * (n * sum(diag(C22_g)) - sum(C22_g))
+
+  return(H2_Cullis_parameters(delta_avg, s2_g))
+}
+
+
+#' @noRd
+#' @export
+h2_Piepho.lmerMod <- function(model,
+                              target = NULL,
+                              source = NULL,
+                              options = NULL,
+                              marginal = TRUE,
+                              stratification = NULL,
+                              vc = NULL,
+                              ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  # Get genotype variance
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+                   marginal, stratification, ...)
+  }
+  gnames <- vc$gnames
+
+  delta <- var_diff(vc$C11_g)
+  dimnames(delta) <- list(gnames, gnames)
+  diag(delta) <- NA
+  delta_avg <- mean(delta[upper.tri(delta)])
+
+  # s2_g / (s2_g + delta_avg / 2)
+  s2_g <- mean(diag(vc$G_g))
+  H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+
+  ## Conterpart method
+
+  # Get genotype variance
+  # if(is.null(vc)){
+  #   vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, marginal, stratification, ...)
+  # }
+  # if(vc$marginal || !is.null(vc$stratification)){
+  #   cli::cli_warn("Piepho heritability can only be computed on main genetic effects, retuning {.value {NA}}.")
+  #   return(NA)
+  # }
+  # G_g <- vc$G_g
+  # s2_g <- mean(diag(G_g))
+  #
+  # conterpart <- fit_counterpart_model(model, target)
+  #
+  # # Get mean variance of a difference between genotypes
+  # frm <- as.formula(paste("pairwise ~", target))
+  # EMM_fit <- emmeans::emmeans(conterpart, specs = frm)$contrasts
+  # delta_avg <- mean(data.frame(EMM_fit)$SE^2) # Get variance
+  #
+  # # s2_g / (s2_g + delta_avg / 2)
+  # H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+
+  return(H2_Piepho)
+}
+
+
+#' @noRd
+#' @export
 H2_Standard.lmerMod <- function(model,
                                 target = NULL,
                                 options = NULL,

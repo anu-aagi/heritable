@@ -2,7 +2,7 @@
 #' @export
 H2 <- function(model,
                target,
-               method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"),
+               method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
                options = NULL,
                marginal = TRUE,
                stratification = NULL,
@@ -86,44 +86,8 @@ H2_Standard <- function(model,
   UseMethod("H2_Standard")
 }
 
-#' Calculate Cullis' heritability from model object
-#' @description Compute "generalised heritability" for unbalanced experimental designs.
-#' See Cullis, Smith and Coombes (2006) for derivation.
-#' @inheritParams H2
-#' @usage H2_Cullis(model,
-#'                  target,
-#'                  options,
-#'                  marginal = TRUE,
-#'                  stratification = NULL,
-#'                  ...)
-#' @return Numeric value
-#' @details The equation for Cullis heritability is as follow
-#'
-#' \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
-#'
-#' where:
-#' - \eqn{PEV} is the prediction error variance matrix of the pairwise differences among BLUPS
-#' - \eqn{\sigma^2} is the variance attributed to differences between genotype
-#' @references
-#' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
+#' @noRd
 #' @export
-#' @examples
-#' # lme4 model
-#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
-#' H2_Cullis(lettuce_lme4, target = "gen")
-#'
-#' # asreml model (Requires license)
-#' \dontrun{
-#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
-#'                                  random = ~ gen,
-#'                                  data = lettuce_subset,
-#'                                  trace = FALSE
-#'                                  )
-#'
-#' H2_Cullis(lettuce_asreml, target = "gen")
-#' }
-
 H2_Cullis <- function(model,
                       target,
                       options = NULL,
@@ -144,44 +108,8 @@ H2_Oakey <- function(model,
   UseMethod("H2_Oakey")
 }
 
-#' Calculate Piepho's heritability from model object
-#' Compute Piepho's heritability using variance differences between genotype BLUEs
-#' @usage H2_Piepho(model,
-#'                  target,
-#'                  options,
-#'                  marginal = TRUE,
-#'                  stratification = NULL,
-#'                  ...)
-#' @inheritParams H2
-#' @details The equation for Piepho's heritability is as follows:
-#'
-#' \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
-#'
-#' where:
-#' - \eqn{\overline{PEV_{BLUE_g}}} is the prediction error variance matrix for genotype BLUEs
-#' - \eqn{\sigma^2_g} is the variance attributed to differences between genotype
-#'
-#' See reference for full derivation and details.
-#' @returns Numeric
+#' @noRd
 #' @export
-#' @references
-#' Piepho, H.-P., & Möhring, J. (2007). Computing Heritability and Selection Response From Unbalanced Plant Breeding Trials. Genetics, 177(3), 1881–1888. https://doi.org/10.1534/genetics.107.074229
-#' @examples
-#' # lme4 model
-#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
-#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
-#' H2_Piepho(lettuce_lme4, target = "gen")
-#'
-#' # asreml model (Requires license)
-#' \dontrun{
-#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
-#'                                  random = ~ gen,
-#'                                  data = lettuce_subset,
-#'                                  trace = FALSE
-#'                                  )
-#'
-#' H2_Piepho(lettuce_asreml, target = "gen")
-#' }
 H2_Piepho <- function(model,
                       target,
                       options = NULL,
