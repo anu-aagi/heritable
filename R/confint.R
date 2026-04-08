@@ -65,6 +65,13 @@ confint.heritable <- function(object,
                               return_model = TRUE,
                               seed = NULL,
                               ...) {
+
+  parallel <- list(...)[["parallel"]]
+  if(!is.null(parallel) && parallel != "no"){
+    if(inherits(model, "lmerMod")) require(lme4)
+    if(inherits(model, "asreml")) require(asreml)
+  }
+
   # basic: bias corrected percentile interval
   # norm: bias corrected normal interval
   # perc: percentile interval
@@ -98,13 +105,11 @@ confint.heritable <- function(object,
 
   if (h2.type == "broad_sense") {
     Fun_use <- function(x) {
-      require(lme4) # Fot snow distributed computation
       args[["model"]] <- x
       do.call(H2, args)
     }
   } else {
     Fun_use <- function(x) {
-      require(asreml) # Fot snow distributed computation
       args[["model"]] <- x
       do.call(h2, args)
     }
@@ -151,8 +156,8 @@ confint.heritable <- function(object,
 #'   (the statistic to bootstrap).
 #' @param use.u A logical indicating whether to resample random effects, or only
 #' resample residuals.
-#' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`.
-#' When not provided (NULL by default), the GRM variable used for `vm` calling will be searched in the global environment.
+#' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`, provided as a named list.
+#' When not provided (an empty list by default), the GRM variable used for `vm` calling will be searched in the global environment.
 #' @param seed Optional integer seed for reproducibility.
 #' @param ... Additional arguments passed to [boot::boot()].
 #'
@@ -190,7 +195,7 @@ bootstrap_asreml <- function(model,
                              FUN,
                              nsim = 1,
                              use.u = FALSE,
-                             source = NULL,
+                             source = list(),
                              seed = NULL,
                              ...) {
   if (!inherits(model, "asreml")) {
@@ -198,13 +203,9 @@ bootstrap_asreml <- function(model,
   }
 
   # Get model frame
-  if(!use.u){
-    design_default <- asreml::asreml.options()$design
-    asreml::asreml.options(design = TRUE)
-    model <- check_deisgn_exsits(model)
-  } else {
-    model <- check_deisgn_exsits(model, build_design = FALSE)
-  }
+  design_default <- asreml::asreml.options()$design
+  asreml::asreml.options(design = TRUE)
+  model <- check_deisgn_exsits(model)
   mf <- model$mf
 
   mf <- as.data.frame(mf)
@@ -270,6 +271,8 @@ bootstrap_asreml <- function(model,
         V <- R + Z %*% G %*% t(Z)
       }
 
+      source <- check_GRM_exists(model = model, source = source, return = TRUE)
+
       V <- tryCatch(
         get_V(model, source),
         error = function(e) {
@@ -310,14 +313,16 @@ bootstrap_asreml <- function(model,
   }
 
   # Refit wrapper for boot()
-  refit_asreml <- function(data, model, FUN) {
-    require(asreml) # Fot snow distributed computation
-    fit <- update(model, data = data)
+  refit_asreml <- function(data, model, FUN, source, design) {
+    if(length(source) > 0){
+      list2env(source, environment())
+    }
+    fit <- asreml::update.asreml(model, data = data)
+    fit[["design"]] <- design
     FUN(fit)
   }
 
   if (!is.null(seed)) set.seed(seed)
-
   boot <- boot::boot(
     data      = boot_data,
     statistic = refit_asreml,
@@ -325,15 +330,15 @@ bootstrap_asreml <- function(model,
     ran.gen   = generate_data,
     R         = nsim,
     model     = model,
+    source    = source,
+    design    = model$design,
     mle       = L,
     FUN       = FUN,
     ...
   )
 
   # Set the asreml option back
-  if(!use.u){
-    asreml::asreml.options(design = design_default)
-  }
+  asreml::asreml.options(design = design_default)
 
   boot
 

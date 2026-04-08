@@ -37,6 +37,14 @@ test_that("We can find GRM",{
 
   data("lettuce_GRM")
 
-  expect_true(check_GRM_exists(asreml_model_grm, "gen", source = lettuce_GRM))
-  expect_true(check_GRM_exists(asreml_model_grm, "gen"))
+  expect_true(
+    do.call(c,
+            check_GRM_exists(asreml_model_grm, "gen", source = list(lettuce_GRM = lettuce_GRM))
+            )
+  )
+  expect_true(
+    do.call(c,
+             check_GRM_exists(asreml_model_grm, "gen")
+           )
+  )
 })

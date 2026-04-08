@@ -6,6 +6,7 @@ H2 <- function(model,
                options = NULL,
                marginal = TRUE,
                stratification = NULL,
+               source = list(),
                ...
                ) {
   UseMethod("H2")
@@ -20,6 +21,7 @@ H2.default <- function(model,
                        options = NULL,
                        marginal = TRUE,
                        stratification = NULL,
+                       source = list(),
                        ...
                        ) {
   method <- match.arg(method, several.ok = TRUE)
@@ -28,11 +30,11 @@ H2.default <- function(model,
 
   # Check correct model specification.
   if(options$check %||% TRUE){
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check design exists
-  model <- check_deisgn_exsits(model)
+  model <- check_deisgn_exsits(model, source = source)
 
   # Build variance component
   vc <- var_comp(model,
@@ -82,6 +84,7 @@ H2_Standard <- function(model,
                         options = NULL,
                         marginal = TRUE,
                         stratification = NULL,
+                        vc = NULL,
                         ...) {
   UseMethod("H2_Standard")
 }
@@ -93,6 +96,7 @@ H2_Cullis <- function(model,
                       options = NULL,
                       marginal = TRUE,
                       stratification = NULL,
+                      vc = NULL,
                       ...) {
   UseMethod("H2_Cullis")
 }
@@ -104,6 +108,7 @@ H2_Oakey <- function(model,
                      options = NULL,
                      marginal = TRUE,
                      stratification = NULL,
+                     vc = NULL,
                      ...) {
   UseMethod("H2_Oakey")
 }
@@ -115,6 +120,7 @@ H2_Piepho <- function(model,
                       options = NULL,
                       marginal = TRUE,
                       stratification = NULL,
+                      vc = NULL,
                       ...) {
   UseMethod("H2_Piepho")
 }
@@ -128,6 +134,7 @@ H2_Delta <- function(
     options = NULL,
     marginal = TRUE,
     stratification = NULL,
+    vc = NULL,
     ...) {
   UseMethod("H2_Delta")
 }
@@ -140,6 +147,7 @@ H2_Delta.default <- function(model,
                              options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
+                             vc = NULL,
                              ...) {
   type <- match.arg(type)
 
@@ -149,6 +157,7 @@ H2_Delta.default <- function(model,
                               options = options,
                               marginal =  marginal,
                               stratification = stratification,
+                              vc = vc,
                               ...)
 
   if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
@@ -170,6 +179,7 @@ H2_Delta_by_genotype <- function(model,
                                  options = NULL,
                                  marginal = TRUE,
                                  stratification = NULL,
+                                 vc = NULL,
                                  ...) {
   UseMethod("H2_Delta_by_genotype")
 }
@@ -182,6 +192,7 @@ H2_Delta_by_genotype.default <- function(model,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
+                                         vc = NULL,
                                          ...) {
   H2D_ij <- H2_Delta_pairwise(model,
                               target,
@@ -189,6 +200,7 @@ H2_Delta_by_genotype.default <- function(model,
                               options = options,
                               marginal =  marginal,
                               stratification = stratification,
+                              vc = vc,
                               ...)
 
   if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
@@ -214,6 +226,7 @@ H2_Delta_pairwise <- function(model,
                               options = NULL,
                               marginal = TRUE,
                               stratification = NULL,
+                              vc = NULL,
                               ...) {
   UseMethod("H2_Delta_pairwise")
 }

@@ -2,7 +2,6 @@
 #' @export
 h2_Standard.lmerMod <- function(model,
                                target,
-                               source = NULL,
                                options = NULL,
                                marginal = TRUE,
                                stratification = NULL,
@@ -76,7 +75,6 @@ h2_Standard.lmerMod <- function(model,
 #' @export
 h2_Oakey.lmerMod <- function(model,
                             target,
-                            source = NULL,
                             options = NULL,
                             marginal = TRUE,
                             stratification = NULL,
@@ -108,7 +106,6 @@ h2_Oakey.lmerMod <- function(model,
 #' @export
 h2_Delta_pairwise.lmerMod <- function(model,
                                      target,
-                                     source = NULL,
                                      type = c("BLUP", "BLUE"),
                                      options = NULL,
                                      marginal = TRUE,
@@ -120,7 +117,7 @@ h2_Delta_pairwise.lmerMod <- function(model,
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense", source)
+    check_model_specification(model, target, "narrow_sense")
   }
 
   # Check if target is random or fixed
@@ -130,10 +127,10 @@ h2_Delta_pairwise.lmerMod <- function(model,
 
   # Check if target is random or fixed
   if (type == "BLUE") {
-    h2_Delta <- h2_Delta_BLUE_pairwise.lmerMod(model, target, source, options,
+    h2_Delta <- h2_Delta_BLUE_pairwise.lmerMod(model, target, options,
                                               marginal, stratification, vc, ...)
   } else if (type == "BLUP") {
-    h2_Delta <- h2_Delta_BLUP_pairwise.lmerMod(model, target, source, options,
+    h2_Delta <- h2_Delta_BLUP_pairwise.lmerMod(model, target, options,
                                               marginal, stratification, vc, ...)
   }
 
@@ -143,7 +140,6 @@ h2_Delta_pairwise.lmerMod <- function(model,
 #' @keywords internal
 h2_Delta_BLUP_pairwise.lmerMod<- function(model,
                                          target,
-                                         source = NULL,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
@@ -153,7 +149,7 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "narrow_sense", source)
+    check_model_specification(model, target, "narrow_sense")
   }
 
   # Check if target is random or fixed
@@ -186,7 +182,6 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
 #' @keywords internal
 h2_Delta_BLUE_pairwise.lmerMod<- function(model,
                                          target,
-                                         source = NULL,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
@@ -276,7 +271,6 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
 #' @export
 h2_Cullis.lmerMod <- function(model,
                               target = NULL,
-                              source = NULL,
                               options = NULL,
                               marginal = TRUE,
                               stratification = NULL,
@@ -312,7 +306,6 @@ h2_Cullis.lmerMod <- function(model,
 #' @export
 h2_Piepho.lmerMod <- function(model,
                               target = NULL,
-                              source = NULL,
                               options = NULL,
                               marginal = TRUE,
                               stratification = NULL,
@@ -744,7 +737,8 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE,
+                   calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g

@@ -9,10 +9,10 @@
 h2(model,
    target,
    method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-   source = NULL,
    options = NULL,
    marginal = TRUE,
    stratification = NULL,
+   source = list(),
    ...)
 
 H2(model,
@@ -21,6 +21,7 @@ H2(model,
    options = NULL,
    marginal = TRUE,
    stratification = NULL,
+   source = list(),
    ...
    )
 }
@@ -30,10 +31,6 @@ H2(model,
 \item{target}{The name of the random effect for which heritability is to be calculated.}
 
 \item{method}{Character vector of name of method to calculate heritability. See details.}
-
-\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}.
-When not provided (NULL by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
-Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 
@@ -45,6 +42,10 @@ iteracting terms.}
 \item{stratification}{A one-row data frame defining the stratum in which
 genotype effects should be evaluated. The columns must correspond
 to model terms that interact with \code{target}.}
+
+\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}, provided as a named list.
+When not provided (an empty list by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
+Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled}
 }

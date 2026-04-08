@@ -8,11 +8,11 @@
 \usage{
 h2_Delta_pairwise(model,
                   target,
-                  source = NULL,
                   type = c("BLUP", "BLUE"),
                   options = NULL,
                   marginal = TRUE,
                   stratification = NULL,
+                  vc = NULL,
                   ...)
 H2_Delta_pairwise(model,
                   target,
@@ -20,16 +20,13 @@ H2_Delta_pairwise(model,
                   options = NULL,
                   marginal = TRUE,
                   stratification = NULL,
+                  vc = NULL,
                   ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
-
-\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}.
-When not provided (NULL by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
-Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{type}{character, whether heritability is calculated using BLUEs or BLUPs}
 

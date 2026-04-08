@@ -9,7 +9,7 @@ bootstrap_asreml(
   FUN,
   nsim = 1,
   use.u = FALSE,
-  source = NULL,
+  source = list(),
   seed = NULL,
   ...
 )
@@ -25,8 +25,8 @@ bootstrap_asreml(
 \item{use.u}{A logical indicating whether to resample random effects, or only
 resample residuals.}
 
-\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}.
-When not provided (NULL by default), the GRM variable used for \code{vm} calling will be searched in the global environment.}
+\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}, provided as a named list.
+When not provided (an empty list by default), the GRM variable used for \code{vm} calling will be searched in the global environment.}
 
 \item{seed}{Optional integer seed for reproducibility.}
 

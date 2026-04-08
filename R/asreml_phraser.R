@@ -83,7 +83,7 @@ phrase_ar1 <- function(G_params, ...) {
   G
 }
 
-phrase_vm <- function(G_params, source = NULL, ...) {
+phrase_vm <- function(G_params, source = list(), ...) {
   spec <- G_params[["model"]]
   if (spec != "vm") {
     cli::cli_abort("Wrong phrase used.")
@@ -107,8 +107,8 @@ phrase_vm <- function(G_params, source = NULL, ...) {
     )[,2]
   }
 
-  if (!is.null(source)){
-    GRM_source <- source
+  if (!is.null(source[[name_GRM]])){
+    GRM_source <- source[[name_GRM]]
   } else if (exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)){
     GRM_source <- get(name_GRM, envir = .GlobalEnv,  inherits = FALSE)
   } else {
@@ -131,7 +131,7 @@ phrase_vm <- function(G_params, source = NULL, ...) {
       GRM <- ginv_sym_sparse(GRM)
     }
   } else {
-    cli::cli_abort("Cannot get the source {.value target_vm} for vm().")
+    cli::cli_abort("Cannot get the source {.code {name_GRM}} for vm().")
   }
 
   dimnames(GRM) <- c(list(G_params[["levels"]]), list(G_params[["levels"]]))

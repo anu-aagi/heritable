@@ -524,7 +524,7 @@ var_comp.lmerMod <- function(model, target,
 var_comp.asreml <- function(model, target,
                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                             marginal = TRUE, stratification = NULL,
-                            source = NULL, ...) {
+                            source = list(), ...) {
 
   model <- check_deisgn_exsits(model)
   design <- model$design

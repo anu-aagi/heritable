@@ -11,15 +11,15 @@
 #'                                  trace = FALSE
 #'                                  )
 #'
-#' h2_Standard.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' h2_Standard.asreml(lettuce_asreml, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
 #' }
 h2_Standard.asreml <- function(model,
                                target,
-                               source = NULL,
                                options = NULL,
                                marginal = TRUE,
                                stratification = NULL,
                                vc = NULL,
+                               source = list(),
                                ...) {
   initial_checks(model, target, options)
 
@@ -40,13 +40,13 @@ h2_Standard.asreml <- function(model,
     return(NA)
   }
 
-  model <- check_deisgn_exsits(model, build_design = FALSE)
+  model <- check_deisgn_exsits(model, build_design = FALSE, source = source)
   mf <- model$mf
 
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
-                   marginal, stratification, source = source, ...)
+                   marginal, stratification, source, ...)
   }
   V <- vc$V
   Z <- vc$Z
@@ -80,15 +80,15 @@ h2_Standard.asreml <- function(model,
 #'                                  trace = FALSE
 #'                                  )
 #'
-#' h2_Oakey.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' h2_Oakey.asreml(lettuce_asreml, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
 #' }
 h2_Oakey.asreml <- function(model,
                             target,
-                            source = NULL,
                             options = NULL,
                             marginal = TRUE,
                             stratification = NULL,
                             vc = NULL,
+                            source = list(),
                             ...) {
   initial_checks(model, target, options)
 
@@ -104,7 +104,7 @@ h2_Oakey.asreml <- function(model,
 
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal, stratification, source = source, ...)
+                   marginal, stratification, source, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -124,16 +124,16 @@ h2_Oakey.asreml <- function(model,
 #'                                  trace = FALSE
 #'                                  )
 #'
-#' h2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP", source = lettuce_GRM)
+#' h2_Delta_pairwise.asreml(lettuce_asreml, target = "gen", type = "BLUP", source = list(lettuce_GRM = lettuce_GRM))
 #' }
 h2_Delta_pairwise.asreml <- function(model,
                                      target,
-                                     source = NULL,
                                      type = c("BLUP", "BLUE"),
                                      options = NULL,
                                      marginal = TRUE,
                                      stratification = NULL,
                                      vc = NULL,
+                                     source = list(),
                                      ...) {
   initial_checks(model, target, options)
   type <- match.arg(type)
@@ -150,11 +150,11 @@ h2_Delta_pairwise.asreml <- function(model,
 
   # Check if target is random or fixed
   if (type == "BLUE") {
-    h2_Delta <- h2_Delta_BLUE_pairwise.asreml(model, target, source, options,
-                                              marginal, stratification, vc, ...)
+    h2_Delta <- h2_Delta_BLUE_pairwise.asreml(model, target, options,
+                                              marginal, stratification, vc, source, ...)
   } else if (type == "BLUP") {
-    h2_Delta <- h2_Delta_BLUP_pairwise.asreml(model, target, source, options,
-                                              marginal, stratification, vc, ...)
+    h2_Delta <- h2_Delta_BLUP_pairwise.asreml(model, target, options,
+                                              marginal, stratification, vc, source, ...)
   }
 
   return(h2_Delta)
@@ -163,11 +163,11 @@ h2_Delta_pairwise.asreml <- function(model,
 #' @keywords internal
 h2_Delta_BLUP_pairwise.asreml<- function(model,
                                          target,
-                                         source = NULL,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
                                          vc = NULL,
+                                         source = list(),
                                          ...) {
   initial_checks(model, target, options)
 
@@ -182,7 +182,8 @@ h2_Delta_BLUP_pairwise.asreml<- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, source = source, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE,
+                   calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, source, ...)
   }
   G_g <- vc$G_g
   C22_g <- vc$C22_g
@@ -205,11 +206,12 @@ h2_Delta_BLUP_pairwise.asreml<- function(model,
 #' @keywords internal
 h2_Delta_BLUE_pairwise.asreml<- function(model,
                                          target,
-                                         source = NULL,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
-                                         vc = NULL, ...) {
+                                         vc = NULL,
+                                         source = list(),
+                                         ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -225,7 +227,7 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, ...)
+                   marginal, stratification, source, ...)
   }
   gnames <- vc$gnames
 
@@ -277,21 +279,21 @@ h2_Delta_BLUE_pairwise.asreml<- function(model,
 #'                                  trace = FALSE
 #'                                  )
 #'
-#' h2_Cullis.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' h2_Cullis.asreml(lettuce_asreml, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
 #' }
 h2_Cullis.asreml <- function(model,
                              target = NULL,
-                             source = NULL,
                              options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
                              vc = NULL,
+                             source = list(),
                              ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed
@@ -301,7 +303,7 @@ h2_Cullis.asreml <- function(model,
 
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE,
-                   calc_C11 = FALSE, marginal, stratification, source = source, ...)
+                   calc_C11 = FALSE, marginal, stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -327,21 +329,21 @@ h2_Cullis.asreml <- function(model,
 #'                                  trace = FALSE
 #'                                  )
 #'
-#' h2_Piepho.asreml(lettuce_asreml, target = "gen", source = lettuce_GRM)
+#' h2_Piepho.asreml(lettuce_asreml, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
 #' }
 h2_Piepho.asreml <- function(model,
                              target = NULL,
-                             source = NULL,
                              options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
                              vc = NULL,
+                             source = list(),
                              ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check if target is random or fixed
@@ -352,7 +354,7 @@ h2_Piepho.asreml <- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, source = source, ...)
+                   marginal, stratification, source, ...)
   }
   gnames <- vc$gnames
 
@@ -414,12 +416,13 @@ H2_Cullis.asreml <- function(model,
                               marginal = TRUE,
                               stratification = NULL,
                               vc = NULL,
+                              source = list(),
                               ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check if target is random or fixed
@@ -428,7 +431,8 @@ H2_Cullis.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE,
+                   calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, source, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -461,12 +465,13 @@ H2_Oakey.asreml <- function(model,
                              marginal = TRUE,
                              stratification = NULL,
                              vc = NULL,
+                             source = list(),
                              ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check if target is random or fixed
@@ -475,7 +480,8 @@ H2_Oakey.asreml <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE,
+                   calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, source,...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -580,7 +586,8 @@ H2_Delta_pairwise.asreml <- function(model,
                                       marginal = TRUE,
                                       stratification = NULL,
                                       vc = NULL,
-                                      ...) {
+                                      source = list(),
+                                     ...) {
   initial_checks(model, target, options)
   type <- match.arg(type)
 
@@ -597,10 +604,10 @@ H2_Delta_pairwise.asreml <- function(model,
   # Check if target is random or fixed
   if (type == "BLUE") {
     H2_Delta <- H2_Delta_BLUE_pairwise.asreml(model, target, options,
-                                               marginal, stratification, vc, ...)
+                                               marginal, stratification, vc, source, ...)
   } else if (type == "BLUP") {
-    H2_Delta <- H2_Delta_BLUP_pairwise.asreml(model, target, options,
-                                               marginal, stratification, vc, ...)
+    H2_Delta <- H2_Delta_BLUP_pairwise.asreml(model, target, source, options,
+                                               marginal, stratification, vc, source, ...)
   }
 
   return(H2_Delta)
@@ -612,12 +619,14 @@ H2_Delta_BLUP_pairwise.asreml<- function(model,
                                            options = NULL,
                                            marginal = TRUE,
                                            stratification = NULL,
-                                           vc = NULL, ...) {
+                                           vc = NULL,
+                                           source = list(),
+                                         ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check if target is random or fixed
@@ -626,7 +635,8 @@ H2_Delta_BLUP_pairwise.asreml<- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE,
+                   calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, source, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g
@@ -650,12 +660,14 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
-                                         vc = NULL, ...) {
+                                         vc = NULL,
+                                         source = list(),
+                                         ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check if target is random or fixed
@@ -667,7 +679,7 @@ H2_Delta_BLUE_pairwise.asreml<- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, ...)
+                   marginal, stratification, source, ...)
   }
   gnames <- vc$gnames
 
@@ -726,12 +738,13 @@ H2_Standard.asreml <- function(model,
                                 marginal = TRUE,
                                 stratification = NULL,
                                 vc = NULL,
+                                source = list(),
                                 ...) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check if target is random or fixed
@@ -739,7 +752,7 @@ H2_Standard.asreml <- function(model,
     return(NA)
   }
 
-  model <- check_deisgn_exsits(model, build_design = FALSE)
+  model <- check_deisgn_exsits(model, build_design = FALSE, source = source)
   mf <- model$mf
 
   # Check if all random terms contain the target.
@@ -749,7 +762,8 @@ H2_Standard.asreml <- function(model,
   if(all(trms == target)){
     # Get genotype variance
     if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)$G_g
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE,
+                      marginal, stratification, source, ...)$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -765,7 +779,8 @@ H2_Standard.asreml <- function(model,
 
     # Get genotype variance
     if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE, marginal, stratification, ...)
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
+                     marginal, stratification, source, ...)
     }
 
     V <- vc$V

@@ -131,7 +131,7 @@ check_target_both <- function(model, target) {
 
 # Check if the design matrix exists, otherwise builds one.
 #' @keywords internal
-check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
+check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE, source = list()){
 
   if(!inherits(model, "asreml")){
     return(model)
@@ -156,6 +156,13 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
       build_mf <- TRUE
     } else {
       build_mf <- FALSE
+    }
+  }
+
+  if(build_design ||  build_mf){
+    source <- check_GRM_exists(model = model, source = source, return = TRUE)
+    if(length(source) > 0){
+      list2env(source, environment())
     }
   }
 
@@ -184,16 +191,30 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
 ########################### Method specific check ##############################
 # Helper function to check if GRM exists in environment
 #' @keywords internal
-check_GRM_exists <- function(model, target, source = NULL, return = FALSE) {
-  trms <- do.call(c,
-          lapply(model$G.param, function(x) {
-            facnam <- lapply(x[-1], function(y) y[["facnam"]])
-            do.call(c, facnam) |> unname()
-          })  |> unname()
-  )
+check_GRM_exists <- function(model, target = NULL, source = list(), return = FALSE) {
 
-  contain_target <- grepl(paste0("^vm\\([^,]*\\b", target, "\\b"), trms)
-  trms <- trms[contain_target]
+  if(!is.list(source)){
+    cli::cli_abort("souce must be a named list.")
+  }
+
+  trms <- pull_terms(model)$random
+  trms_no_special <- pull_terms_without_specials(model)$random
+
+  if(!is.null(target)){
+    contain_target <- sapply(trms_no_special, function(trm){
+      target %in% stringr::str_split(trm, ":")[[1]]
+    }, USE.NAMES = FALSE)
+  } else {
+    contain_target <- rep(TRUE, length(model$G.param))
+  }
+
+  trms <- lapply(model$G.param[contain_target], function(x) {
+    x <- lapply(x[-1], function(y) {
+      if(y[["model"]] == "vm") y[["facnam"]] else NULL
+    }) |> unname()
+    do.call(c, x)
+  }) |> unname()
+  trms <- do.call(c, trms)
 
   if (length(trms) > 0) {
     name_GRM <- stringr::str_match(
@@ -207,24 +228,26 @@ check_GRM_exists <- function(model, target, source = NULL, return = FALSE) {
       "vm\\([^,]+,\\s*([^\\s,\\)]+)"
     )[,2]
 
-    if(!all(name_GRM == name_GRM[1])){
-      cli::cli_abort("Multiple known relationship matrices have been specified.")
+    name_GRM <- unique(name_GRM)
+
+    for(x in name_GRM){
+
+      if(!is.null(source[[x]])){
+
+        if(!return) source[[x]] <- TRUE
+
+      } else if (exists(x, envir = .GlobalEnv, inherits = FALSE)) {
+
+        source[[x]] <- if(return) get(x, envir = .GlobalEnv, inherits = FALSE) else TRUE
+
+      } else {
+        # Source doesn't exist and not supplied
+        cli::cli_abort("Cannot find the source {.code {x}}.")
+      }
     }
 
-    if(!is.null(source)){
-      return(
-        if(return) source else TRUE
-      )
-    } else if (exists(name_GRM[1], envir = .GlobalEnv, inherits = FALSE)) {
-      return(
-        if(return) get(name_GRM[1], envir = .GlobalEnv, inherits = FALSE) else TRUE
-      )
-    } else {
-      # Source doesn't exist and not supplied
-      cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
-    }
   }
-  if(return) NULL else TRUE
+  source
 }
 
 #' Check target term specification for borad-sense heritability
@@ -234,7 +257,7 @@ check_GRM_exists <- function(model, target, source = NULL, return = FALSE) {
 #' @noRd
 check_model_specification.asreml <- function(model, target,
                                              type = c("broad_sense", "narrow_sense"),
-                                             source = NULL,
+                                             source = list(),
                                              ...){
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random

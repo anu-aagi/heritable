@@ -8,26 +8,23 @@
 \usage{
 h2_Oakey(model,
             target,
-            source = NULL,
             options = NULL,
             marginal = TRUE,
             stratification = NULL,
+            vc = NULL,
             ...)
 H2_Oakey(model,
             target,
             options = NULL,
             marginal = TRUE,
             stratification = NULL,
+            vc = NULL,
             ...)
 }
 \arguments{
 \item{model}{Model object of class \code{lmerMod/merMod} or \code{asreml}}
 
 \item{target}{The name of the random effect for which heritability is to be calculated.}
-
-\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}.
-When not provided (NULL by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
-Ignored for broad-sense and \code{lmerMod} methods}
 
 \item{options}{NULL by default, for internal checking of model object before calculations}
 

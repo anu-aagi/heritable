@@ -7,9 +7,6 @@
 #' @param model Model object of class `lmerMod/merMod` or `asreml`
 #' @param method Character vector of name of method to calculate heritability. See details.
 #' @param target The name of the random effect for which heritability is to be calculated.
-#' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`.
-#' When not provided (NULL by default), the GRM variable used for `vm` calling will be searched in the global environment.
-#' Ignored for broad-sense and `lmerMod` methods
 #' @param options NULL by default, for internal checking of model object before calculations
 #' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
 #'   mappings so that each genotype receives a single averaged effect per term.
@@ -18,15 +15,18 @@
 #' @param stratification A one-row data frame defining the stratum in which
 #'   genotype effects should be evaluated. The columns must correspond
 #'   to model terms that interact with `target`.
+#' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`, provided as a named list.
+#' When not provided (an empty list by default), the GRM variable used for `vm` calling will be searched in the global environment.
+#' Ignored for broad-sense and `lmerMod` methods
 #' @param ... Additional arguments that specify heritability calculation when interactions with genotype effects are modelled
 #' @usage
 #' h2(model,
 #'    target,
 #'    method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-#'    source = NULL,
 #'    options = NULL,
 #'    marginal = TRUE,
 #'    stratification = NULL,
+#'    source = list(),
 #'    ...)
 #'
 #' H2(model,
@@ -35,6 +35,7 @@
 #'    options = NULL,
 #'    marginal = TRUE,
 #'    stratification = NULL,
+#'    source = list(),
 #'    ...
 #'    )
 #' @name H2
@@ -85,10 +86,10 @@
 h2 <- function(model,
                target,
                method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-               source = NULL,
                options = NULL,
                marginal = TRUE,
                stratification = NULL,
+               source = list(),
                ...) {
   UseMethod("h2")
 }
@@ -98,10 +99,10 @@ h2 <- function(model,
 h2.default <- function(model,
                        target,
                        method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       source = NULL,
                        options = NULL,
                        marginal = TRUE,
                        stratification = NULL,
+                       source = list(),
                        ...) {
   method <- match.arg(method, several.ok = TRUE)
 
@@ -113,7 +114,7 @@ h2.default <- function(model,
   }
 
   # Check design exists
-  model <- check_deisgn_exsits(model)
+  model <- check_deisgn_exsits(model, source = source)
 
   # Build variance component
   vc <- var_comp(model,
@@ -125,11 +126,11 @@ h2.default <- function(model,
 
   h2_values <- sapply(method, function(m) {
     switch(m,
-           Cullis = h2_Cullis(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
-           Oakey = h2_Oakey(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
-           Piepho = h2_Piepho(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
-           Delta = h2_Delta(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
-           Standard = h2_Standard(model, target, source = source, options = list(check = FALSE), vc = vc, ...),
+           Cullis = h2_Cullis(model, target, options = list(check = FALSE), vc = vc, ...),
+           Oakey = h2_Oakey(model, target, options = list(check = FALSE), vc = vc, ...),
+           Piepho = h2_Piepho(model, target, options = list(check = FALSE), vc = vc, ...),
+           Delta = h2_Delta(model, target, options = list(check = FALSE), vc = vc, ...),
+           Standard = h2_Standard(model, target, options = list(check = FALSE), vc = vc, ...),
            cli::cli_abort(
              "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
            )
@@ -165,16 +166,17 @@ h2.default <- function(model,
 #' @usage
 #' h2_Standard(model,
 #'             target,
-#'             source = NULL,
 #'             options = NULL,
 #'             marginal = TRUE,
 #'             stratification = NULL,
+#'             vc = NULL,
 #'             ...)
 #' H2_Standard(model,
 #'             target,
 #'             options = NULL,
 #'             marginal = TRUE,
 #'             stratification = NULL,
+#'             vc = NULL,
 #'             ...)
 #' @inheritParams H2
 #' @name H2_Standard
@@ -217,10 +219,10 @@ h2.default <- function(model,
 #' @export
 h2_Standard <- function(model,
                         target,
-                        source = NULL,
                         options = NULL,
                         marginal = TRUE,
                         stratification = NULL,
+                        vc = NULL,
                         ...) {
   UseMethod("h2_Standard")
 }
@@ -244,16 +246,17 @@ h2_Standard <- function(model,
 #' @usage
 #' h2_Oakey(model,
 #'             target,
-#'             source = NULL,
 #'             options = NULL,
 #'             marginal = TRUE,
 #'             stratification = NULL,
+#'             vc = NULL,
 #'             ...)
 #' H2_Oakey(model,
 #'             target,
 #'             options = NULL,
 #'             marginal = TRUE,
 #'             stratification = NULL,
+#'             vc = NULL,
 #'             ...)
 #' @returns Numeric
 #' @references
@@ -267,10 +270,10 @@ h2_Standard <- function(model,
 #' @export
 h2_Oakey <- function(model,
                      target,
-                     source = NULL,
                      options  = NULL,
                      marginal = TRUE,
                      stratification = NULL,
+                     vc = NULL,
                      ...) {
   UseMethod("h2_Oakey")
 }
@@ -289,11 +292,11 @@ h2_Oakey <- function(model,
 #' @usage
 #' h2_Delta(model,
 #'          target,
-#'          source = NULL,
 #'          type = c("BLUP", "BLUE"),
 #'          options = NULL,
 #'          marginal = TRUE,
 #'          stratification = NULL,
+#'          vc = NULL,
 #'          ...)
 #'
 #' H2_Delta(model,
@@ -302,6 +305,7 @@ h2_Oakey <- function(model,
 #'          options = NULL,
 #'          marginal = TRUE,
 #'          stratification = NULL,
+#'          vc = NULL,
 #'          ...)
 #' @returns Numeric
 #' @details
@@ -343,11 +347,11 @@ h2_Oakey <- function(model,
 #' }
 h2_Delta <- function(model,
                      target,
-                     source = NULL,
                      type = c("BLUP", "BLUE"),
                      options = NULL,
                      marginal = TRUE,
                      stratification = NULL,
+                     vc = NULL,
                      ...) {
   UseMethod("h2_Delta")
 }
@@ -356,21 +360,21 @@ h2_Delta <- function(model,
 #' @export
 h2_Delta.default <- function(model,
                              target,
-                             source = NULL,
                              type = c("BLUP", "BLUE"),
                              options = NULL,
                              marginal = TRUE,
                              stratification = NULL,
+                             vc = NULL,
                              ...) {
   type <- match.arg(type)
 
   h2D_ij <- h2_Delta_pairwise(model,
                               target,
-                              source = source,
                               type = type,
                               options = options,
                               marginal =  marginal,
                               stratification = stratification,
+                              vc = vc,
                               ...)
 
   if (is.atomic(h2D_ij) && length(h2D_ij) == 1 && is.na(h2D_ij)) {
@@ -393,11 +397,11 @@ h2_Delta.default <- function(model,
 #' @usage
 #' h2_Delta_by_genotype(model,
 #'                      target,
-#'                      source = NULL,
 #'                      type = c("BLUP", "BLUE"),
 #'                      options = NULL,
 #'                      marginal = TRUE,
 #'                      stratification = NULL,
+#'                      vc = NULL,
 #'                      ...)
 #' H2_Delta_by_genotype(model,
 #'                      target,
@@ -405,6 +409,7 @@ h2_Delta.default <- function(model,
 #'                      options = NULL,
 #'                      marginal = TRUE,
 #'                      stratification = NULL,
+#'                      vc = NULL,
 #'                      ...)
 #' @inheritParams H2_Delta
 #' @name H2_Delta_by_genotype
@@ -450,11 +455,11 @@ h2_Delta.default <- function(model,
 #' }
 h2_Delta_by_genotype <- function(model,
                                  target,
-                                 source = NULL,
                                  type = c("BLUP", "BLUE"),
                                  options = NULL,
                                  marginal = TRUE,
                                  stratification = NULL,
+                                 vc = NULL,
                                  ...) {
   UseMethod("h2_Delta_by_genotype")
 }
@@ -463,21 +468,21 @@ h2_Delta_by_genotype <- function(model,
 #' @export
 h2_Delta_by_genotype.default <- function(model,
                                          target,
-                                         source = NULL,
                                          type = c("BLUP", "BLUE"),
                                          options = NULL,
                                          marginal = TRUE,
                                          stratification = NULL,
+                                         vc = NULL,
                                          ...) {
   type <- match.arg(type)
 
   h2D_ij <- h2_Delta_pairwise(model,
                               target,
-                              source = source,
                               type = type,
                               options = options,
                               marginal =  marginal,
                               stratification = stratification,
+                              vc = vc,
                               ...)
 
   h2D_i <- as.matrix(h2D_ij) |>
@@ -500,11 +505,11 @@ h2_Delta_by_genotype.default <- function(model,
 #' @usage
 #' h2_Delta_pairwise(model,
 #'                   target,
-#'                   source = NULL,
 #'                   type = c("BLUP", "BLUE"),
 #'                   options = NULL,
 #'                   marginal = TRUE,
 #'                   stratification = NULL,
+#'                   vc = NULL,
 #'                   ...)
 #' H2_Delta_pairwise(model,
 #'                   target,
@@ -512,6 +517,7 @@ h2_Delta_by_genotype.default <- function(model,
 #'                   options = NULL,
 #'                   marginal = TRUE,
 #'                   stratification = NULL,
+#'                   vc = NULL,
 #'                   ...)
 #' @inheritParams H2_Delta
 #' @name H2_Delta_pairwise
@@ -539,11 +545,11 @@ h2_Delta_by_genotype.default <- function(model,
 #' }
 h2_Delta_pairwise <- function(model,
                               target,
-                              source = NULL,
                               type = c("BLUP", "BLUE"),
                               options = NULL,
                               marginal = TRUE,
                               stratification = NULL,
+                              vc = NULL,
                               ...) {
   UseMethod("h2_Delta_pairwise")
 }
@@ -561,13 +567,14 @@ h2_Delta_pairwise <- function(model,
 #'           options = NULL,
 #'           marginal = TRUE,
 #'           stratification = NULL,
+#'           vc = NULL,
 #'           ...)
 #' h2_Cullis(model,
 #'           target,
-#'           source = NULL,
 #'           options = NULL,
 #'           marginal = TRUE,
 #'           stratification = NULL,
+#'           vc = NULL,
 #'           ...)
 #' @return Numeric value
 #' @details The equation for Cullis heritability is as follow
@@ -599,10 +606,10 @@ h2_Delta_pairwise <- function(model,
 
 h2_Cullis <- function(model,
                       target,
-                      source = NULL,
                       options = NULL,
                       marginal = TRUE,
                       stratification = NULL,
+                      vc = NULL,
                       ...) {
   UseMethod("h2_Cullis")
 }
@@ -616,13 +623,14 @@ h2_Cullis <- function(model,
 #'           options = NULL,
 #'           marginal = TRUE,
 #'           stratification = NULL,
+#'           vc = NULL,
 #'           ...)
 #' h2_Piepho(model,
 #'           target,
-#'           source = NULL,
 #'           options = NULL,
 #'           marginal = TRUE,
 #'           stratification = NULL,
+#'           vc = NULL,
 #'           ...)
 #' @inheritParams H2
 #' @name H2_Piepho
@@ -658,10 +666,10 @@ h2_Cullis <- function(model,
 #' }
 h2_Piepho <- function(model,
                       target,
-                      source = NULL,
                       options = NULL,
                       marginal = TRUE,
                       stratification = NULL,
+                      vc = NULL,
                       ...) {
   UseMethod("h2_Piepho")
 }

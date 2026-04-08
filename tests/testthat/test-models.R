@@ -60,6 +60,9 @@
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1+ 1+ loc || gen ) + (1| gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1| gen), data = lettuce_subset)
+
+# require(devtools)
+# load_all()
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
 # system.time(
 #   confint(H2(model, "gen"), B = 20)
@@ -68,8 +71,9 @@
 #   confint(H2(model, "gen"), B = 20, parallel = "multicore", ncpus = 10)
 # )
 # system.time(
-#   confint(H2(model, "gen"), B = 100, parallel = "snow", ncpus = 2)
+#   confint(H2(model, "gen"), B = 20, parallel = "snow", ncpus = 2)
 # )
+# H2(model, "gen", method = "Delta")
 #
 
 #
@@ -117,8 +121,48 @@
 # Ginv <- MASS::ginv(G)
 # dimnames(G) <- dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
 # attr(Ginv, "INVERSE") <- TRUE
+
+# lettuce_G <- lettuce_GRM
+#
+# require(devtools)
+# load_all()
+#
+# model <- asreml::asreml(
+#   fixed = y ~ rep,
+#   random = ~ vm(gen, lettuce_G) * idv(loc) ,
+#   data = lettuce_phenotypes)
+#
+# h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G))
+#
+# heritable::h2(model, "gen", marginal = TRUE, source = list(lettuce_G = lettuce_G))
+# confint(my_h2, B = 10, parallel  = "snow", ncpus = 2)
+# confint(my_h2, B = 10)
+# model$G.param
+#
+# asreml::asreml.options(
+# )
 #
 #
+# model <- asreml::asreml(
+#   fixed = y ~ rep,
+#   random = ~ gen*loc ,
+#   data = lettuce_phenotypes)
+# my_h2 <- heritable::h2(model, "gen", marginal = FALSE)
+# confint(my_h2, B = 10, parallel  = "snow", ncpus = 3)
+# phrase_G
+# phrase_vm
+# ??H2
+# model$G.param$`vm(gen, source = lettuce_GRM):loc`[[1]]
+#
+# check_GRM_exists(model, "gen", return = TRUE)
+# lettuce_GRM <- lettuce_GRM
+# rm(lettuce_GRM)
+#
+# pull_terms(model)
+# pull_terms_without_specials(model)
+#
+# heritable::h2(model, "gen", marginal = FALSE, source = list(lettuce_GRM = lettuce_GRM))
+
 # model <- asreml(
 #   fixed = y ~ rep,
 #   random =  ~ loc +vm(gen, lettuce_GRM) + gen:loc ,
