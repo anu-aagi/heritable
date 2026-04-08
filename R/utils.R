@@ -407,7 +407,7 @@ var_diff <- function(V) {
 
 
 #' @noRd
-#' @keywords internal
+#' @export
 var_comp.lmerMod <- function(model, target,
                              calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                              marginal = TRUE, stratification = NULL,...) {
@@ -520,7 +520,7 @@ var_comp.lmerMod <- function(model, target,
 }
 
 #' @noRd
-#' @keywords internal
+#' @export
 var_comp.asreml <- function(model, target,
                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                             marginal = TRUE, stratification = NULL,
@@ -706,8 +706,55 @@ var_comp.asreml <- function(model, target,
        marginal = marginal, stratification = stratification)
 }
 
-#' @keywords internal
-#' @noRd
+#' Extract variance components
+#'
+#' This function provides the variance matrix quantities needed to evaluate heritability
+#' with respect to a target random-effect term in a fitted linear mixed model.
+#'
+#' @param model Model object of class `lmerMod/merMod` or `asreml`
+#' @param target The name of the random effect for which heritability is to be calculated.
+#' @param calc_C22 Logical; whether to compute the prediction error
+#'   variance (PEV) matrix for the transformed target effect.
+#' @param calc_V Logical; whether to retain the marginal variance
+#'   matrix of the response and supporting quantities (`V`, `G`, `Z`, `X`, `idx`,
+#'   and `m`) in the output.
+#' @param calc_C11 Logical; whether to compute the variance
+#'   matrix of the fixed-effect counterpart estimator for the transformed target
+#'   effect.
+#' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
+#'   mappings so that each genotype receives a single averaged effect per term.
+#'   If `FALSE`, mappings will only consider the main genotype effect and ignore the
+#'   iteracting terms.
+#' @param stratification A one-row data frame defining the stratum in which
+#'   genotype effects should be evaluated. The columns must correspond
+#'   to model terms that interact with `target`.
+#' @param ... Additional arguments passed to downstream helper functions.
+#' @return A named list with the following elements:
+#'
+#' \describe{
+#'   \item{`n_g`}{Number of transformed genetic coefficients after applying the
+#'   mapping matrix `m`.}
+#'   \item{`gnames`}{Names of the transformed genetic coefficients.}
+#'   \item{`G_g`}{Variance matrix of the transformed target genetic effect.}
+#'   \item{`C22_g`}{Prediction error variance matrix of the transformed target
+#'   effect, if `calc_C22 = TRUE`; otherwise `NULL`.}
+#'   \item{`C11_g`}{Variance matrix of the fixed-effect counterpart estimator for
+#'   the transformed target effect, if `calc_C11 = TRUE`; otherwise `NULL`.}
+#'   \item{`V`}{Marginal covariance matrix of the response, if `calc_V = TRUE`;
+#'   otherwise `NULL`.}
+#'   \item{`G`}{Variance matrix of all random effects, if `calc_V = TRUE`;
+#'   otherwise `NULL`.}
+#'   \item{`Z`}{Random-effect design matrix, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`X`}{Fixed-effect design matrix, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`idx`}{Indices of the random-effect coefficients associated with the
+#'   target term, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`m`}{Linear mapping from the original target coefficients to the
+#'   transformed target effect, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`marginal`}{Logical scalar indicating whether the returned quantities
+#'   correspond to a marginal definition of the target effect.}
+#'   \item{`stratification`}{The user-supplied stratification object, if any.}
+#' }
+#' @export
 var_comp <- function(model, target,
                      calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                      marginal = TRUE, stratification = NULL,...) {

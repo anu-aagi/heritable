@@ -13,6 +13,7 @@ h2(model,
    marginal = TRUE,
    stratification = NULL,
    source = list(),
+   vc = NULL,
    ...)
 
 H2(model,
@@ -22,6 +23,7 @@ H2(model,
    marginal = TRUE,
    stratification = NULL,
    source = list(),
+   vc = NULL,
    ...
    )
 }
@@ -46,6 +48,8 @@ to model terms that interact with \code{target}.}
 \item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}, provided as a named list.
 When not provided (an empty list by default), the GRM variable used for \code{vm} calling will be searched in the global environment.
 Ignored for broad-sense and \code{lmerMod} methods}
+
+\item{vc}{A list of precomputed variance components. Should be in the same structure as the output of \code{\link[=var_comp]{var_comp()}}}
 
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled}
 }

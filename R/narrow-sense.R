@@ -18,6 +18,7 @@
 #' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`, provided as a named list.
 #' When not provided (an empty list by default), the GRM variable used for `vm` calling will be searched in the global environment.
 #' Ignored for broad-sense and `lmerMod` methods
+#' @param vc A list of precomputed variance components. Should be in the same structure as the output of [`var_comp()`]
 #' @param ... Additional arguments that specify heritability calculation when interactions with genotype effects are modelled
 #' @usage
 #' h2(model,
@@ -27,6 +28,7 @@
 #'    marginal = TRUE,
 #'    stratification = NULL,
 #'    source = list(),
+#'    vc = NULL,
 #'    ...)
 #'
 #' H2(model,
@@ -36,6 +38,7 @@
 #'    marginal = TRUE,
 #'    stratification = NULL,
 #'    source = list(),
+#'    vc = NULL,
 #'    ...
 #'    )
 #' @name H2
@@ -90,6 +93,7 @@ h2 <- function(model,
                marginal = TRUE,
                stratification = NULL,
                source = list(),
+               vc = NULL,
                ...) {
   UseMethod("h2")
 }
@@ -103,6 +107,7 @@ h2.default <- function(model,
                        marginal = TRUE,
                        stratification = NULL,
                        source = list(),
+                       vc = NULL,
                        ...) {
   method <- match.arg(method, several.ok = TRUE)
 
@@ -116,13 +121,15 @@ h2.default <- function(model,
   # Check design exists
   model <- check_deisgn_exsits(model, source = source)
 
-  # Build variance component
-  vc <- var_comp(model,
-                 target = target,
-                 source = source,
-                 marginal = marginal,
-                 stratification = stratification,
-                 ...)
+  if(is.null(vc)){
+    # Build variance component
+    vc <- var_comp(model,
+                   target = target,
+                   source = source,
+                   marginal = marginal,
+                   stratification = stratification,
+                   ...)
+  }
 
   h2_values <- sapply(method, function(m) {
     switch(m,

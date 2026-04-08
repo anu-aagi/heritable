@@ -134,7 +134,7 @@
 #
 # h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G))
 #
-# heritable::h2(model, "gen", marginal = TRUE, source = list(lettuce_G = lettuce_G))
+# my_h2 <- heritable::h2(model, "gen", marginal = TRUE, source = list(lettuce_G = lettuce_G))
 # confint(my_h2, B = 10, parallel  = "snow", ncpus = 2)
 # confint(my_h2, B = 10)
 # model$G.param

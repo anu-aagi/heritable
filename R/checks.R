@@ -259,6 +259,7 @@ check_model_specification.asreml <- function(model, target,
                                              type = c("broad_sense", "narrow_sense"),
                                              source = list(),
                                              ...){
+  type <- match.arg(type)
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
   spec <- attr(ran_trms_with_special, "spec")
@@ -285,6 +286,7 @@ check_model_specification.asreml <- function(model, target,
 check_model_specification.lmerMod <- function(model, target,
                                               type = c("broad_sense", "narrow_sense"),
                                               ...){
+  type <- match.arg(type)
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
 

@@ -37,6 +37,8 @@ iteracting terms.}
 genotype effects should be evaluated. The columns must correspond
 to model terms that interact with \code{target}.}
 
+\item{vc}{A list of precomputed variance components. Should be in the same structure as the output of \code{\link[=var_comp]{var_comp()}}}
+
 \item{...}{Additional arguments that specify heritability calculation when interactions with genotype effects are modelled}
 }
 \value{

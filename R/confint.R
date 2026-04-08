@@ -205,7 +205,7 @@ bootstrap_asreml <- function(model,
   # Get model frame
   design_default <- asreml::asreml.options()$design
   asreml::asreml.options(design = TRUE)
-  model <- check_deisgn_exsits(model)
+  model <- check_deisgn_exsits(model, source = source)
   mf <- model$mf
 
   mf <- as.data.frame(mf)
@@ -218,7 +218,7 @@ bootstrap_asreml <- function(model,
 
   # Get the linear predictor of fixed effect.
   if (!use.u) {
-    yhat <- get_fixed_fit_asreml(model)
+    yhat <- get_fixed_fit_asreml(model, source)
     V <- tryCatch(
       asremlPlus::estimateV.asreml(model, which.matrix = "V"),
       error = function(e) {
@@ -317,7 +317,9 @@ bootstrap_asreml <- function(model,
     if(length(source) > 0){
       list2env(source, environment())
     }
-    fit <- asreml::update.asreml(model, data = data)
+    capture.output(
+      fit <- asreml::update.asreml(model, data = data)
+    )
     fit[["design"]] <- design
     FUN(fit)
   }
@@ -353,6 +355,8 @@ bootstrap_asreml <- function(model,
 #'
 #' @param model An object of class \code{"asreml"}, fitted with
 #' \code{model.frame = TRUE}.
+#' @param source The known genomic relationship matrix (GRM) used in `model` fitted using `asreml::vm()`, provided as a named list.
+#' When not provided (an empty list by default), the GRM variable used for `vm` calling will be searched in the global environment.
 #'
 #' @return
 #' A numeric vector of length \eqn{N}, giving the fixed-effects-only
@@ -366,13 +370,13 @@ bootstrap_asreml <- function(model,
 #' Random effects (BLUPs) are not included.
 #'
 #' @export
-get_fixed_fit_asreml <- function(model) {
+get_fixed_fit_asreml <- function(model, source = list()) {
   if (!inherits(model, "asreml")) {
     stop("`model` must be an `asreml` object.")
   }
 
   # Get model frame
-  model <- check_deisgn_exsits(model, build_mf = FALSE)
+  model <- check_deisgn_exsits(model, build_mf = FALSE, source = source)
   design <- model$design
 
   N <- nrow(design)

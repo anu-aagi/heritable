@@ -593,7 +593,7 @@ H2_Delta_pairwise.asreml <- function(model,
 
   if (options$check %||% TRUE) {
     # Check correct model specification.
-    check_model_specification(model, target, "broad_sense")
+    check_model_specification(model, target, "broad_sense", source)
   }
 
   # Check if target is random or fixed
@@ -606,7 +606,7 @@ H2_Delta_pairwise.asreml <- function(model,
     H2_Delta <- H2_Delta_BLUE_pairwise.asreml(model, target, options,
                                                marginal, stratification, vc, source, ...)
   } else if (type == "BLUP") {
-    H2_Delta <- H2_Delta_BLUP_pairwise.asreml(model, target, source, options,
+    H2_Delta <- H2_Delta_BLUP_pairwise.asreml(model, target, options,
                                                marginal, stratification, vc, source, ...)
   }
 

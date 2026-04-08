@@ -7,6 +7,7 @@ H2 <- function(model,
                marginal = TRUE,
                stratification = NULL,
                source = list(),
+               vc = NULL,
                ...
                ) {
   UseMethod("H2")
@@ -22,6 +23,7 @@ H2.default <- function(model,
                        marginal = TRUE,
                        stratification = NULL,
                        source = list(),
+                       vc = NULL,
                        ...
                        ) {
   method <- match.arg(method, several.ok = TRUE)
@@ -37,11 +39,13 @@ H2.default <- function(model,
   model <- check_deisgn_exsits(model, source = source)
 
   # Build variance component
-  vc <- var_comp(model,
-                 target = target,
-                 marginal = marginal,
-                 stratification = stratification,
-                 ...)
+  if(is.null(vc)){
+    vc <- var_comp(model,
+                   target = target,
+                   marginal = marginal,
+                   stratification = stratification,
+                   ...)
+  }
 
   # Calculate H2 for each method
   H2_values <- sapply(method, function(m) {
