@@ -7,7 +7,7 @@
 #
 # # when i fit a conterpart model of
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
-# # should it be
+# should it be
 # model <-  lme4::lmer(y ~  rep + gen + gen:loc + (1 | loc), data = lettuce_phenotypes)
 # # or
 # model <-  lme4::lmer(y ~  rep + gen + gen:loc + loc, data = lettuce_phenotypes)
@@ -123,7 +123,7 @@
 # attr(Ginv, "INVERSE") <- TRUE
 
 # lettuce_G <- lettuce_GRM
-#
+# #
 # require(devtools)
 # load_all()
 #
@@ -134,9 +134,25 @@
 #
 # h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G))
 #
-# my_h2 <- heritable::h2(model, "gen", marginal = TRUE, source = list(lettuce_G = lettuce_G))
+#
+# my_h2 <- heritable::h2(model, "gen", marginal = FALSE, source = list(lettuce_G = lettuce_G))
 # confint(my_h2, B = 10, parallel  = "snow", ncpus = 2)
-# confint(my_h2, B = 10)
+#
+# my_h2 <- heritable::h2(model, "gen", marginal = FALSE, source = list(lettuce_G = lettuce_G))
+# system.time(
+#   {
+#     confint(my_h2, B = 10)
+#   }
+# )
+#
+# my_h2 <- heritable::h2(model, "gen", marginal = FALSE, source = list(lettuce_G = lettuce_G), solver = "LMM")
+# system.time(
+#   {
+#     confint(my_h2, B = 10)
+#   }
+# )
+
+
 # model$G.param
 #
 # asreml::asreml.options(

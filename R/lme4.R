@@ -29,7 +29,7 @@ h2_Standard.lmerMod <- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   V <- vc$V
   Z <- vc$Z
@@ -59,7 +59,7 @@ h2_Standard.lmerMod <- function(model,
     g <- stats::model.frame(model)[[target]]
     gnames <- levels(g)
     Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
-    C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+    C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
     W <- t(C) %*% Z[,idx] # C^T Z G Z C
     G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
@@ -94,7 +94,7 @@ h2_Oakey.lmerMod <- function(model,
 
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -159,7 +159,7 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
 
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   G_g <- vc$G_g
   C22_g <- vc$C22_g
@@ -201,7 +201,7 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   gnames <- vc$gnames
 
@@ -289,7 +289,8 @@ h2_Cullis.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -326,7 +327,7 @@ h2_Piepho.lmerMod <- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   gnames <- vc$gnames
 
@@ -394,7 +395,8 @@ H2_Standard.lmerMod <- function(model,
   if(all(trms == target)){
     # Get genotype variance
     if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)$G_g
+      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE,
+                      marginal = marginal, stratification = stratification, ...)$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -410,7 +412,8 @@ H2_Standard.lmerMod <- function(model,
 
     # Get genotype variance
     if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE, marginal, stratification, ...)
+      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
+                     marginal = marginal, stratification = stratification, ...)
     }
 
     V <- vc$V
@@ -459,7 +462,7 @@ H2_Standard.lmerMod <- function(model,
       g <- stats::model.frame(model)[[target]]
       gnames <- levels(g)
       Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
-      C <- Z_g %*% Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+      C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
       W <- t(C) %*% Z[,idx] # C^T Z G Z C
       G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
@@ -495,7 +498,8 @@ H2_Cullis.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -529,7 +533,8 @@ H2_Oakey.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, ...)
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -560,7 +565,7 @@ H2_Piepho.lmerMod <- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   gnames <- vc$gnames
 
@@ -656,7 +661,7 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal, stratification, ...)
+                   marginal = marginal, stratification = stratification, ...)
   }
   gnames <- vc$gnames
 
@@ -737,8 +742,8 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   }
 
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE,
-                   calc_V = FALSE, calc_C11 = FALSE, marginal, stratification, ...)
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, ...)
   }
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g

@@ -12,6 +12,7 @@ var_comp(
   calc_C11 = TRUE,
   marginal = TRUE,
   stratification = NULL,
+  solver = c("direct", "LMM"),
   ...
 )
 }
@@ -39,6 +40,9 @@ iteracting terms.}
 \item{stratification}{A one-row data frame defining the stratum in which
 genotype effects should be evaluated. The columns must correspond
 to model terms that interact with \code{target}.}
+
+\item{solver}{A string specifying the solver for the PEV matrix. Can be
+either \code{"direct"} (directly invert \code{V}) or \code{"LMM"} (Solve the LMM equation).}
 
 \item{...}{Additional arguments passed to downstream helper functions.}
 }

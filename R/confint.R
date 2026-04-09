@@ -317,7 +317,7 @@ bootstrap_asreml <- function(model,
     if(length(source) > 0){
       list2env(source, environment())
     }
-    capture.output(
+    utils::capture.output(
       fit <- asreml::update.asreml(model, data = data)
     )
     fit[["design"]] <- design

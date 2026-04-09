@@ -400,9 +400,9 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
 
 #' @noRd
 #' @keywords internal
-#' @importFrom Matrix Diagonal Matrix t diag crossprod tcrossprod
+#' @importFrom Matrix t diag crossprod tcrossprod
 var_diff <- function(V) {
-  Matrix(outer(diag(V), diag(V), "+") - 2 * V)
+  Matrix::Matrix(outer(diag(V), diag(V), "+") - 2 * V)
 }
 
 
@@ -410,7 +410,9 @@ var_diff <- function(V) {
 #' @export
 var_comp.lmerMod <- function(model, target,
                              calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
-                             marginal = TRUE, stratification = NULL,...) {
+                             marginal = TRUE, stratification = NULL,
+                             solver = c("direct", "LMM"), ...) {
+  solver <- match.arg(solver)
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -466,11 +468,17 @@ var_comp.lmerMod <- function(model, target,
   if (calc_V || calc_C22 || calc_C11) {
     R <- diag(nrow(X)) * sigma2
     V <- R + Z %*% G %*% t(Z)
-    Vinv <- solve(V)
 
     if(calc_C22) {
-      P <- Vinv - Vinv %*% X %*% solve(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
-      C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+
+      if(solver == "direct"){
+        Vinv <- ginv_sym_sparse(V)
+        P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+        C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+      }else{
+        C22 <- solve_LMM(X, Z, G, R)$C22
+      }
+
       dimnames(C22) <- list(colnames(Z), colnames(Z))
       C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
       dimnames(C22_g) <- list(gnames, gnames)
@@ -479,11 +487,24 @@ var_comp.lmerMod <- function(model, target,
     }
 
     if(calc_C11){
-      Z_g <-  Z[, g, drop=FALSE]
-      V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
-      X_tilde <- cbind(X, Z_g)
 
-      C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      if(solver == "direct"){
+        Z_g <-  Z[, g, drop=FALSE]
+        V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
+        X_tilde <- cbind(X, Z_g)
+
+        C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      } else {
+        X_tilde <- cbind(X, Z[, g, drop=FALSE])
+        if(length(g) != ncol(Z)){
+          Z_tilde <-  Z[, -g, drop=FALSE]
+          G_tilde <- G[-g,-g,drop=FALSE]
+          C11 <- solve_LMM(X_tilde, Z_tilde, G_tilde, R)$C11
+        } else {
+          C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(R) %*% X_tilde)
+        }
+      }
+
       C11_g <- crossprod(m, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% m
       dimnames(C11_g) <- list(gnames, gnames)
     } else {
@@ -524,8 +545,9 @@ var_comp.lmerMod <- function(model, target,
 var_comp.asreml <- function(model, target,
                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                             marginal = TRUE, stratification = NULL,
+                            solver = c("direct", "LMM"),
                             source = list(), ...) {
-
+  solver <- match.arg(solver)
   model <- check_deisgn_exsits(model)
   design <- model$design
 
@@ -627,9 +649,15 @@ var_comp.asreml <- function(model, target,
     V <- R + Z %*% G %*% t(Z)
 
     if(calc_C22) {
-      Vinv <- ginv_sym_sparse(V)
-      P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
-      C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+
+      if(solver == "direct"){
+        Vinv <- ginv_sym_sparse(V)
+        P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+        C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+      }else{
+        C22 <- solve_LMM(X, Z, G, R)$C22
+      }
+
       dimnames(C22) <- list(colnames(Z), colnames(Z))
       C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
       dimnames(C22_g) <- list(gnames, gnames)
@@ -638,11 +666,24 @@ var_comp.asreml <- function(model, target,
     }
 
     if(calc_C11){
-      Z_g <-  Z[, g, drop=FALSE]
-      V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
-      X_tilde <- cbind(X, Z_g)
 
-      C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      if(solver == "direct"){
+        Z_g <-  Z[, g, drop=FALSE]
+        V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
+        X_tilde <- cbind(X, Z_g)
+
+        C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      } else {
+        X_tilde <- cbind(X, Z[, g, drop=FALSE])
+        if(length(g) != ncol(Z)){
+          Z_tilde <-  Z[, -g, drop=FALSE]
+          G_tilde <- G[-g,-g,drop=FALSE]
+          C11 <- solve_LMM(X_tilde, Z_tilde, G_tilde, R)$C11
+        } else {
+          C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(R) %*% X_tilde)
+        }
+      }
+
       C11_g <- crossprod(m, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% m
       dimnames(C11_g) <- list(gnames, gnames)
     } else {
@@ -728,6 +769,8 @@ var_comp.asreml <- function(model, target,
 #' @param stratification A one-row data frame defining the stratum in which
 #'   genotype effects should be evaluated. The columns must correspond
 #'   to model terms that interact with `target`.
+#' @param solver A string specifying the solver for the PEV matrix. Can be
+#' either `"direct"` (directly invert `V`) or `"LMM"` (Solve the LMM equation).
 #' @param ... Additional arguments passed to downstream helper functions.
 #' @return A named list with the following elements:
 #'
@@ -757,7 +800,7 @@ var_comp.asreml <- function(model, target,
 #' @export
 var_comp <- function(model, target,
                      calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
-                     marginal = TRUE, stratification = NULL,...) {
+                     marginal = TRUE, stratification = NULL, solver = c("direct", "LMM"), ...) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
@@ -1348,15 +1391,24 @@ ginv_sym_sparse <- function(A, tol = 1e-10) {
 }
 
 
-.capture_all_args <- function(fun, env = parent.frame(), drop = NULL) {
-  fmls <- formals(fun)
+#' @keywords internal
+#' @noRd
+solve_LMM <- function(X, Z, G, R){
+  Rinv <- ginv_sym_sparse(R)
+  Ginv <- ginv_sym_sparse(G)
+  XtRinvX <- crossprod(X, Rinv) %*% X
+  XtRinvZ <- crossprod(X, Rinv) %*% Z
+  ZtRinvZ <- crossprod(Z, Rinv) %*% Z
 
-  args <- lapply(names(fmls), function(nm) {
-    get(nm, envir = env)
-  })
-  names(args) <- names(fmls)
+  ## Mixed model equation matrix
+  C <- rbind(
+    cbind(XtRinvX, XtRinvZ),
+    cbind(t(XtRinvZ), ZtRinvZ + Ginv)
+  )
 
-  args <- args[setdiff(names(args), drop)]
-  args
+  Cinv <- ginv_sym_sparse(C)
+  idx_11 <- 1:ncol(X)
+
+  list(C11 = Cinv[idx_11,idx_11,drop=FALSE],
+       C22 = Cinv[-idx_11,-idx_11,drop=FALSE])
 }
-
