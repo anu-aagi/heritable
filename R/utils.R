@@ -1383,11 +1383,9 @@ build_f_mat <- function(x, level) {
 ginv_sym_sparse <- function(A, tol = 1e-10) {
   A <- Matrix::forceSymmetric(A)
 
-  e <- eigen(as.matrix(A), symmetric = TRUE)
+  diag(A) <- diag(A) + tol
 
-  d_inv <- ifelse(abs(e$values) > tol, 1 / e$values, 0)
-
-  e$vectors %*% (d_inv * t(e$vectors))
+  solve(A)
 }
 
 

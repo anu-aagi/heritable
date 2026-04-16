@@ -83,7 +83,7 @@ H2_Oakey_parameters <- function(Gg_inv, C22_g) {
    M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
 
    eM <- eigen(M, symmetric = TRUE)
-   thres <- 1e-10
+   thres <- 1e-8
    H2_Oakey <- mean(eM$values[eM$values > thres])
    return(H2_Oakey)
 }

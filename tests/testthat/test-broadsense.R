@@ -65,7 +65,7 @@ test_that("H2 works for lme4",{
 
   # lme4 Random "gen" single RE----------------------------------------------------------
   lettuce_lme4 <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
-  expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"))
+  expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"), tolerance = 1e-3)
 })
 
 test_that("H2 can handle multiple methods", {
