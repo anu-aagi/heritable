@@ -411,7 +411,7 @@ var_diff <- function(V) {
 var_comp.lmerMod <- function(model, target,
                              calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                              marginal = TRUE, stratification = NULL,
-                             solver = c("direct", "LMM"), ...) {
+                             solver = c("LMM", "direct"), ...) {
   solver <- match.arg(solver)
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
@@ -545,7 +545,7 @@ var_comp.lmerMod <- function(model, target,
 var_comp.asreml <- function(model, target,
                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                             marginal = TRUE, stratification = NULL,
-                            solver = c("direct", "LMM"),
+                            solver = c("LMM", "direct"),
                             source = list(), ...) {
   solver <- match.arg(solver)
   model <- check_deisgn_exsits(model)
@@ -800,7 +800,7 @@ var_comp.asreml <- function(model, target,
 #' @export
 var_comp <- function(model, target,
                      calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
-                     marginal = TRUE, stratification = NULL, solver = c("direct", "LMM"), ...) {
+                     marginal = TRUE, stratification = NULL, solver = c("LMM", "direct"), ...) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
@@ -1385,7 +1385,7 @@ ginv_sym_sparse <- function(A, tol = 1e-10) {
 
   diag(A) <- diag(A) + tol
 
-  solve(A)
+  solve(A, tol = -Inf)
 }
 
 

@@ -132,11 +132,11 @@
 #   random = ~ vm(gen, lettuce_G) * idv(loc) ,
 #   data = lettuce_phenotypes)
 #
-# h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G))
-#
+# h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G), solver ="direct")
+# .Machine$double.eps
 #
 # my_h2 <- heritable::h2(model, "gen", marginal = FALSE, source = list(lettuce_G = lettuce_G))
-# confint(my_h2, B = 10, parallel  = "snow", ncpus = 2)
+# my_ci <- confint(my_h2, B = 10, parallel  = "snow")
 #
 # my_h2 <- heritable::h2(model, "gen", marginal = FALSE, source = list(lettuce_G = lettuce_G))
 # system.time(

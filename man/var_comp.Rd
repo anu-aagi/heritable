@@ -12,7 +12,7 @@ var_comp(
   calc_C11 = TRUE,
   marginal = TRUE,
   stratification = NULL,
-  solver = c("direct", "LMM"),
+  solver = c("LMM", "direct"),
   ...
 )
 }
