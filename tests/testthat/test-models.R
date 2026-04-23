@@ -1,7 +1,7 @@
 # test_that("Refactored asreml works",{
 #   skip()
 # lettuce_phenotypes <- subset(heritable::lettuce_phenotypes, !is.na(y))
-# model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+#model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1 | gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1 | gen) + (1|gen:loc), data = lettuce_phenotypes)
 #
@@ -211,6 +211,12 @@
 # )
 #
 #
-#
-#
+# include <- !is.na(lettuce_phenotypes$y)
+# lettuce_data <- lettuce_phenotypes[include,]
+# # Fit a asreml model
+# model <- asreml::asreml(
+#   fixed = y ~ rep,
+#   random = ~ gen * loc,
+#   data = lettuce_data)
+# heritable::H2(model = model, target = "gen", marginal = FALSE)
 # })

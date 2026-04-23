@@ -1381,11 +1381,17 @@ build_f_mat <- function(x, level) {
 #' @keywords internal
 #' @noRd
 ginv_sym_sparse <- function(A, tol = 1e-10) {
-  A <- Matrix::forceSymmetric(A)
 
-  diag(A) <- diag(A) + tol
+  tol <- tol * irlba::irlba(A, nv = 1, nu = 1)$d
 
-  solve(A, tol = -Inf)
+  solve(t(A) %*% A + tol * diag(ncol(A))) %*% t(A)
+
+  # e <- eigen(as.matrix(A), symmetric = TRUE)
+  #
+  # d_inv <- ifelse(e$values > tol, 1 / e$values, 0)
+  #
+  # e$vectors %*% (d_inv * t(e$vectors))
+
 }
 
 

@@ -22,7 +22,8 @@ Imports:
     methods,
     reformulas,
     stringr,
-    vctrs
+    vctrs,
+    irlba
 Suggests: 
     testthat (>= 3.0.0),
     agridat,
