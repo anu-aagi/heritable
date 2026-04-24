@@ -123,7 +123,7 @@
 # attr(Ginv, "INVERSE") <- TRUE
 
 # lettuce_G <- lettuce_GRM
-# #
+#
 # require(devtools)
 # load_all()
 #
@@ -131,7 +131,7 @@
 #   fixed = y ~ rep,
 #   random = ~ vm(gen, lettuce_G) * idv(loc) ,
 #   data = lettuce_phenotypes)
-#
+
 # h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G), solver ="direct")
 # .Machine$double.eps
 #
