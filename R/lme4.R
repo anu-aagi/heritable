@@ -19,13 +19,6 @@ h2_Standard.lmerMod <- function(model,
     return(NA)
   }
 
-  if(!is.null(vc)) stratification <- vc$stratification
-
-  if(!is.null(stratification)){
-    cli::cli_warn("Stratified heritability is not defined for the standard method, retuning {.value {NA}}.")
-    return(NA)
-  }
-
   # Get genotype variance
   if(is.null(vc)){
     vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
@@ -39,12 +32,12 @@ h2_Standard.lmerMod <- function(model,
   if(vc$marginal || !is.null(vc$stratification)){
     X <- vc$X
     y <- vc$y
-    m <- vc$m
+    W <- vc$W
 
     X_tilde <- cbind(X, Z[, idx, drop=FALSE])
     C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
     C <- C[-seq_len(ncol(X)),]
-    C <- crossprod(C, m)
+    C <- crossprod(C, W)
     W <-  t(C) %*% Z[,idx]
     G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
@@ -52,7 +45,7 @@ h2_Standard.lmerMod <- function(model,
 
     # Check estimability
     # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
-    # c <- c(rep(0, ), m[,1] - m[,3])
+    # c <- c(rep(0, ), W[,1] - W[,3])
     # plot(c - P %*% c)
 
   } else {
@@ -161,6 +154,7 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
     vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
                    marginal = marginal, stratification = stratification, ...)
   }
+  gnames <- vc$gnames
   G_g <- vc$G_g
   C22_g <- vc$C22_g
 
@@ -169,12 +163,15 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
 
   # Compute variance of difference from PEV
   delta_pev <- var_diff(C22_g)
-  diag(delta_pev) <- NA
 
   # H2 Delta BLUP, same parameterisation as the broad sense.
   h2_Delta_BLUP <- H2_Delta_parameters(delta_g, delta_pev, "BLUP")
 
-  dimnames(h2_Delta_BLUP) <- dimnames(delta_g)
+  dimnames(h2_Delta_BLUP) <- list(gnames, gnames)
+  diag(h2_Delta_BLUP) <- NA
+
+  attr(h2_Delta_BLUP, "delta_g") <- delta_g
+  attr(h2_Delta_BLUP, "delta_pev") <- delta_pev
 
   h2_Delta_BLUP
 }
@@ -206,11 +203,18 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
   gnames <- vc$gnames
 
   delta <- var_diff(vc$C11_g)
-  dimnames(delta) <- list(gnames, gnames)
-  diag(delta) <- NA
 
-  delta_g <- var_diff(vc$G_g)
+  delta_g <- var_diff(vc$G_g_tilde)
+
   h2_Delta_BLUE <- H2_Delta_parameters(delta_g, delta, "BLUE")
+
+  dimnames(h2_Delta_BLUE) <- list(gnames, gnames)
+  diag(h2_Delta_BLUE) <- NA
+
+  attr(h2_Delta_BLUE, "delta_g") <- delta_g
+  attr(h2_Delta_BLUE, "delta_pev") <- delta
+
+  h2_Delta_BLUE
 
   # # Extract vc_g and vc_e
   # if(is.null(vc)){
@@ -261,10 +265,6 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
   # dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
   #
   # h2_Delta_BLUE
-
-  dimnames(h2_Delta_BLUE) <- dimnames(delta_g)
-
-  h2_Delta_BLUE
 }
 
 #' @noRd
@@ -326,7 +326,7 @@ h2_Piepho.lmerMod <- function(model,
 
   # Get genotype variance
   if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
+    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = TRUE,
                    marginal = marginal, stratification = stratification, ...)
   }
   gnames <- vc$gnames
@@ -337,8 +337,10 @@ h2_Piepho.lmerMod <- function(model,
   delta_avg <- mean(delta[upper.tri(delta)])
 
   # s2_g / (s2_g + delta_avg / 2)
-  s2_g <- mean(diag(vc$G_g))
-  H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+  G_g_tilde <- vc$G_g_tilde_no_cov
+  s2_g_tilde <- mean(var_diff(G_g_tilde)[upper.tri(G_g_tilde)]) / 2
+
+  return(H2_Piepho_parameters(s2_g_tilde, delta_avg))
 
   ## Conterpart method
 
@@ -362,8 +364,6 @@ h2_Piepho.lmerMod <- function(model,
   #
   # # s2_g / (s2_g + delta_avg / 2)
   # H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
-
-  return(H2_Piepho)
 }
 
 
@@ -423,12 +423,12 @@ H2_Standard.lmerMod <- function(model,
 
     if(vc$marginal || !is.null(vc$stratification)){
       X <- vc$X
-      m <- vc$m
+      W <- vc$W
 
       X_tilde <- cbind(X, Z[, idx, drop=FALSE])
       C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
       C <- C[-seq_len(ncol(X)),]
-      C <- crossprod(C, m)
+      C <- crossprod(C, W)
       W <-  t(C) %*% Z[,idx]
       G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
@@ -436,7 +436,7 @@ H2_Standard.lmerMod <- function(model,
 
       # Check estimability
       # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
-      # c <- c(rep(0, ), m[,1] - m[,3])
+      # c <- c(rep(0, ), W[,1] - W[,3])
       # plot(c - P %*% c)
 
       # Validate stratified heritability using the following model
@@ -575,8 +575,9 @@ H2_Piepho.lmerMod <- function(model,
   delta_avg <- mean(delta[upper.tri(delta)])
 
   # s2_g / (s2_g + delta_avg / 2)
-  s2_g <- mean(diag(vc$G_g))
-  H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
+  G_g_tilde <- vc$G_g_tilde_no_cov
+  s2_g_tilde <- mean(var_diff(G_g_tilde)[upper.tri(G_g_tilde)]) / 2
+  return(H2_Piepho_parameters(s2_g_tilde, delta_avg))
 
   ## Conterpart method
 
@@ -600,8 +601,6 @@ H2_Piepho.lmerMod <- function(model,
   #
   # # s2_g / (s2_g + delta_avg / 2)
   # H2_Piepho <- H2_Piepho_parameters(s2_g, delta_avg)
-
-  return(H2_Piepho)
 }
 
 #' @noRd
@@ -666,11 +665,19 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
   gnames <- vc$gnames
 
   delta <- var_diff(vc$C11_g)
-  dimnames(delta) <- list(gnames, gnames)
-  diag(delta) <- NA
 
-  s2_g <- mean(diag(vc$G_g))
-  H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
+  G_g_tilde <- vc$G_g_tilde_no_cov
+  s2_g_tilde <- mean(var_diff(G_g_tilde)[upper.tri(G_g_tilde)]) / 2
+
+  H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g_tilde, delta, "BLUE")
+
+  dimnames(H2_Delta_BLUE) <- list(gnames, gnames)
+  diag(H2_Delta_BLUE) <- NA
+
+  attr(H2_Delta_BLUE, "delta_g") <- 2*s2_g_tilde
+  attr(H2_Delta_BLUE, "delta_pev") <- delta
+
+  H2_Delta_BLUE
 
   # Counterpart approach
   #
@@ -716,10 +723,6 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
 
   # H2 Delta BLUE
   # H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g, delta, "BLUE")
-
-  dimnames(H2_Delta_BLUE) <- dimnames(delta)
-
-  return(H2_Delta_BLUE)
 }
 
 #' @keywords internal
@@ -745,18 +748,22 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
     vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
                    marginal = marginal, stratification = stratification, ...)
   }
+  gnames <- vc$gnames
   s2_g <- mean(diag(vc$G_g))
   C22_g <- vc$C22_g
 
   # Compute variance of difference from PEV
   delta <- var_diff(C22_g)
-  diag(delta) <- NA
-  dimnames(delta) <- list(vc$gnames, vc$gnames)
 
   # H2 Delta BLUP
   H2_Delta_BLUP <- H2_Delta_parameters(2*s2_g, delta, "BLUP")
 
-  dimnames(H2_Delta_BLUP) <- dimnames(delta)
+  dimnames(H2_Delta_BLUP) <- list(vc$gnames, vc$gnames)
+  diag(H2_Delta_BLUP) <- NA
+
+  attr(H2_Delta_BLUP, "delta_g") <- 2*s2_g
+  attr(H2_Delta_BLUP, "delta_pev") <- delta
 
   H2_Delta_BLUP
+
 }

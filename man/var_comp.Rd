@@ -56,7 +56,11 @@ mapping matrix \code{m}.}
 \item{\code{G_g}}{Variance matrix of the transformed target genetic effect.}
 \item{\code{C22_g}}{Prediction error variance matrix of the transformed target
 effect, if \code{calc_C22 = TRUE}; otherwise \code{NULL}.}
-\item{\code{C11_g}}{Variance matrix of the fixed-effect counterpart estimator for
+\item{\code{G_g_tilde}}{Variance matrix of the fixed-effect counterpart estimator for
+the transformed target effect, if \code{calc_C11 = TRUE}; otherwise \code{NULL}.}
+\item{\code{G_g_tilde_no_cov}}{Variance matrix of the fixed-effect counterpart estimator for
+the transformed target effect, without considering target covariance, if \code{calc_C11 = TRUE}; otherwise \code{NULL}.}
+\item{\code{C11_g}}{Estimation error variance matrix of the fixed-effect counterpart estimator for
 the transformed target effect, if \code{calc_C11 = TRUE}; otherwise \code{NULL}.}
 \item{\code{V}}{Marginal covariance matrix of the response, if \code{calc_V = TRUE};
 otherwise \code{NULL}.}
@@ -66,7 +70,7 @@ otherwise \code{NULL}.}
 \item{\code{X}}{Fixed-effect design matrix, if \code{calc_V = TRUE}; otherwise \code{NULL}.}
 \item{\code{idx}}{Indices of the random-effect coefficients associated with the
 target term, if \code{calc_V = TRUE}; otherwise \code{NULL}.}
-\item{\code{m}}{Linear mapping from the original target coefficients to the
+\item{\code{W}}{Linear mapping from the original target coefficients to the
 transformed target effect, if \code{calc_V = TRUE}; otherwise \code{NULL}.}
 \item{\code{marginal}}{Logical scalar indicating whether the returned quantities
 correspond to a marginal definition of the target effect.}

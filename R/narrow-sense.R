@@ -387,11 +387,13 @@ h2_Delta.default <- function(model,
   if (is.atomic(h2D_ij) && length(h2D_ij) == 1 && is.na(h2D_ij)) {
     return(NA)
   }
-  delta_values <- h2D_ij[upper.tri(h2D_ij)]
+
+  delta_g <- mean(attr(h2D_ij, "delta_g")[upper.tri(h2D_ij)])
+  delta_pev <- mean(attr(h2D_ij, "delta_pev")[upper.tri(h2D_ij)])
 
   switch(type,
-         "BLUP" = mean(delta_values),
-         "BLUE" = length(delta_values) / sum(1 / delta_values)
+         "BLUP" = 1 - delta_pev / delta_g,
+         "BLUE" = delta_g / (delta_g + delta_pev)
   )
 }
 
@@ -492,15 +494,15 @@ h2_Delta_by_genotype.default <- function(model,
                               vc = vc,
                               ...)
 
-  h2D_i <- as.matrix(h2D_ij) |>
-    rowMeans(na.rm = TRUE) |>
-    data.frame()
+  delta_g <- attr(h2D_ij, "delta_g")
+  delta_pev <- attr(h2D_ij, "delta_pev")
+  delta_pev <- Matrix::rowSums(delta_pev)/(ncol(delta_pev)-1)
 
-  h2D_i <- setNames(h2D_i, "h2D_i")
-
-  h2D_i_list <- split(h2D_i, rownames(h2D_i))
-
-  return(h2D_i_list)
+  if(type == "BLUP"){
+    return(1 - delta_pev / delta_g)
+  } else {
+    return(delta_g / (delta_g + delta_pev))
+  }
 }
 
 #' Calculate pairwise heritability of differences between genotypes from model object

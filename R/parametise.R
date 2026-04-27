@@ -162,5 +162,6 @@ h2_Standard_parameters <- function(G_g, V, C) {
   delta_g <- var_diff(G_g)
   # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
 
-  1/mean((delta_y/delta_g)[lower.tri(delta_y)])
+  mean(delta_g[upper.tri(delta_y)])/mean(delta_y[upper.tri(delta_y)])
+
 }

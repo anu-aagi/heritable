@@ -167,11 +167,12 @@ H2_Delta.default <- function(model,
   if (is.atomic(H2D_ij) && length(H2D_ij) == 1 && is.na(H2D_ij)) {
     return(NA)
   }
-  delta_values <- H2D_ij[upper.tri(H2D_ij)]
+  delta_g <- attr(H2D_ij, "delta_g")
+  delta_pev <- mean(attr(H2D_ij, "delta_pev")[upper.tri(H2D_ij)])
 
   switch(type,
-    "BLUP" = mean(delta_values),
-    "BLUE" = length(delta_values) / sum(1 / delta_values)
+    "BLUP" = 1 - delta_pev / delta_g,
+    "BLUE" = delta_g / (delta_g + delta_pev)
   )
 }
 
@@ -198,6 +199,8 @@ H2_Delta_by_genotype.default <- function(model,
                                          stratification = NULL,
                                          vc = NULL,
                                          ...) {
+  type <- match.arg(type)
+
   H2D_ij <- H2_Delta_pairwise(model,
                               target,
                               type = type,
@@ -211,15 +214,16 @@ H2_Delta_by_genotype.default <- function(model,
     return(NA)
   }
 
-  H2D_i <- as.matrix(H2D_ij) |>
-    rowMeans(na.rm = TRUE) |>
-    data.frame()
+  delta_g <- attr(H2D_ij, "delta_g")
+  delta_pev <- attr(H2D_ij, "delta_pev")
+  delta_pev <- Matrix::rowSums(delta_pev)/(ncol(delta_pev)-1)
 
-  H2D_i <- setNames(H2D_i, "H2D_i")
+  if(type == "BLUP"){
+    return(1 - delta_pev / delta_g)
+  } else {
+    return(delta_g / (delta_g + delta_pev))
+  }
 
-  H2D_i_list <- split(H2D_i, rownames(H2D_i))
-
-  return(H2D_i_list)
 }
 
 #' @noRd

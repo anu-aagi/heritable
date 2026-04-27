@@ -421,17 +421,20 @@ var_comp.lmerMod <- function(model, target,
   G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
+  if(marginal || !is.null(stratification)) marginal <- TRUE
   mapper <- map_target_terms(model, target, marginal)
+  W <- m <- mapper$m
+  m <- m != 0
   g <- mapper$idx
 
   # Get BLUP weight
   if (is.null(stratification)) {
-    m <- mapper$m
     main <- mapper$main
     if (sum(!main) == 0) {
       marginal <- FALSE
     } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
+      W <- W[main, , drop = FALSE]
       m <- m[main, , drop = FALSE]
       cli::cli_inform(
         c(
@@ -457,11 +460,11 @@ var_comp.lmerMod <- function(model, target,
       )
     )
     marginal <- FALSE
-    m <- build_new_Z(model, target, stratification) |> t()
+    W <- build_new_Z(model, target, stratification) |> t()
   }
 
-  gnames <- colnames(m)
-  G_g <- crossprod(m, G[g, g, drop = FALSE]) %*% m
+  gnames <- colnames(W)
+  G_g <- crossprod(W, G[g, g, drop = FALSE]) %*% W
   dimnames(G_g) <- list(gnames, gnames)
   n_g <- length(gnames)
 
@@ -480,7 +483,7 @@ var_comp.lmerMod <- function(model, target,
       }
 
       dimnames(C22) <- list(colnames(Z), colnames(Z))
-      C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
+      C22_g <- crossprod(W, C22[g, g, drop = FALSE]) %*% W
       dimnames(C22_g) <- list(gnames, gnames)
     } else {
       C22_g <- NULL
@@ -505,10 +508,36 @@ var_comp.lmerMod <- function(model, target,
         }
       }
 
-      C11_g <- crossprod(m, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% m
+      XTX <- crossprod(X_tilde)
+      P <- ginv_sym_sparse(XTX) %*% XTX
+      W_tilde <- t(crossprod(W, P[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]))
+
+      # Genetic variance matrix in the conterpart model
+      G_g_tilde <- crossprod(W_tilde, G[g, g, drop = FALSE]) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      # Genetic variance matrix in the conterpart model without considering genetic covariance
+      ij <- apply(m, 2, function(z) {
+        active <- which(z)
+        expand.grid(active, active)
+      }) |>
+        do.call(rbind, args = _)
+      G_g_no_cov <- G[g, g, drop=FALSE] * Matrix::sparseMatrix(
+        i = ij[, 1],
+        j = ij[, 2],
+        x = 1,
+        dims = c(nrow(m), nrow(m))
+      )
+      G_g_tilde_no_cov <- crossprod(W_tilde, G_g_no_cov) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      C11_g <- crossprod(W, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% W
       dimnames(C11_g) <- list(gnames, gnames)
+
     } else {
       C11_g <- NULL
+      G_g_tilde <- NULL
+      G_g_tilde_no_cov <- NULL
     }
 
     if(!calc_V) {
@@ -517,7 +546,7 @@ var_comp.lmerMod <- function(model, target,
       Z <- NULL
       X <- NULL
       idx <- NULL
-      m <- NULL
+      W <- NULL
     } else {
       idx <- g
     }
@@ -528,15 +557,17 @@ var_comp.lmerMod <- function(model, target,
     Z <- NULL
     X <- NULL
     idx <- NULL
-    m <- NULL
+    W <- NULL
     C22_g <- NULL
     C11_g <- NULL
+    G_g_tilde <- NULL
+    G_g_tilde_no_cov <- NULL
   }
 
   list(n_g = n_g, gnames = gnames,
-       G_g = G_g, C22_g = C22_g, C11_g = C11_g, V = V, G = G,
-       Z = Z, X = X,
-       idx = idx, m = m,
+       G_g = G_g, C22_g = C22_g,
+       G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
+       V = V, G = G, Z = Z, X = X, idx = idx, W = W,
        marginal = marginal, stratification = stratification)
 }
 
@@ -551,7 +582,10 @@ var_comp.asreml <- function(model, target,
   model <- check_deisgn_exsits(model)
   design <- model$design
 
+  if(marginal || !is.null(stratification)) marginal <- TRUE
   mapper <- map_target_terms(model, target, marginal)
+  W <- m <- mapper$m
+  m <- m != 0
   g <- mapper$idx
 
   # Get random terms
@@ -580,12 +614,12 @@ var_comp.asreml <- function(model, target,
 
   # Get BLUP weight
   if (is.null(stratification)) {
-    m <- mapper$m
     main <- mapper$main
     if (sum(!main) == 0) {
       marginal <- FALSE
     } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
+      W <- W[main, , drop = FALSE]
       m <- m[main, , drop = FALSE]
       cli::cli_inform(
         c(
@@ -611,10 +645,10 @@ var_comp.asreml <- function(model, target,
       )
     )
     marginal <- FALSE
-    m <- build_new_Z(model, target, stratification) |> t()
+    W <- build_new_Z(model, target, stratification) |> t()
   }
 
-  gnames <- colnames(m)
+  gnames <- colnames(W)
   n_g <- length(gnames)
 
   if (calc_V || calc_C22 || calc_C11) {
@@ -639,7 +673,7 @@ var_comp.asreml <- function(model, target,
       G[, missing_terms] <- 0
     }
 
-    G_g <- crossprod(m, G[g, g, drop = FALSE]) %*% m
+    G_g <- crossprod(W, G[g, g, drop = FALSE]) %*% W
     dimnames(G_g) <- list(gnames, gnames)
 
     # Build R matrix
@@ -659,7 +693,7 @@ var_comp.asreml <- function(model, target,
       }
 
       dimnames(C22) <- list(colnames(Z), colnames(Z))
-      C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
+      C22_g <- crossprod(W, C22[g, g, drop = FALSE]) %*% W
       dimnames(C22_g) <- list(gnames, gnames)
     } else {
       C22_g <- NULL
@@ -684,10 +718,35 @@ var_comp.asreml <- function(model, target,
         }
       }
 
-      C11_g <- crossprod(m, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% m
+      XTX <- crossprod(X_tilde)
+      P <- ginv_sym_sparse(XTX) %*% XTX
+      W_tilde <- t(crossprod(W, P[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]))
+
+      # Genetic variance matrix in the conterpart model
+      G_g_tilde <- crossprod(W_tilde, G[g, g, drop = FALSE]) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      # Genetic variance matrix in the conterpart model without considering genetic covariance
+      ij <- apply(m, 2, function(z) {
+        active <- which(z)
+        expand.grid(active, active)
+      }) |>
+        do.call(rbind, args = _)
+      G_g_no_cov <- G[g, g, drop=FALSE] * Matrix::sparseMatrix(
+        i = ij[, 1],
+        j = ij[, 2],
+        x = 1,
+        dims = c(nrow(m), nrow(m))
+      )
+      G_g_tilde_no_cov <- crossprod(W_tilde, G_g_no_cov) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      C11_g <- crossprod(W, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% W
       dimnames(C11_g) <- list(gnames, gnames)
     } else {
       C11_g <- NULL
+      G_g_tilde <- NULL
+      G_g_tilde_no_cov <- NULL
     }
 
     if(!calc_V) {
@@ -696,7 +755,7 @@ var_comp.asreml <- function(model, target,
       Z <- NULL
       X <- NULL
       idx <- NULL
-      m <- NULL
+      W <- NULL
     } else {
       idx <- g
     }
@@ -727,7 +786,7 @@ var_comp.asreml <- function(model, target,
       G[, missing_terms] <- 0
     }
 
-    G_g <- crossprod(m, G[rownames(m), rownames(m), drop = FALSE]) %*% m
+    G_g <- crossprod(W, G[rownames(W), rownames(W), drop = FALSE]) %*% W
     dimnames(G_g) <- list(gnames, gnames)
 
     V <- NULL
@@ -735,16 +794,18 @@ var_comp.asreml <- function(model, target,
     Z <- NULL
     X <- NULL
     idx <- NULL
-    m <- NULL
+    W <- NULL
     C22_g <- NULL
     C11_g <- NULL
+    G_g_tilde <- NULL
+    G_g_tilde_no_cov <- NULL
   }
 
   list(n_g = n_g, gnames = gnames,
-       G_g = G_g, C22_g = C22_g, C11_g = C11_g, V = V, G = G,
-       Z = Z, X = X,
-       idx = idx, m = m,
-       marginal = marginal, stratification = stratification)
+       G_g = G_g, C22_g = C22_g,
+       G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
+       V = V, G = G, Z = Z, X = X, idx = idx, W = W,
+       marginal = marginal, stratification = stratification, C22 = C22)
 }
 
 #' Extract variance components
@@ -781,7 +842,11 @@ var_comp.asreml <- function(model, target,
 #'   \item{`G_g`}{Variance matrix of the transformed target genetic effect.}
 #'   \item{`C22_g`}{Prediction error variance matrix of the transformed target
 #'   effect, if `calc_C22 = TRUE`; otherwise `NULL`.}
-#'   \item{`C11_g`}{Variance matrix of the fixed-effect counterpart estimator for
+#'   \item{`G_g_tilde`}{Variance matrix of the fixed-effect counterpart estimator for
+#'   the transformed target effect, if `calc_C11 = TRUE`; otherwise `NULL`.}
+#'   \item{`G_g_tilde_no_cov`}{Variance matrix of the fixed-effect counterpart estimator for
+#'   the transformed target effect, without considering target covariance, if `calc_C11 = TRUE`; otherwise `NULL`.}
+#'   \item{`C11_g`}{Estimation error variance matrix of the fixed-effect counterpart estimator for
 #'   the transformed target effect, if `calc_C11 = TRUE`; otherwise `NULL`.}
 #'   \item{`V`}{Marginal covariance matrix of the response, if `calc_V = TRUE`;
 #'   otherwise `NULL`.}
@@ -791,7 +856,7 @@ var_comp.asreml <- function(model, target,
 #'   \item{`X`}{Fixed-effect design matrix, if `calc_V = TRUE`; otherwise `NULL`.}
 #'   \item{`idx`}{Indices of the random-effect coefficients associated with the
 #'   target term, if `calc_V = TRUE`; otherwise `NULL`.}
-#'   \item{`m`}{Linear mapping from the original target coefficients to the
+#'   \item{`W`}{Linear mapping from the original target coefficients to the
 #'   transformed target effect, if `calc_V = TRUE`; otherwise `NULL`.}
 #'   \item{`marginal`}{Logical scalar indicating whether the returned quantities
 #'   correspond to a marginal definition of the target effect.}
@@ -1386,6 +1451,8 @@ ginv_sym_sparse <- function(A, tol = .Machine$double.eps) {
   n <- nrow(A)
   I <- Matrix::Diagonal(n)
 
+  if(n == 1) return(1/A)
+
   smax <- irlba::irlba(A, nv = 1, nu = 1)$d[1]
   lambda <- tol * smax^2 + tol
 
@@ -1393,6 +1460,14 @@ ginv_sym_sparse <- function(A, tol = .Machine$double.eps) {
     Matrix::crossprod(A) + lambda * I,
     Matrix::t(A), tol = -Inf
   )
+
+  # A <- Matrix::forceSymmetric(A)
+  #
+  # e <- eigen(as.matrix(A), symmetric = TRUE)
+  #
+  # d_inv <- ifelse(e$values > 1e-10, 1 / e$values, 0)
+  #
+  # e$vectors %*% (d_inv * t(e$vectors))
 
 }
 
