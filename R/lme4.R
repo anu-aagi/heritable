@@ -31,8 +31,9 @@ h2_Standard.lmerMod <- function(model,
 
   if(vc$marginal || !is.null(vc$stratification)){
     X <- vc$X
-    y <- vc$y
     W <- vc$W
+
+    active_g <- attr(W, "active")
 
     X_tilde <- cbind(X, Z[, idx, drop=FALSE])
     C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
@@ -41,7 +42,7 @@ h2_Standard.lmerMod <- function(model,
     W <-  t(C) %*% Z[,idx]
     G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
-    h2_Standard <-  h2_Standard_parameters(G_g, V, C)
+    h2_Standard <-  h2_Standard_parameters(G_g, V, C, active_g)
 
     # Check estimability
     # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
@@ -56,7 +57,7 @@ h2_Standard.lmerMod <- function(model,
     W <- t(C) %*% Z[,idx] # C^T Z G Z C
     G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
-    h2_Standard <- h2_Standard_parameters(G_g, V, C)
+    h2_Standard <- h2_Standard_parameters(G_g, V, C, NULL)
 
   }
 
@@ -425,6 +426,8 @@ H2_Standard.lmerMod <- function(model,
       X <- vc$X
       W <- vc$W
 
+      active_g <- attr(W, "active")
+
       X_tilde <- cbind(X, Z[, idx, drop=FALSE])
       C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
       C <- C[-seq_len(ncol(X)),]
@@ -432,7 +435,7 @@ H2_Standard.lmerMod <- function(model,
       W <-  t(C) %*% Z[,idx]
       G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
-      H2_Standard <-  h2_Standard_parameters(G_g, V, C)
+      H2_Standard <-  h2_Standard_parameters(G_g, V, C, active_g)
 
       # Check estimability
       # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
@@ -466,7 +469,7 @@ H2_Standard.lmerMod <- function(model,
       W <- t(C) %*% Z[,idx] # C^T Z G Z C
       G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
-      H2_Standard <- h2_Standard_parameters(G_g, V, C)
+      H2_Standard <- h2_Standard_parameters(G_g, V, C, NULL)
 
     }
 

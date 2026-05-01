@@ -2,6 +2,7 @@
 #   skip()
 # lettuce_phenotypes <- subset(heritable::lettuce_phenotypes, !is.na(y))
 # model <-  lme4::lmer(y ~  rep + (1 | gen * loc), data = lettuce_phenotypes)
+# H2(model, "gen", stratification = data.frame(loc = "L1"))
 # model <-  lme4::lmer(y ~  rep + (1 | gen), data = lettuce_phenotypes)
 # model <-  lme4::lmer(y ~  rep + (1 | gen) + (1|gen:loc), data = lettuce_phenotypes)
 #
@@ -122,15 +123,15 @@
 # dimnames(G) <- dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
 # attr(Ginv, "INVERSE") <- TRUE
 
-# lettuce_G <- lettuce_GRM
+lettuce_G <- lettuce_GRM
 #
-# require(devtools)
-# load_all()
-#
-# model <- asreml::asreml(
-#   fixed = y ~ rep,
-#   random = ~ vm(gen, lettuce_G) * idv(loc) ,
-#   data = lettuce_phenotypes)
+require(devtools)
+load_all()
+
+model <- asreml::asreml(
+  fixed = y ~ rep,
+  random = ~ vm(gen, lettuce_G) * idv(loc) ,
+  data = lettuce_phenotypes)
 #
 # h2_Cullis(model, "gen" , marginal = FALSE, source = list(lettuce_G = lettuce_G), solver ="direct")
 # .Machine$double.eps
@@ -213,7 +214,7 @@
 #
 # include <- !is.na(lettuce_phenotypes$y)
 # lettuce_data <- lettuce_phenotypes[include,]
-# # Fit a asreml model
+#Fit a asreml model
 # model <- asreml::asreml(
 #   fixed = y ~ rep,
 #   random = ~ gen * loc,
@@ -222,13 +223,13 @@
 # heritable::h2(model = model, target = "gen", marginal = FALSE, type = "BLUE")
 # heritable::H2(model = model, target = "gen", marginal = TRUE)
 # heritable::h2(model = model, target = "gen", marginal = TRUE, type = "BLUE")
-# heritable::h2(model = model, target = "gen", marginal = TRUE, type = "BLUE", stratification = data.frame(loc = "L1"))
+# heritable::h2(model = model, target = "gen", marginal = TRUE, type = "BLUE", stratification = data.frame(loc = "L3"))
 
 #
 # model <- lme4::lmer(
-#   y ~ 1 + (1|gen*loc),
+#   y ~ rep + (1|gen*loc),
 #   data = lettuce_data)
-# heritable::H2(model = model, target = "gen", marginal = FALSE)
+#heritable::H2(model = model, target = "gen", marginal = FALSE)
 # heritable::h2(model = model, target = "gen", marginal = FALSE, type = "BLUE")
 # heritable::H2(model = model, target = "gen", marginal = TRUE)
 # heritable::h2(model = model, target = "gen", marginal = TRUE, type = "BLUE")

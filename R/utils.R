@@ -452,6 +452,8 @@ var_comp.lmerMod <- function(model, target,
       )
       marginal <- TRUE
     }
+
+    active_g <- NULL # Define genotypes on which heritability is measured.
   } else {
     cli::cli_inform(
       c(
@@ -460,7 +462,9 @@ var_comp.lmerMod <- function(model, target,
       )
     )
     marginal <- FALSE
-    W <- build_new_Z(model, target, stratification) |> t()
+
+    W <- build_new_Z(model, target, stratification)
+    active_g <- attr(W, "active")
   }
 
   gnames <- colnames(W)
@@ -564,6 +568,27 @@ var_comp.lmerMod <- function(model, target,
     G_g_tilde_no_cov <- NULL
   }
 
+  if(!is.null(active_g) && any(!active_g)){
+    cli::cli_inform(
+      c(
+        "Following genotypes are not presented in the specified strat: {.code {gnames[!active_g]}}.",
+        "They are excluded from the estimation."
+      )
+    )
+
+    n_g <- sum(active_g)
+    gnames <- gnames[active_g]
+    G_g <- G_g[active_g,active_g, drop = FALSE]
+    if(calc_C22){
+      C22_g <- C22_g[active_g,active_g, drop = FALSE]
+    }
+    if(calc_C11){
+      G_g_tilde <- G_g_tilde[active_g,active_g, drop = FALSE]
+      G_g_tilde_no_cov <- G_g_tilde_no_cov[active_g,active_g, drop = FALSE]
+      C11_g <- C11_g[active_g,active_g, drop = FALSE]
+    }
+  }
+
   list(n_g = n_g, gnames = gnames,
        G_g = G_g, C22_g = C22_g,
        G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
@@ -637,6 +662,7 @@ var_comp.asreml <- function(model, target,
       )
       marginal <- TRUE
     }
+    active_g <- NULL
   } else {
     cli::cli_inform(
       c(
@@ -645,7 +671,8 @@ var_comp.asreml <- function(model, target,
       )
     )
     marginal <- FALSE
-    W <- build_new_Z(model, target, stratification) |> t()
+    W <- build_new_Z(model, target, stratification)
+    active_g <- attr(W, "active")
   }
 
   gnames <- colnames(W)
@@ -801,11 +828,32 @@ var_comp.asreml <- function(model, target,
     G_g_tilde_no_cov <- NULL
   }
 
+  if(!is.null(active_g) && any(!active_g)){
+    cli::cli_inform(
+      c(
+        "Following genotypes are not presented in the specified strat: {.code {gnames[!active_g]}}.",
+        "They are excluded from the estimation."
+      )
+    )
+
+    n_g <- sum(active_g)
+    gnames <- gnames[active_g]
+    G_g <- G_g[active_g,active_g, drop = FALSE]
+    if(calc_C22){
+      C22_g <- C22_g[active_g,active_g, drop = FALSE]
+    }
+    if(calc_C11){
+      G_g_tilde <- G_g_tilde[active_g,active_g, drop = FALSE]
+      G_g_tilde_no_cov <- G_g_tilde_no_cov[active_g,active_g, drop = FALSE]
+      C11_g <- C11_g[active_g,active_g, drop = FALSE]
+    }
+  }
+
   list(n_g = n_g, gnames = gnames,
        G_g = G_g, C22_g = C22_g,
        G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
        V = V, G = G, Z = Z, X = X, idx = idx, W = W,
-       marginal = marginal, stratification = stratification, C22 = C22)
+       marginal = marginal, stratification = stratification)
 }
 
 #' Extract variance components
@@ -1194,6 +1242,7 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
   }
 
   Z_list <- list()
+  active_g <- rep(TRUE, n_g)
 
   for (itr in seq_along(matched_grp)) {
     g_idx <- matched_grp[itr]
@@ -1211,11 +1260,16 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
     mm_grp <- build_f_mat(grp_new, grp)
 
+    # Check which factor levels are missing
+    active_g <- active_g & (grp_new %in% grp)
+
     z <- Matrix::KhatriRao(t(mm_grp), t(mm)) |> t()
     dimnames(z) <- list(gnames, rep(grp, each = p))
     Z_list[[itr]] <- z
   }
-  do.call(cbind, Z_list)
+  Z <- do.call(cbind, Z_list) |> t()
+  attr(Z, "active") <- active_g
+  Z
 }
 
 #' @keywords internal
@@ -1320,6 +1374,8 @@ build_new_Z.asreml <- function(model, target, new_data) {
 
   Z_list <- list()
 
+  active_g <- rep(TRUE, n_g)
+
   for (i in seq_along(matched_grp)) {
     g_idx <- matched_grp[i]
     term <- grp_names[g_idx]
@@ -1335,6 +1391,12 @@ build_new_Z.asreml <- function(model, target, new_data) {
     grp_split <- grp_terms[[g_idx]]
     target_key <- grp_split[, target_idx]
     target_levs <- levels(target_key)
+
+    # Check which factor levels are missing
+    factor_name <- vars[factor_idx]
+    available_factor_levs <- apply(mf[,factor_name, drop=FALSE],1, function(x) paste(x, collapse = ":"))
+    required_factor_levs <- apply(new_data[,factor_name, drop=FALSE],1, function(x) paste(x, collapse = ":"))
+    active_g <- active_g & (required_factor_levs %in% available_factor_levs)
 
     if (length(numeric_var_idx) > 0 && any(specs[numeric_var_idx] != "id")) {
       cli::cli_inform(
@@ -1387,9 +1449,12 @@ build_new_Z.asreml <- function(model, target, new_data) {
     }
   }
 
-  Z <- do.call(cbind, Z_list)
-  colnames(Z) <- unname(terms)
-  rownames(Z) <- gnames
+  Z <- do.call(cbind, Z_list) |> t()
+  rownames(Z) <- unname(terms)
+  colnames(Z) <- gnames
+
+  attr(Z, "active") <- active_g
+
   Z
 }
 

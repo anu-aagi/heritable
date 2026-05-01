@@ -149,7 +149,7 @@ H2_Delta_parameters <- function(delta_g, delta_pev, type = c("BLUP", "BLUE")) {
 #' @noRd
 #' @return Narrow sense heritability for the standard method.
 #' @keywords internal
-h2_Standard_parameters <- function(G_g, V, C) {
+h2_Standard_parameters <- function(G_g, V, C, active_g) {
 
   # S = C' V C  (g x g)
   S <- crossprod(C, V %*% C)
@@ -162,6 +162,11 @@ h2_Standard_parameters <- function(G_g, V, C) {
   delta_g <- var_diff(G_g)
   # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
 
-  mean(delta_g[upper.tri(delta_y)])/mean(delta_y[upper.tri(delta_y)])
+  if(!is.null(active_g) && any(!active_g)){
+    delta_y <- delta_y[active_g,active_g,drop=FALSE]
+    delta_g <- delta_g[active_g,active_g,drop=FALSE]
+  }
+
+  mean(delta_g[upper.tri(delta_g)])/mean(delta_y[upper.tri(delta_y)])
 
 }

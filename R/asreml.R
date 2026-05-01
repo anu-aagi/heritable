@@ -46,15 +46,37 @@ h2_Standard.asreml <- function(model,
   G <- vc$G
   idx <- vc$idx
 
-  g <- mf[[target]]
-  gnames <- levels(g)
-  Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
-  C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
-  W <- t(C) %*% Z[,idx]
-  G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
 
-  h2_Standard <- h2_Standard_parameters(G_g, V, C)
+  if(vc$marginal || !is.null(vc$stratification)){
+    X <- vc$X
+    W <- vc$W
 
+    active_g <- attr(W, "active")
+
+    X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+    C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
+    C <- C[-seq_len(ncol(X)),]
+    C <- crossprod(C, W)
+    W <-  t(C) %*% Z[,idx]
+    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+    h2_Standard <-  h2_Standard_parameters(G_g, V, C, active_g)
+
+    # Check estimability
+    # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
+    # c <- c(rep(0, ), W[,1] - W[,3])
+    # plot(c - P %*% c)
+
+  } else {
+    g <- mf[[target]]
+    gnames <- levels(g)
+    Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
+    C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
+    W <- t(C) %*% Z[,idx]
+    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+
+    h2_Standard <- h2_Standard_parameters(G_g, V, C, NULL)
+  }
 
   return(h2_Standard)
 }
@@ -801,6 +823,8 @@ H2_Standard.asreml <- function(model,
       X <- vc$X
       W <- vc$W
 
+      active_g <- attr(W, "active")
+
       X_tilde <- cbind(X, Z[, idx, drop=FALSE])
       C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
       C <- C[-seq_len(ncol(X)),]
@@ -813,6 +837,8 @@ H2_Standard.asreml <- function(model,
       # c <- c(rep(0, ), W[,1] - W[,3])
       # plot(c - P %*% c)
 
+      H2_Standard <-  h2_Standard_parameters(G_g, V, C, active_g)
+
     } else {
       g <- mf[[target]]
       gnames <- levels(g)
@@ -820,9 +846,9 @@ H2_Standard.asreml <- function(model,
       C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
       W <- t(C) %*% Z[,idx]
       G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
-    }
 
-    H2_Standard <-  h2_Standard_parameters(G_g, V, C)
+      H2_Standard <-  h2_Standard_parameters(G_g, V, C, NULL)
+    }
 
   }
 
