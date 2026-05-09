@@ -83,9 +83,10 @@ H2_Oakey_parameters <- function(Gg_inv, C22_g) {
    M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
 
    eM <- eigen(M, symmetric = TRUE)
-   thres <- 1e-6
+   thres <- sqrt(.Machine$double.eps)
    H2_Oakey <- mean(eM$values[eM$values/max(eM$values) > thres])
    return(H2_Oakey)
+
 }
 
 #' Calculate Piepho's heritability using variance parameters

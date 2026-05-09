@@ -411,7 +411,7 @@ var_diff <- function(V) {
 var_comp.lmerMod <- function(model, target,
                              calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                              marginal = TRUE, stratification = NULL,
-                             solver = c("LMM", "direct"), ...) {
+                             solver = c("direct", "LMM"), ...) {
   solver <- match.arg(solver)
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
@@ -601,7 +601,7 @@ var_comp.lmerMod <- function(model, target,
 var_comp.asreml <- function(model, target,
                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
                             marginal = TRUE, stratification = NULL,
-                            solver = c("LMM", "direct"),
+                            solver = c("direct", "LMM"),
                             source = list(), ...) {
   solver <- match.arg(solver)
   model <- check_deisgn_exsits(model)
@@ -695,7 +695,7 @@ var_comp.asreml <- function(model, target,
       Matrix::colSums(design[, intersect(ran_terms, col_design)] != 0) == 0
     ) |> names()
     missing_terms <- unique(c(missing_terms, setdiff(ran_terms, col_design)))
-    if (length(missing_terms) > 1) {
+    if (length(missing_terms) > 0) {
       G[missing_terms, ] <- 0
       G[, missing_terms] <- 0
     }
@@ -808,7 +808,7 @@ var_comp.asreml <- function(model, target,
       Matrix::colSums(design[, intersect(terms, col_design)] != 0) == 0
     ) |> names()
     missing_terms <- unique(c(missing_terms, setdiff(terms, col_design)))
-    if (length(missing_terms) > 1) {
+    if (length(missing_terms) > 0) {
       G[missing_terms, ] <- 0
       G[, missing_terms] <- 0
     }
@@ -925,9 +925,22 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
   mf <- stats::model.frame(model)
   mmlist <- lme4::getME(model, "mmList")
   grp_list <- lme4::getME(model, "flist")
-  grp_names <- names(lme4::getME(model, "cnms"))
+  cnms <- lme4::getME(model, "cnms")
+  grp_names <- names(cnms)
   Z <- lme4::getME(model, "Z")
   Gp <- lme4::getME(model, "Gp")
+
+  # Match mm and Gp
+  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
+        sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
+        sep = "|"
+        )
+  Gpid <- paste(
+    names(cnms),
+    sapply(cnms, function(x) paste(x, collapse = ":")),
+    sep = "|"
+  )
+  mmlist <- mmlist[match(Gpid, mmid)]
 
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
@@ -967,8 +980,10 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
 
         z <- Z[, idx[[itr]]]
         w <- numeric(p * q)
+
         for (id in unique(stra_id)) {
           s <- which(stra_id == id)
+
           if (length(s) > 0) {
             w[s] <- sum(z[, s]) / n
           }
@@ -1219,7 +1234,20 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
   frm <- paste("~", frm)
 
   grp_list <- lme4::getME(model, "flist")
-  grp_names <- names(lme4::getME(model, "cnms"))
+  cnms <- lme4::getME(model, "cnms")
+  grp_names <- names(cnms)
+
+  # Match mm and Gp
+  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
+                sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
+                sep = "|"
+  )
+  Gpid <- paste(
+    names(cnms),
+    sapply(cnms, function(x) paste(x, collapse = ":")),
+    sep = "|"
+  )
+  mmlist <- mmlist[match(Gpid, mmid)]
 
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
@@ -1510,29 +1538,32 @@ build_f_mat <- function(x, level) {
 
 #' @keywords internal
 #' @noRd
-ginv_sym_sparse <- function(A, tol = .Machine$double.eps) {
+ginv_sym_sparse <- function(A, tol = .Machine$double.eps,
+                            exact_psd_inv = getOption("exact_psd_inv", TRUE)) {
 
-  A <- Matrix::forceSymmetric(A)
-  n <- nrow(A)
-  I <- Matrix::Diagonal(n)
+  if(!exact_psd_inv) {
+    A <- Matrix::forceSymmetric(A)
+    n <- nrow(A)
+    I <- Matrix::Diagonal(n)
 
-  if(n == 1) return(1/A)
+    if(n == 1) return(1/A)
 
-  smax <- irlba::irlba(A, nv = 1, nu = 1)$d[1]
-  lambda <- tol * smax^2 + tol
+    smax <- irlba::irlba(A, nv = 1, nu = 1)$d[1]
+    lambda <- tol * smax^2 + tol
 
-  Matrix::solve(
-    Matrix::crossprod(A) + lambda * I,
-    Matrix::t(A), tol = -Inf
-  )
+    Matrix::solve(
+      Matrix::crossprod(A) + lambda * I,
+      Matrix::t(A), tol = -Inf
+    )
+  } else {
+    A <- Matrix::forceSymmetric(A)
 
-  # A <- Matrix::forceSymmetric(A)
-  #
-  # e <- eigen(as.matrix(A), symmetric = TRUE)
-  #
-  # d_inv <- ifelse(e$values > 1e-10, 1 / e$values, 0)
-  #
-  # e$vectors %*% (d_inv * t(e$vectors))
+    e <- eigen(as.matrix(A), symmetric = TRUE)
+
+    d_inv <- ifelse(e$values > sqrt(.Machine$double.eps), 1 / e$values, 0)
+
+    e$vectors %*% (d_inv * t(e$vectors))
+  }
 
 }
 
@@ -1540,21 +1571,41 @@ ginv_sym_sparse <- function(A, tol = .Machine$double.eps) {
 #' @keywords internal
 #' @noRd
 solve_LMM <- function(X, Z, G, R){
-  Rinv <- ginv_sym_sparse(R)
-  Ginv <- ginv_sym_sparse(G)
-  XtRinvX <- crossprod(X, Rinv) %*% X
-  XtRinvZ <- crossprod(X, Rinv) %*% Z
-  ZtRinvZ <- crossprod(Z, Rinv) %*% Z
+  zero_idx <- Matrix::diag(G) == 0
+  keep_idx <- !zero_idx
 
-  ## Mixed model equation matrix
+  Z_reduce <- Z[, keep_idx, drop = FALSE]
+  G_reduce <- G[keep_idx, keep_idx, drop = FALSE]
+
+  Rinv <- ginv_sym_sparse(R)
+  Ginv <- ginv_sym_sparse(G_reduce)
+
+  XtRinvX <- crossprod(X, Rinv) %*% X
+  XtRinvZ <- crossprod(X, Rinv) %*% Z_reduce
+  ZtRinvZ <- crossprod(Z_reduce, Rinv) %*% Z_reduce
+
   C <- rbind(
     cbind(XtRinvX, XtRinvZ),
     cbind(t(XtRinvZ), ZtRinvZ + Ginv)
   )
 
-  Cinv <- ginv_sym_sparse(C)
-  idx_11 <- 1:ncol(X)
+  Cinv <- ginv_sym_sparse(Matrix::forceSymmetric(C))
 
-  list(C11 = Cinv[idx_11,idx_11,drop=FALSE],
-       C22 = Cinv[-idx_11,-idx_11,drop=FALSE])
+  p <- ncol(X)
+  q <- ncol(Z)
+
+  C11 <- Cinv[seq_len(p), seq_len(p), drop = FALSE]
+
+  C22_reduce <- Cinv[p + seq_len(ncol(Z_reduce)),
+                     p + seq_len(ncol(Z_reduce)),
+                     drop = FALSE]
+
+  C22 <- Matrix::Matrix(0, nrow = q, ncol = q, dimnames = dimnames(G))
+  C22[keep_idx, keep_idx] <- C22_reduce
+  C22 <- Matrix::forceSymmetric(C22)
+
+  dimnames(C22) <- list(colnames(Z), colnames(Z))
+
+  list(C11 = C11,
+       C22 = C22)
 }
