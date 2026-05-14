@@ -913,7 +913,7 @@ var_comp.asreml <- function(model, target,
 #' @export
 var_comp <- function(model, target,
                      calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
-                     marginal = TRUE, stratification = NULL, solver = c("LMM", "direct"), ...) {
+                     marginal = TRUE, stratification = NULL, solver = c("direct", "LMM"), ...) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
@@ -1216,7 +1216,7 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     new_data <- data.frame(rep(new_data[, 1], n_g))
     colnames(new_data) <- trms
   } else {
-    new_data <- rep(new_data, n_g)
+    new_data <- new_data[rep(1, n_g), , drop = FALSE]
   }
   new_data[[target]] <- factor(gnames, levels = gnames)
 
@@ -1284,7 +1284,6 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     n <- nrow(mm)
     p <- ncol(mm)
     q <- length(grp)
-
     grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
     mm_grp <- build_f_mat(grp_new, grp)
 
@@ -1384,7 +1383,7 @@ build_new_Z.asreml <- function(model, target, new_data) {
     new_data <- data.frame(rep(new_data[, 1], n_g))
     colnames(new_data) <- trms
   } else {
-    new_data <- rep(new_data, n_g)
+    new_data <- new_data[rep(1, n_g), , drop = FALSE]
   }
   new_data[[target]] <- factor(gnames, levels = gnames)
 
