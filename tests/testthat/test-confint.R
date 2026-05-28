@@ -3,6 +3,33 @@
 # library(asreml)
 # asreml.license.activate()
 
+test_that("Confint works for transformed y", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  skip_on_ci()
+  skip()
+
+  lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
+
+  # asreml.options(design=TRUE)
+  # fit <- asreml::asreml(sqrt(y) ~ rep, random = ~gen, data = lettuce_subset)
+  # saveRDS(fit, test_path("fixtures/confint_lettuce_asreml_sqrty.rds"))
+  fit_asreml <- readRDS(test_path("fixtures/confint_lettuce_asreml_sqrty.rds"))
+
+  expect_no_error(
+   confint(H2(fit_asreml, "gen", method = "Cullis"), B = 5)
+  )
+
+  # fit <- lme4::lmer(sqrt(y) ~ rep + (1|gen), data = lettuce_subset)
+  # saveRDS(fit, test_path("fixtures/confint_lettuce_lme4_sqrty.rds"))
+  fit_lme4 <- readRDS(test_path("fixtures/confint_lettuce_lme4_sqrty.rds"))
+
+  expect_no_error(
+    confint(H2(fit_lme4, "gen", method = "Cullis"), B = 5)
+  )
+})
+
+
 test_that("Confint works",{
   skip_if_not_installed("asreml")
   skip_on_cran()

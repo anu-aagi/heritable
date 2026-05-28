@@ -214,7 +214,11 @@ bootstrap_asreml <- function(model,
   # Get response name if not provided.
   fixed_formula <- model$formulae$fixed
   resp_idx <- attr(terms(fixed_formula), "response")
-  response <- all.vars(fixed_formula)[resp_idx]
+  response <- deparse(fixed_formula[[2]])
+
+  # Fix for response transformation
+  new_formula <- paste0(".y", "~", deparse(fixed_formula[[3]]))
+  new_formula <-  as.formula(new_formula)
 
   # Get the linear predictor of fixed effect.
   if (!use.u) {
@@ -302,13 +306,14 @@ bootstrap_asreml <- function(model,
   # Bootstrap data
   boot_data <- mf
   boot_data[[".yhat"]] <- yhat
+  boot_data[[".y"]] <- mf[,response]
 
   # generator: simulate response into correct column name
   generate_data <- function(data, mle) {
     out <- data
     N <- nrow(out)
     eps <- as.numeric(L %*% stats::rnorm(N))
-    out[[response]] <- out[[".yhat"]] + eps
+    out[[".y"]] <- out[[".yhat"]] + eps
     out
   }
 
@@ -318,7 +323,7 @@ bootstrap_asreml <- function(model,
       list2env(source, environment())
     }
     utils::capture.output(
-      fit <- asreml::update.asreml(model, data = data)
+      fit <- asreml::update.asreml(model, data = data, fixed = new_formula)
     )
     fit[["design"]] <- design
     FUN(fit)
