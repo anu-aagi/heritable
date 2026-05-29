@@ -269,8 +269,11 @@ bootstrap_asreml <- function(model,
         common_col <- intersect(colnames(design), ran_terms)
         Z[, common_col] <- design[, common_col]
 
+        tmp_data_call <- model$call$data
+        model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
         R <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
           Matrix::Matrix()
+        model$call$data <- tmp_data_call
 
         V <- R + Z %*% G %*% t(Z)
       }
@@ -294,8 +297,12 @@ bootstrap_asreml <- function(model,
 
   if (use.u) {
     yhat <- model$linear.predictors
+
+    tmp_data_call <- model$call$data
+    model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
     V <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
       Matrix::Matrix()
+    model$call$data <- tmp_data_call
   }
 
   # Get V and Cholesky factor L such that L %*% z ~ N(0, V)

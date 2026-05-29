@@ -704,8 +704,11 @@ var_comp.asreml <- function(model, target,
     dimnames(G_g) <- list(gnames, gnames)
 
     # Build R matrix
+    tmp_data_call <- model$call$data
+    model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
     R <- asremlPlus::estimateV.asreml(model, which.matrix = "R") |>
       Matrix::Matrix()
+    model$call$data <- tmp_data_call
 
     V <- R + Z %*% G %*% t(Z)
 
@@ -1608,3 +1611,5 @@ solve_LMM <- function(X, Z, G, R){
   list(C11 = C11,
        C22 = C22)
 }
+
+
