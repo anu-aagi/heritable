@@ -8,8 +8,6 @@ test_that("Confint works for transformed y", {
   skip_on_cran()
   skip_on_ci()
 
-  #lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
-
   # fit <- asreml::asreml(fixed = sqrt(yield) ~ rep, random = ~gen + rep:block,
   #                data = agridat::john.alpha, trace = FALSE)
   # saveRDS(fit, test_path("fixtures/confint_lettuce_asreml_sqrty.rds"))
