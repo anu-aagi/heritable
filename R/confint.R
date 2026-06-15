@@ -408,5 +408,5 @@ get_fixed_fit_asreml <- function(model, source = list()) {
     model$coefficients$sparse
   )
 
-  as.numeric(design[, term_names] %*% beta)
+  as.numeric(design[, term_names, drop = FALSE] %*% beta)
 }
