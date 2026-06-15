@@ -712,7 +712,7 @@ var_comp.asreml <- function(model, target,
     # Build R matrix
     tmp_data_call <- model$call$data
     model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
-    V <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
+    R <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
       Matrix::Matrix()
     model$call$data <- tmp_data_call
 
