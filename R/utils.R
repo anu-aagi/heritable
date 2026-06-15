@@ -29,9 +29,15 @@ pull_terms.asreml <- function(model) {
 
 #' @keywords internal
 pull_terms.lmerMod <- function(model) {
-  fixed_trms <- reformulas::nobars(formula(model)) |>
-    terms() |>
-    attr("term.labels")
+
+  fixed_trms <- reformulas::nobars(formula(model))
+  if(class(fixed_trms) == "formula"){
+    fixed_trms <- terms(fixed_trms) |>
+      attr("term.labels")
+  } else {
+    fixed_trms <- character()
+  }
+
   mmList <- lme4::getME(model, "mmList")
   ran_trms <- names(mmList)
 
@@ -704,11 +710,8 @@ var_comp.asreml <- function(model, target,
     dimnames(G_g) <- list(gnames, gnames)
 
     # Build R matrix
-    tmp_data_call <- model$call$data
-    model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
     R <- asremlPlus::estimateV.asreml(model, which.matrix = "R") |>
       Matrix::Matrix()
-    model$call$data <- tmp_data_call
 
     V <- R + Z %*% G %*% t(Z)
 
@@ -1611,5 +1614,3 @@ solve_LMM <- function(X, Z, G, R){
   list(C11 = C11,
        C22 = C22)
 }
-
-
