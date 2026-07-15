@@ -12,15 +12,17 @@ reference:
 - title: Reference
 - subtitle: Wrappers for heritability calculation
 - contents:
-  # - h2
+  - h2
   - H2
-- subtitle: Method-specific functions
-# - subtitle: Narrow-sense heritability
-# - contents:
-#   - h2_Oakey
-#   - h2_Delta
-#   - h2_Delta_by_genotype
-#   - h2_Delta_pairwise
+- subtitle: Narrow-sense heritability
+- contents:
+  - h2_Standard
+  - h2_Cullis
+  - h2_Piepho
+  - h2_Oakey
+  - h2_Delta
+  - h2_Delta_by_genotype
+  - h2_Delta_pairwise
 - subtitle: Broad-sense heritability
 - contents:
   - H2_Standard
@@ -33,6 +35,15 @@ reference:
 - subtitle: Parameter functions for calculation
 - contents:
   - ends_with("parameters")
+- subtitle: Confidence interval via parametric bootstrap
+- contents:
+  - confint.heritable
+- subtitle: Utils
+- contents:
+  - get_fixed_fit_asreml
+  - bootstrap_asreml
+  - var_comp
 - title: Data
 - contents:
   - starts_with("lettuce")
+  - starts_with("lizard")
