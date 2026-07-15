@@ -23,6 +23,8 @@ test_that("Check GRM specification", {
                                          subset(loc == "L2")
   )
 
+
+
   Ginv2 <- data.frame(Row = as.vector(row(Ginv)[!upper.tri(Ginv)]),
                       Column = as.vector(col(Ginv)[!upper.tri(Ginv)]),
                       value = as.vector(Ginv[!upper.tri(Ginv)])) |>
@@ -34,6 +36,15 @@ test_that("Check GRM specification", {
                            random = ~ vm(gen, Ginv2),
                            data = lettuce_phenotypes |>
                              subset(loc == "L2")
+  )
+
+
+  suppressWarnings(
+    model3 <- asreml::asreml(y ~ rep,
+                             random = ~ vm(gen, G, singG = "PSD"),
+                             data = lettuce_phenotypes |>
+                               subset(loc == "L2")
+    )
   )
 
   expect_equal(

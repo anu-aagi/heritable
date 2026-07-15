@@ -3,6 +3,32 @@
 # library(asreml)
 # asreml.license.activate()
 
+test_that("Confint works for transformed y", {
+  skip_if_not_installed("asreml")
+  skip_on_cran()
+  skip_on_ci()
+  skip()
+
+  # fit <- asreml::asreml(fixed = sqrt(yield) ~ rep, random = ~gen + rep:block,
+  #                data = agridat::john.alpha, trace = FALSE)
+  # saveRDS(fit, test_path("fixtures/confint_lettuce_asreml_sqrty.rds"))
+  fit_asreml <- readRDS(test_path("fixtures/confint_lettuce_asreml_sqrty.rds"))
+
+  expect_no_error(
+   confint(H2(fit_asreml, "gen", method = "Cullis"), B = 5)
+  )
+
+  # fit <- lme4::lmer( sqrt(yield) ~ rep + (1|gen) + (1:rep:block),
+  #                    data = agridat::john.alpha)
+  # saveRDS(fit, test_path("fixtures/confint_lettuce_lme4_sqrty.rds"))
+  fit_lme4 <- readRDS(test_path("fixtures/confint_lettuce_lme4_sqrty.rds"))
+
+  expect_no_error(
+    confint(H2(fit_lme4, "gen", method = "Cullis"), B = 5)
+  )
+})
+
+
 test_that("Confint works",{
   skip_if_not_installed("asreml")
   skip_on_cran()

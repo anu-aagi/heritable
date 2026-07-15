@@ -4,7 +4,15 @@
 \alias{bootstrap_asreml}
 \title{Parametric bootstrap for an asreml model.}
 \usage{
-bootstrap_asreml(model, FUN, nsim = 1, use.u = FALSE, seed = NULL, ...)
+bootstrap_asreml(
+  model,
+  FUN,
+  nsim = 1,
+  use.u = FALSE,
+  source = list(),
+  seed = NULL,
+  ...
+)
 }
 \arguments{
 \item{model}{An \code{asreml} fitted model. Must be fitted with \code{model.frame = TRUE}.}
@@ -16,6 +24,9 @@ bootstrap_asreml(model, FUN, nsim = 1, use.u = FALSE, seed = NULL, ...)
 
 \item{use.u}{A logical indicating whether to resample random effects, or only
 resample residuals.}
+
+\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}, provided as a named list.
+When not provided (an empty list by default), the GRM variable used for \code{vm} calling will be searched in the global environment.}
 
 \item{seed}{Optional integer seed for reproducibility.}
 

@@ -1,10 +1,7 @@
 test_that("asreml PEV definition",{
   skip()
-  skip_if_not_installed("asreml")
-  skip_on_cran()
-  skip_on_ci()
 
-  asreml::asreml.options(design = TRUE)
+  asreml.options(design = TRUE)
 
   lettuce_subset <- lettuce_subset <- lettuce_phenotypes |>
        dplyr::filter(loc == "L2")

@@ -17,12 +17,12 @@
 )
 }
 \arguments{
-\item{object}{A heritability object returned by \code{\link[=H2]{H2()}} (broad-sense). The object must store the fitted model
+\item{object}{A heritability object returned by \code{\link[=H2]{H2()}} (broad-sense) \link[=H2]{h2()} (narrow-sense). The object must store the fitted model
 as an attribute.}
 
-\item{parm}{a specification of which parameters are to be given confidence intervals,
+\item{parm}{a specification of which methods are to be given confidence intervals,
 either a vector of numbers or a vector of names.
-If missing, all parameters are considered.}
+If missing, all methods are considered.}
 
 \item{level}{Confidence level.}
 
@@ -41,14 +41,16 @@ If missing, all parameters are considered.}
 
 \item{seed}{Optional random seed.}
 
-\item{...}{Additional arguments passed to the bootstrap routine.}
+\item{...}{Additional arguments passed to the bootstrap routine. Check
+\code{\link[boot:boot]{boot::boot()}}, as well as the examples below for parallel computation}
 }
 \value{
 A matrix of confidence intervals.
 }
 \description{
 Computes a confidence interval for a heritability estimate using parametric
-bootstrap of the underlying mixed model.
+bootstrap of the underlying mixed model. Parallel computing is supported through
+\code{\link[boot:boot]{boot::boot()}}
 }
 \examples{
 \dontrun{
@@ -63,7 +65,22 @@ bootstrap of the underlying mixed model.
 
   my_H2 <- H2(lettuce_asreml, "gen", c("Cullis", "Standard"))
 
-  confint(my_H2)
-}
+  my_ci <- confint(my_H2)
 
+  # Get bootstrap model
+  boot_mod <- attr(my_ci, "boot_mod")
+  boot_mod$t # Check bootstrap statistics
+
+  # Parallel computing (On Windows)
+  # Note that for asreml, `ncpus` can't be larger than the number of asreml
+  # license available
+  confint(my_H2, parallel = "snow", ncpus = 3)
+
+  # Parallel computing (On non-Windows)
+  confint(my_H2, parallel = "multicore", ncpus = 3)
+
+}
+}
+\seealso{
+\code{\link[boot:boot]{boot::boot()}}, \code{\link[=H2]{H2()}}
 }

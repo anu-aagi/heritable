@@ -59,20 +59,12 @@ check_model_convergence.lmerMod <- function(model) {
   }
 }
 
-check_model_convergence.glmmTMB <- function(model) {
-  if (model$fit$convergence != 0) {
-    warning("The input model has not converged")
-  }
-}
-
 #' @keywords internal
 check_model_convergence <- function(model) {
   UseMethod("check_model_convergence")
 }
 .S3method("check_model_convergence", "asreml", check_model_convergence.asreml)
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
-.S3method("check_model_convergence", "glmmTMB", check_model_convergence.glmmTMB)
-
 
 
 #' Check whether the fitted model contains random terms not grouped by `target`
@@ -139,7 +131,7 @@ check_target_both <- function(model, target) {
 
 # Check if the design matrix exists, otherwise builds one.
 #' @keywords internal
-check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
+check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE, source = list()){
 
   if(!inherits(model, "asreml")){
     return(model)
@@ -164,6 +156,13 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
       build_mf <- TRUE
     } else {
       build_mf <- FALSE
+    }
+  }
+
+  if(build_design ||  build_mf){
+    source <- check_GRM_exists(model = model, source = source, return = TRUE)
+    if(length(source) > 0){
+      list2env(source, environment())
     }
   }
 
@@ -192,37 +191,63 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE){
 ########################### Method specific check ##############################
 # Helper function to check if GRM exists in environment
 #' @keywords internal
-check_GRM_in_environment <- function(model, target) {
-  vpars <- names(model$vparameters)
-  env <- attr(model$formulae$random, ".Environment")
-  w <- grepl(paste0("^vm\\(", target), vpars)
-  if (sum(w) == 1) {
-    target_vm <- vpars[w]
-    #name_GRM <- stringr::str_extract(vpars[w], paste0("vm\\(", target, ", (.+)\\)"), group = 1)
-    name_GRM <- stringr::str_match(
-      vpars[w],
-      paste0("vm\\(", target, "\\s*,\\s*([^,\\)]+)")
-    )[,2]
-    if (exists(name_GRM, envir = env, inherits = FALSE)) {
-      return(TRUE)
-    }
-  }
-  FALSE
-}
+check_GRM_exists <- function(model, target = NULL, source = list(), return = FALSE) {
 
-#' Check if GRM is supplied if not search environment
-#' @keywords internal
-check_GRM_exists <- function(model, target, source = NULL){
-  # Is source supplied?
-  if(!is.null(source)){
-    TRUE
-  } else if (check_GRM_in_environment(model, target)) {
-    # Is it in the environment?
-    TRUE
-  } else {
-    # Source doesn't exist and not supplied
-    cli::cli_abort("Cannot find the source for {.code vm({target}, ...)}.")
+  if(!is.list(source)){
+    cli::cli_abort("souce must be a named list.")
   }
+
+  trms <- pull_terms(model)$random
+  trms_no_special <- pull_terms_without_specials(model)$random
+
+  if(!is.null(target)){
+    contain_target <- sapply(trms_no_special, function(trm){
+      target %in% stringr::str_split(trm, ":")[[1]]
+    }, USE.NAMES = FALSE)
+  } else {
+    contain_target <- rep(TRUE, length(model$G.param))
+  }
+
+  trms <- lapply(model$G.param[contain_target], function(x) {
+    x <- lapply(x[-1], function(y) {
+      if(y[["model"]] == "vm") y[["facnam"]] else NULL
+    }) |> unname()
+    do.call(c, x)
+  }) |> unname()
+  trms <- do.call(c, trms)
+
+  if (length(trms) > 0) {
+    name_GRM <- stringr::str_match(
+      trms,
+      "source\\s*=\\s*([^\\s,\\)]+)"
+    )[,2]
+    na_idx <- is.na(name_GRM)
+
+    name_GRM[na_idx] <- stringr::str_match(
+      trms[na_idx],
+      "vm\\([^,]+,\\s*([^\\s,\\)]+)"
+    )[,2]
+
+    name_GRM <- unique(name_GRM)
+
+    for(x in name_GRM){
+
+      if(!is.null(source[[x]])){
+
+        if(!return) source[[x]] <- TRUE
+
+      } else if (exists(x, envir = .GlobalEnv, inherits = FALSE)) {
+
+        source[[x]] <- if(return) get(x, envir = .GlobalEnv, inherits = FALSE) else TRUE
+
+      } else {
+        # Source doesn't exist and not supplied
+        cli::cli_abort("Cannot find the source {.code {x}}.")
+      }
+    }
+
+  }
+  source
 }
 
 #' Check target term specification for borad-sense heritability
@@ -230,10 +255,18 @@ check_GRM_exists <- function(model, target, source = NULL){
 #' For asreml, target as a random effect can only be specified once as target
 #' @keywords internal
 #' @noRd
-check_model_specification.asreml <- function(model, target, type){
+check_model_specification.asreml <- function(model, target,
+                                             type = c("broad_sense", "narrow_sense"),
+                                             source = list(),
+                                             ...){
+  type <- match.arg(type)
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
   spec <- attr(ran_trms_with_special, "spec")
+
+  # Check GRM exists
+  check_GRM_exists(model, target, source)
+
   if(target %in% ran_trms){
     if(type == "broad_sense"){
       if(sum(ran_trms == target)!=1){
@@ -250,7 +283,10 @@ check_model_specification.asreml <- function(model, target, type){
 
 #' @keywords internal
 #' @noRd
-check_model_specification.lmerMod <- function(model, target, type){
+check_model_specification.lmerMod <- function(model, target,
+                                              type = c("broad_sense", "narrow_sense"),
+                                              ...){
+  type <- match.arg(type)
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
 
@@ -274,25 +310,10 @@ check_model_specification.lmerMod <- function(model, target, type){
 
 #' @keywords internal
 #' @noRd
-check_model_specification <- function(model, target, type) {
+check_model_specification <- function(model, target,
+                                      type = c("broad_sense", "narrow_sense"),
+                                      ...) {
   UseMethod("check_model_specification")
 }
 .S3method("check_model_specification", "asreml", check_model_specification.asreml)
 .S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
-
-#' Check if asreml is installed and load it
-#'
-#' Checks whether asreml is installed, errors if not, and loads it if present.
-#'
-#' @keywords internal
-#' @noRd
-
-check_and_load_asreml <- function() {
-  if (!requireNamespace("asreml", quietly = TRUE)) {
-    cli::cli_abort(
-      "The {.pkg asreml} package is required for this function.
-       Please install it before proceeding."
-    )
-  }
-  invisible(library("asreml", character.only = TRUE))
-}

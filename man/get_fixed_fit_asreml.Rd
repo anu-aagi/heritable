@@ -4,11 +4,14 @@
 \alias{get_fixed_fit_asreml}
 \title{Fixed-effects-only fitted values from an asreml model}
 \usage{
-get_fixed_fit_asreml(model)
+get_fixed_fit_asreml(model, source = list())
 }
 \arguments{
 \item{model}{An object of class \code{"asreml"}, fitted with
 \code{model.frame = TRUE}.}
+
+\item{source}{The known genomic relationship matrix (GRM) used in \code{model} fitted using \code{asreml::vm()}, provided as a named list.
+When not provided (an empty list by default), the GRM variable used for \code{vm} calling will be searched in the global environment.}
 }
 \value{
 A numeric vector of length \eqn{N}, giving the fixed-effects-only

@@ -50,11 +50,11 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
 #'
 #' @export
- H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
-    H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
+H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
+  H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
 
-    return(H2_Cullis)
- }
+  return(H2_Cullis)
+}
 
 #' Calculate Oakey's heritability using variance parameters
 #'
@@ -83,9 +83,10 @@ H2_Oakey_parameters <- function(Gg_inv, C22_g) {
    M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
 
    eM <- eigen(M, symmetric = TRUE)
-   thres <- 1e-5
-   H2_Oakey <- mean(eM$values[eM$values > thres])
+   thres <- sqrt(.Machine$double.eps)
+   H2_Oakey <- mean(eM$values[eM$values/max(eM$values) > thres])
    return(H2_Oakey)
+
 }
 
 #' Calculate Piepho's heritability using variance parameters
@@ -118,94 +119,55 @@ H2_Piepho_parameters <- function(vc_g, vd_BLUE_avg) {
 #' Calculate heritability of pairwise differences using variance parameters
 #' @description Compute broad-sense heritability of differences
 #' using the variance of differences between two BLUPs/BLUEs
-#' @aliases h2_Delta_parameters
-#' @usage
-#' h2_Delta_parameters(G_g, vd_matrix, type)
-#'
-#' H2_Delta_parameters(vc_g, vd_matrix, type)
-#'
 #' @details See [H2_Delta()] and reference for full derivation
 #'  and equation for heritability Delta
-#' @param G_g Numeric. Genotypic variance-covariance matrix.
-#' @param vc_g Numeric. Genotype variance component
-#' @param vd_matrix Matrix. Variance of pairwise differences among BLUES or BLUPs
+#' @param delta_g Numeric. Genotypic variance-covariance matrix.
+#' @param delta_pev Matrix. Variance of pairwise differences among BLUES or BLUPs
 #' @param type Character. Either BLUES or BLUPS used to compute the variance of pairwise differences.
 #' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
 #' @examples
-#' h2_Delta_parameters(G_g = diag(0.15, 2, 2), vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), type = "BLUP")
 #'
-#' H2_Delta_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), "BLUE")
+#' H2_Delta_parameters(delta_g = diag(0.15, 2, 2),
+#'                     delta_pev = matrix(c(NA,0.2,0.2,NA),2,2),
+#'                     type = "BLUP"
+#'                     )
 #'
 #' @references
 #' Schmidt, P., Hartung, J., Rath, J., & Piepho, H.-P. (2019). Estimating
 #' Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar
 #' Trials. Crop Science, 59(2), 525–536. https://doi.org/10.2135/cropsci2018.06.0376
 #' @export
-H2_Delta_parameters <- function(vc_g, vd_matrix, type = c("BLUP", "BLUE")) {
+H2_Delta_parameters <- function(delta_g, delta_pev, type = c("BLUP", "BLUE")) {
   type <- match.arg(type)
-  denom <- 2 * vc_g
 
   if (type == "BLUP") {
-    1 - vd_matrix / denom
+    1 - delta_pev / delta_g
   } else {
-    1 / (1 + vd_matrix / denom)
+    1 / (1 + delta_pev / delta_g)
   }
 }
 
 #' @noRd
 #' @return Narrow sense heritability for the standard method.
 #' @keywords internal
-h2_Standard_parameters <- function(G_g, V, C) {
+h2_Standard_parameters <- function(G_g, V, C, active_g) {
 
   # S = C' V C  (g x g)
   S <- crossprod(C, V %*% C)
 
   # Sample contrast var(y_i.. - y_j..) = den_ij
   # = (C_i - C_j)' V (C_i - C_j) = S_ii + S_jj - 2 S_ij
-  delta_y <- outer(diag(S), diag(S), "+") - 2 * S
+  delta_y <- var_diff(S)
 
   # genotype contrast var(g_i - g_j) = num_ij = G_ii + G_jj
-  delta_g <- outer(diag(G_g), diag(G_g), "+") - 2 * G_g
+  delta_g <- var_diff(G_g)
   # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
 
-  mean((delta_g/delta_y)[lower.tri(delta_y)])
-}
-
-
-#' @noRd
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#' @export
-h2_Delta_parameters <- function(G_g, vd_matrix, type = c("BLUP", "BLUE")) {
-  type <- match.arg(type)
-  vd <- diag(G_g)
-  n_g <- nrow(G_g)
-  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
-
-  if (type == "BLUP") {
-    1 - vd_matrix / denom
-  } else {
-    1 / (1 + vd_matrix / denom)
+  if(!is.null(active_g) && any(!active_g)){
+    delta_y <- delta_y[active_g,active_g,drop=FALSE]
+    delta_g <- delta_g[active_g,active_g,drop=FALSE]
   }
-}
 
+  mean(delta_g[upper.tri(delta_g)])/mean(delta_y[upper.tri(delta_y)])
 
-#' @noRd
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#' @keywords internal
-h2_Delta_BLUP_parameters <- function(G_g, vd_matrix) {
-vd <- diag(G_g)
-n_g <- nrow(G_g)
- denom <- var_diff(G_g)
-#denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
-1 - vd_matrix / denom
-}
-
-#' @noRd
-#' @return Matrix of pairwise heritability of differences among BLUES or BLUPs
-#' @keywords internal
-h2_Delta_BLUE_parameters <- function(G_g, vd_matrix) {
-  vd <- diag(G_g)
-  n_g <- nrow(G_g)
-  denom <- matrix(vd, n_g, n_g) + matrix(vd, n_g, n_g, byrow = TRUE) - 2 * G_g
-  1 / (1 + vd_matrix / denom)
 }

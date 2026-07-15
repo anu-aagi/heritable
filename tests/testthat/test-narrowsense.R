@@ -4,43 +4,30 @@ test_that("h2 heritability works", {
   skip_on_cran()
   skip()
 
-  asreml_model_random <- readRDS(file = test_path("fixtures/asreml_model_random.rds"))
-  asreml_model_grm <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
-  data("lettuce_GRM")
 
-  # From Schmidt et al 2019 Fig 1.
-  # Delta
-  expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUP"), 0.871, tolerance = 1e-3)
-  # TODO: h2 BLUE values not matching
-  expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUE"), 0.818, tolerance = 1e-3)
+  # Try simple GRM
+  G <- lettuce_GRM
 
-  # Oakey
-  # TODO: h2 Oakey values not matching
-  expect_equal(heritable:::h2_Oakey(asreml_model_grm, target = "gen"), 0.586, tolerance = 1e-3)
+  model <- asreml::asreml(y ~ rep,
+                 random = ~ vm(gen, G) + loc:gen,
+                 data = lettuce_phenotypes
+                 )
 
-  # Structural checks
-  expect_named(h2(asreml_model_grm, target = "gen"), c("Oakey", "Delta"))
-  expect_s4_class(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP"), "dspMatrix")
-  expect_type(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), "list")
-  expect_named(h2(asreml_model_grm, target = "gen"), c("Oakey", "Delta"))
-  expect_length(h2(asreml_model_grm, target = "gen"), 2)
-  expect_named(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), levels(asreml_model_grm$mf$gen), ignore.order = TRUE)
-  expect_equal(nrow(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP")), length(levels(asreml_model_grm$mf$gen)))
-})
 
-test_that("VanRadden GRM", {
-  skip_if_not_installed("asreml")
-  skip_on_ci()
-  skip_on_cran()
-  skip()
+  expect_all_true(
+    abs(h2(model, "gen") - c(0.8499858 , 0.9021862 , 0.8987218 )) < 1e-3
+  )
 
-  # library(sommer)
-  # lettuce_GRM_vanradden <- sommer::A.mat(as.matrix(lettuce_markers[, -1]))
-  # dimnames(lettuce_GRM_vanradden) <- list(lettuce_markers$gen, lettuce_markers$gen)
-  # saveRDS(lettuce_GRM_vanradden, file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
-  # lettuce_GRM_vanradden <- readRDS(file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
+  rm(G)
+  expect_error(
+    h2(model, "gen")
+  )
 
-  # Hand calculate vanRadden
+  expect_all_true(
+    abs(h2(model, "gen", source = lettuce_GRM) - c(0.8499858 , 0.9021862 , 0.8987218 )) < 1e-3
+  )
+
+  # Try vanRadden GRM
   M <- as.matrix(lettuce_markers[, -1] + 1)
   N <- nrow(M)
   pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)
@@ -49,8 +36,115 @@ test_that("VanRadden GRM", {
   W <- sweep(W, 2, sqrt(2 * pm * (1 - pm)), "/")
   G <- tcrossprod(W) / ncol(M)
   Ginv <- MASS::ginv(G)
-  dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  dimnames(G) <- dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
   attr(Ginv, "INVERSE") <- TRUE
+
+  # First type of model specification
+  model <- asreml::asreml(y ~ rep,
+                          random = ~ vm(gen, Ginv) + loc:gen,
+                          data = lettuce_phenotypes
+  )
+
+  expect_all_true(
+    abs(h2(model, "gen") - c(0.8485336 , 0.8991623 , 0.8957253 )) < 1e-3
+  )
+
+  expect_all_true(
+    abs(h2(model, "gen", source = G) - c(0.8485336 , 0.8991623 , 0.8957253 )) < 1e-3
+  )
+
+  # Second type of model specification
+  model <- asreml::asreml(y ~ rep,
+                          random = ~ vm(gen, G, "PSD") + loc:gen,
+                          data = lettuce_phenotypes
+  )
+
+  expect_all_true(
+    abs(h2(model, "gen") - c(0.8500160, 0.9019897 , 0.8985259  )) < 1e-3
+  )
+
+  expect_all_true(
+    abs(h2(model, "gen", source = G) - c(0.8500160 , 0.9019897 , 0.8985259 )) < 1e-3
+  )
+
+
+  # asreml_model_random <- readRDS(file = test_path("fixtures/asreml_model_random.rds"))
+  # asreml_model_grm <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+  # data("lettuce_GRM")
+  #
+  # # From Schmidt et al 2019 Fig 1.
+  # # Delta
+  # expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUP"), 0.871, tolerance = 1e-3)
+  # # TODO: h2 BLUE values not matching
+  # expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUE"), 0.818, tolerance = 1e-3)
+  #
+  # # Oakey
+  # # TODO: h2 Oakey values not matching
+  # expect_equal(heritable:::h2_Oakey(asreml_model_grm, target = "gen"), 0.586, tolerance = 1e-3)
+  #
+  # # Structural checks
+  # expect_named(h2(asreml_model_grm, target = "gen"), c("Oakey", "Delta"))
+  # expect_s4_class(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP"), "dspMatrix")
+  # expect_type(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), "list")
+  # expect_named(h2(asreml_model_grm, target = "gen"), c("Oakey", "Delta"))
+  # expect_length(h2(asreml_model_grm, target = "gen"), 2)
+  # expect_named(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), levels(asreml_model_grm$mf$gen), ignore.order = TRUE)
+  # expect_equal(nrow(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP")), length(levels(asreml_model_grm$mf$gen)))
+})
+
+# test_that("h2 heritability works", {
+#   skip_if_not_installed("asreml")
+#   skip_on_ci()
+#   skip_on_cran()
+#   skip()
+#
+#   asreml_model_random <- readRDS(file = test_path("fixtures/asreml_model_random.rds"))
+#   asreml_model_grm <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
+#   data("lettuce_GRM")
+#
+#   # From Schmidt et al 2019 Fig 1.
+#   # Delta
+#   expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUP"), 0.871, tolerance = 1e-3)
+#   # TODO: h2 BLUE values not matching
+#   expect_equal(h2_Delta(asreml_model_grm, target = "gen", type = "BLUE"), 0.818, tolerance = 1e-3)
+#
+#   # Oakey
+#   # TODO: h2 Oakey values not matching
+#   expect_equal(heritable:::h2_Oakey(asreml_model_grm, target = "gen"), 0.586, tolerance = 1e-3)
+#
+#   # Structural checks
+#   expect_named(h2(asreml_model_grm, target = "gen"), c("Oakey", "Delta"))
+#   expect_s4_class(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP"), "dspMatrix")
+#   expect_type(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), "list")
+#   expect_named(h2(asreml_model_grm, target = "gen"), c("Oakey", "Delta"))
+#   expect_length(h2(asreml_model_grm, target = "gen"), 2)
+#   expect_named(h2_Delta_by_genotype(asreml_model_grm, target = "gen", type = "BLUP"), levels(asreml_model_grm$mf$gen), ignore.order = TRUE)
+#   expect_equal(nrow(h2_Delta_pairwise(asreml_model_grm, target = "gen", type = "BLUP")), length(levels(asreml_model_grm$mf$gen)))
+# })
+
+#test_that("VanRadden GRM", {
+  #skip_if_not_installed("asreml")
+  #skip_on_ci()
+  #skip_on_cran()
+  #skip()
+
+  # library(sommer)
+  # lettuce_GRM_vanradden <- sommer::A.mat(as.matrix(lettuce_markers[, -1]))
+  # dimnames(lettuce_GRM_vanradden) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  # saveRDS(lettuce_GRM_vanradden, file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
+  # lettuce_GRM_vanradden <- readRDS(file = test_path("fixtures/lettuce_GRM_vanradden.rds"))
+
+  # Hand calculate vanRadden
+  # M <- as.matrix(lettuce_markers[, -1] + 1)
+  # N <- nrow(M)
+  # pm <- colSums(M) / (2 * N) # allele freq per marker (diploid X)
+  # pm <- pmin(pmax(pm, 1e-6), 1 - 1e-6) # guard against 0 or 1
+  # W <- sweep(M, 2, 2 * pm, "-")
+  # W <- sweep(W, 2, sqrt(2 * pm * (1 - pm)), "/")
+  # G <- tcrossprod(W) / ncol(M)
+  # Ginv <- MASS::ginv(G)
+  # dimnames(Ginv) <- list(lettuce_markers$gen, lettuce_markers$gen)
+  # attr(Ginv, "INVERSE") <- TRUE
 
   # # Crashes on Fonti's MBP
   # asreml_model_gr_vr <- asreml::asreml(y ~ rep,
@@ -64,47 +158,47 @@ test_that("VanRadden GRM", {
   # qr(Ginv)$rank < ncol(Ginv)
   #
   # saveRDS(asreml_model_gr_vr, test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
-  asreml_model_gr_vr <- readRDS(test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
+  #asreml_model_gr_vr <- readRDS(test_path("fixtures/lettuce_asreml_vradden_grm.rds"))
 
   # h2(asreml_model_gr_vr, "gen", source = Ginv)
-})
+#})
 
-test_that("Refactoring delta parameter functions works", {
-  skip()
-  G_g <- matrix(c(
-    0.5, 0.2, 0.2,
-    0.2, 0.6, 0.3,
-    0.2, 0.3, 0.7
-  ), nrow = 3, byrow = TRUE)
-  vd_matrix <- matrix(c(
-    0.1, 0.15, 0.2,
-    0.15, 0.12, 0.18,
-    0.2, 0.18, 0.14
-  ), nrow = 3, byrow = TRUE)
-
-  expect_equal(
-    h2_Delta_BLUP_parameters(G_g, vd_matrix),
-    h2_Delta_parameters(G_g, vd_matrix, type = "BLUP")
-  )
-
-  expect_equal(
-    h2_Delta_BLUE_parameters(G_g, vd_matrix),
-    h2_Delta_parameters(G_g, vd_matrix, type = "BLUE")
-  )
-
-  vc_g <- 0.01
-  vd_matrix <- matrix(c(NA, 0.2, 0.2, NA), 2, 2)
-
-  expect_equal(
-    H2_Delta_BLUE_parameters(vc_g, vd_matrix),
-    H2_Delta_parameters(vc_g, vd_matrix, type = "BLUE")
-  )
-
-  expect_equal(
-    H2_Delta_BLUP_parameters(vc_g, vd_matrix),
-    H2_Delta_parameters(vc_g, vd_matrix, type = "BLUP")
-  )
-})
+# test_that("Refactoring delta parameter functions works", {
+#   skip()
+#   G_g <- matrix(c(
+#     0.5, 0.2, 0.2,
+#     0.2, 0.6, 0.3,
+#     0.2, 0.3, 0.7
+#   ), nrow = 3, byrow = TRUE)
+#   vd_matrix <- matrix(c(
+#     0.1, 0.15, 0.2,
+#     0.15, 0.12, 0.18,
+#     0.2, 0.18, 0.14
+#   ), nrow = 3, byrow = TRUE)
+#
+#   expect_equal(
+#     h2_Delta_BLUP_parameters(G_g, vd_matrix),
+#     h2_Delta_parameters(G_g, vd_matrix, type = "BLUP")
+#   )
+#
+#   expect_equal(
+#     h2_Delta_BLUE_parameters(G_g, vd_matrix),
+#     h2_Delta_parameters(G_g, vd_matrix, type = "BLUE")
+#   )
+#
+#   vc_g <- 0.01
+#   vd_matrix <- matrix(c(NA, 0.2, 0.2, NA), 2, 2)
+#
+#   expect_equal(
+#     H2_Delta_BLUE_parameters(vc_g, vd_matrix),
+#     H2_Delta_parameters(vc_g, vd_matrix, type = "BLUE")
+#   )
+#
+#   expect_equal(
+#     H2_Delta_BLUP_parameters(vc_g, vd_matrix),
+#     H2_Delta_parameters(vc_g, vd_matrix, type = "BLUP")
+#   )
+# })
 
 # test_that("Alternative way to get sigma a",{
 #   model <- readRDS(file = test_path("fixtures/asreml_model_grm.rds"))
@@ -130,8 +224,8 @@ test_that("Refactoring delta parameter functions works", {
 # }
 # )
 
-test_that("Try GPT simulation", {
-  skip()
+# test_that("Try GPT simulation", {
+#  skip()
   # oakey_true_from_matrices_eigen <- function(X, Z, G_marker, sigma_g2, sigma_e2,
   #                                            tol_eig = 1e-8, tol_G = 1e-10) {
   #   n <- nrow(Z)
@@ -236,4 +330,4 @@ test_that("Try GPT simulation", {
   # # true   fixedVC
   # # 0.7248769 0.2702343
 
-})
+#})

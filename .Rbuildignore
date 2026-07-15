@@ -9,6 +9,7 @@
 ^ignore$
 ^codecov\.yml$
 ^\.github$
+^\.git$
 ^doc$
 ^Meta$
 ^_pkgdown\.yml$

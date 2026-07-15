@@ -9,15 +9,15 @@ test_that("H2 for asreml works", {
   truth_random_asreml <- c(
     "Cullis" = 0.8090841,
     "Oakey" = 0.8090728,
-    "Piepho" = 0.8029759,
+    "Piepho" = 0.8079645 ,
     "Delta" = 0.8090841,
-    "Standard" = 0.7505988
+    "Standard" = 0.7502958
   )
 
   asreml_H2_all_methods <- H2(asreml_model_random, target = "gen")
 
   expect_equal(setNames(as.numeric(asreml_H2_all_methods), names(asreml_H2_all_methods)), truth_random_asreml, tolerance = 1e-3)
-  expect_equal(H2_Delta(asreml_model_random, target = "gen", type = "BLUE"), 0.8030227, tolerance = 1e-3)
+  expect_equal(H2_Delta(asreml_model_random, target = "gen", type = "BLUE"), 0.8079647, tolerance = 1e-3)
 
 
   # Different residual structure -----------------------------------------------
@@ -45,15 +45,15 @@ test_that("H2 works for lme4",{
   truth_random_asreml <- c(
     "Cullis" = 0.8090841,
     "Oakey" = 0.8090728,
-    "Piepho" = 0.8029759,
+    "Piepho" = 0.8079647,
     "Delta" = 0.8090841,
-    "Standard" = 0.7505988
+    "Standard" = 0.7502961
   )
 
   truth_random_lme4 <- c(
     "Cullis" = 0.8091339,
     "Oakey" = 0.8091339,
-    "Piepho" = 0.7966376,
+    "Piepho" = 0.8079647,
     "Delta" = truth_random_asreml[["Delta"]],
     "Standard" = truth_random_asreml[["Standard"]]
   )
@@ -61,11 +61,11 @@ test_that("H2 works for lme4",{
   lmer_H2_all_methods <- H2(lmer_model_random, target = "gen")
 
   expect_equal(setNames(as.numeric(lmer_H2_all_methods), names(lmer_H2_all_methods)), truth_random_lme4, tolerance = 1e-3)
-  expect_equal(H2_Delta(lmer_model_random, target = "gen", type = "BLUE"), 0.7967, tolerance = 1e-3)
+  expect_equal(H2_Delta(lmer_model_random, target = "gen", type = "BLUE"), 0.8079647, tolerance = 1e-3)
 
   # lme4 Random "gen" single RE----------------------------------------------------------
   lettuce_lme4 <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
-  expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"))
+  expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"), tolerance = 1e-3)
 })
 
 test_that("H2 can handle multiple methods", {
@@ -99,7 +99,7 @@ test_that("asreml methods work", {
 
   expect_equal(H2_Cullis.asreml(asreml_model_random, target = "gen"), 0.8090841, tolerance = 1e-3)
   expect_equal(H2_Oakey.asreml(asreml_model_random, target = "gen"), 0.8090728, tolerance = 1e-3)
-  expect_equal(H2_Piepho.asreml(asreml_model_random, target = "gen"), 0.8029759, tolerance = 1e-3)
+  expect_equal(H2_Piepho.asreml(asreml_model_random, target = "gen"), 0.8079645, tolerance = 1e-3)
   expect_equal(H2_Standard.asreml(asreml_model_random, target = "gen"), 0.7505988, tolerance = 1e-3)
 })
 

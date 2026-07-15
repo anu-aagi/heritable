@@ -29,9 +29,15 @@ pull_terms.asreml <- function(model) {
 
 #' @keywords internal
 pull_terms.lmerMod <- function(model) {
-  fixed_trms <- reformulas::nobars(formula(model)) |>
-    terms() |>
-    attr("term.labels")
+
+  fixed_trms <- reformulas::nobars(formula(model))
+  if(inherits(fixed_trms,"formula")){
+    fixed_trms <- terms(fixed_trms) |>
+      attr("term.labels")
+  } else {
+    fixed_trms <- character()
+  }
+
   mmList <- lme4::getME(model, "mmList")
   ran_trms <- names(mmList)
 
@@ -70,9 +76,9 @@ pull_terms_without_specials.lmerMod <- function(model) {
   model_terms$random <- lapply(
     model_terms$random,
     function(frm) {
-      terms <- stringr::str_split(frm, " \\| ")[[1]]
-      grp <- utils::tail(terms, 1)
-      design <- utils::head(terms, 1)
+      trms <- stringr::str_split(frm, " \\| ")[[1]]
+      grp <- utils::tail(trms, 1)
+      design <- utils::head(trms, 1)
       design <- as.formula(paste("~ ", design)) |> terms()
       design_terms <- attr(design, "term.labels")
       contain_intercept <- attr(design, "intercept") == 1
@@ -80,9 +86,9 @@ pull_terms_without_specials.lmerMod <- function(model) {
       if(length(design_terms) == 0){
         grp
       } else if(contain_intercept){
-        c(grp, paste(design_terms, grp, sep = "|"))
+        c(grp, paste(design_terms, grp, sep = " | "))
       } else {
-        paste(design_terms, grp, sep = "|")
+        paste(design_terms, grp, sep = " | ")
       }
     }
   )
@@ -305,11 +311,23 @@ fit_counterpart_model <- function(model, target = NULL) {
 #' @noRd
 #' @export
 print.heritable <- function(x, digits = getOption("digits"), ...) {
-  attr(x, "model") <- NULL
-  attr(x, "target") <- NULL
   attr(x, "type") <- NULL
+  attr(x, "args") <- NULL
   print(unclass(x))
 }
+
+#' Print method for heritable_ci objects
+#'
+#' @param x An object of class "heritable_ci"
+#' @param digits Number of digits to print
+#' @param ... Additional arguments passed to print
+#' @noRd
+#' @export
+print.heritable_ci <- function(x, digits = getOption("digits"), ...) {
+  attr(x, "boot_mod") <- NULL
+  print(unclass(x))
+}
+
 
 #' @keywords internal
 build_precompiled_vignette <- function(input = "vignettes/heritable.Rmd.orig",
@@ -388,21 +406,19 @@ sp2Matrix <- function(x, dense = FALSE, triplet = FALSE) {
 
 #' @noRd
 #' @keywords internal
-#' @importFrom Matrix Diagonal Matrix t diag crossprod tcrossprod
+#' @importFrom Matrix t diag crossprod tcrossprod
 var_diff <- function(V) {
-  d <- diag(V)
-  delta <- -2 * V
-  delta <- delta + d
-  delta <- sweep(delta, 2, d, "+")
-  delta
+  Matrix::Matrix(outer(diag(V), diag(V), "+") - 2 * V)
 }
 
 
 #' @noRd
-#' @keywords internal
-var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
-                             calc_V = TRUE,
-                             marginal = TRUE, stratification = NULL,...) {
+#' @export
+var_comp.lmerMod <- function(model, target,
+                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
+                             marginal = TRUE, stratification = NULL,
+                             solver = c("direct", "LMM"), ...) {
+  solver <- match.arg(solver)
   X <- lme4::getME(model, "X")
   Z <- lme4::getME(model, "Z")
 
@@ -411,18 +427,20 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
   G <- tcrossprod(Lambda) * sigma2
   dimnames(G) <- list(colnames(Z), colnames(Z))
 
+  if(marginal || !is.null(stratification)) marginal <- TRUE
   mapper <- map_target_terms(model, target, marginal)
+  W <- m <- mapper$m
+  m <- m != 0
   g <- mapper$idx
 
   # Get BLUP weight
   if (is.null(stratification)) {
-    m <- mapper$m
     main <- mapper$main
-
     if (sum(!main) == 0) {
-      main <- TRUE
+      marginal <- FALSE
     } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
+      W <- W[main, , drop = FALSE]
       m <- m[main, , drop = FALSE]
       cli::cli_inform(
         c(
@@ -430,7 +448,7 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
-      main <- TRUE
+      marginal <- FALSE
     } else {
       cli::cli_inform(
         c(
@@ -438,8 +456,10 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
           "involving the target term."
         )
       )
-      main <- FALSE
+      marginal <- TRUE
     }
+
+    active_g <- NULL # Define genotypes on which heritability is measured.
   } else {
     cli::cli_inform(
       c(
@@ -447,35 +467,96 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
         "Estimation is restricted to the defined strata."
       )
     )
-    main <- FALSE
-    m <- build_new_Z(model, target, stratification) |> t()
+    marginal <- FALSE
+
+    W <- build_new_Z(model, target, stratification)
+    active_g <- attr(W, "active")
   }
 
-  gnames <- colnames(m)
-  G_g <- crossprod(m, G[g, g, drop = FALSE]) %*% m
+  gnames <- colnames(W)
+  G_g <- crossprod(W, G[g, g, drop = FALSE]) %*% W
   dimnames(G_g) <- list(gnames, gnames)
   n_g <- length(gnames)
 
-  if (calc_V || calc_C22) {
+  if (calc_V || calc_C22 || calc_C11) {
     R <- diag(nrow(X)) * sigma2
     V <- R + Z %*% G %*% t(Z)
-    Vinv <- solve(V)
 
     if(calc_C22) {
-      P <- Vinv - Vinv %*% X %*% solve(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
-      C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+
+      if(solver == "direct"){
+        Vinv <- ginv_sym_sparse(V)
+        P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+        C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+      }else{
+        C22 <- solve_LMM(X, Z, G, R)$C22
+      }
+
       dimnames(C22) <- list(colnames(Z), colnames(Z))
-      C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
+      C22_g <- crossprod(W, C22[g, g, drop = FALSE]) %*% W
       dimnames(C22_g) <- list(gnames, gnames)
     } else {
       C22_g <- NULL
+    }
+
+    if(calc_C11){
+
+      if(solver == "direct"){
+        Z_g <-  Z[, g, drop=FALSE]
+        V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
+        X_tilde <- cbind(X, Z_g)
+
+        C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      } else {
+        X_tilde <- cbind(X, Z[, g, drop=FALSE])
+        if(length(g) != ncol(Z)){
+          Z_tilde <-  Z[, -g, drop=FALSE]
+          G_tilde <- G[-g,-g,drop=FALSE]
+          C11 <- solve_LMM(X_tilde, Z_tilde, G_tilde, R)$C11
+        } else {
+          C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(R) %*% X_tilde)
+        }
+      }
+
+      XTX <- crossprod(X_tilde)
+      P <- ginv_sym_sparse(XTX) %*% XTX
+      W_tilde <- t(crossprod(W, P[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]))
+
+      # Genetic variance matrix in the conterpart model
+      G_g_tilde <- crossprod(W_tilde, G[g, g, drop = FALSE]) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      # Genetic variance matrix in the conterpart model without considering genetic covariance
+      ij <- apply(m, 2, function(z) {
+        active <- which(z)
+        expand.grid(active, active)
+      }) |>
+        do.call(rbind, args = _)
+      G_g_no_cov <- G[g, g, drop=FALSE] * Matrix::sparseMatrix(
+        i = ij[, 1],
+        j = ij[, 2],
+        x = 1,
+        dims = c(nrow(m), nrow(m))
+      )
+      G_g_tilde_no_cov <- crossprod(W_tilde, G_g_no_cov) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      C11_g <- crossprod(W, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% W
+      dimnames(C11_g) <- list(gnames, gnames)
+
+    } else {
+      C11_g <- NULL
+      G_g_tilde <- NULL
+      G_g_tilde_no_cov <- NULL
     }
 
     if(!calc_V) {
       V <- NULL
       G <- NULL
       Z <- NULL
+      X <- NULL
       idx <- NULL
+      W <- NULL
     } else {
       idx <- g
     }
@@ -484,33 +565,92 @@ var_comp.lmerMod <- function(model, target, calc_C22 = TRUE,
     V <- NULL
     G <- NULL
     Z <- NULL
+    X <- NULL
     idx <- NULL
+    W <- NULL
     C22_g <- NULL
+    C11_g <- NULL
+    G_g_tilde <- NULL
+    G_g_tilde_no_cov <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g,
-       V = V, G = G, Z = Z, idx = idx, gnames = gnames, main = main)
+  if(!is.null(active_g) && any(!active_g)){
+    cli::cli_inform(
+      c(
+        "Following genotypes are not presented in the specified strat: {.code {gnames[!active_g]}}.",
+        "They are excluded from the estimation."
+      )
+    )
+
+    n_g <- sum(active_g)
+    gnames <- gnames[active_g]
+    G_g <- G_g[active_g,active_g, drop = FALSE]
+    if(calc_C22){
+      C22_g <- C22_g[active_g,active_g, drop = FALSE]
+    }
+    if(calc_C11){
+      G_g_tilde <- G_g_tilde[active_g,active_g, drop = FALSE]
+      G_g_tilde_no_cov <- G_g_tilde_no_cov[active_g,active_g, drop = FALSE]
+      C11_g <- C11_g[active_g,active_g, drop = FALSE]
+    }
+  }
+
+  list(n_g = n_g, gnames = gnames,
+       G_g = G_g, C22_g = C22_g,
+       G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
+       V = V, G = G, Z = Z, X = X, idx = idx, W = W,
+       marginal = marginal, stratification = stratification)
 }
 
 #' @noRd
-#' @keywords internal
-var_comp.asreml <- function(model, target, calc_C22 = TRUE,
-                            calc_V = TRUE,
-                            marginal = TRUE, stratification = NULL,...) {
+#' @export
+var_comp.asreml <- function(model, target,
+                            calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
+                            marginal = TRUE, stratification = NULL,
+                            solver = c("direct", "LMM"),
+                            source = list(), ...) {
+  solver <- match.arg(solver)
   model <- check_deisgn_exsits(model)
   design <- model$design
 
+  if(marginal || !is.null(stratification)) marginal <- TRUE
   mapper <- map_target_terms(model, target, marginal)
+  W <- m <- mapper$m
+  m <- m != 0
   g <- mapper$idx
+
+  # Get random terms
+  ran_terms <- lapply(model$G.param, function(x) {
+    facnam <- lapply(x[-1], function(y) {
+      y <- paste0(y[["facnam"]], "_", y[["levels"]])
+      factor(y, levels = y)
+    })
+    facnam <- do.call(
+      expand.grid,
+      c(rev(facnam), list(stringsAsFactors = FALSE))
+    )
+    facnam <- facnam[, rev(seq_len(ncol(facnam))), drop = FALSE]
+    facnam <- apply(facnam, 1, function(x) paste0(x, collapse = ":"))
+  })
+  ran_terms <- do.call(c, ran_terms)
+
+  # Build design matrix
+  N <- nrow(design)
+  Q <- length(ran_terms)
+  Z <- Matrix::Matrix(0, N, Q)
+  colnames(Z) <- ran_terms
+  common_col <- intersect(colnames(design), ran_terms)
+  Z[, common_col] <- design[, common_col]
+  X <- design[, !colnames(design) %in% ran_terms, drop = FALSE]
 
   # Get BLUP weight
   if (is.null(stratification)) {
-    m <- mapper$m
     main <- mapper$main
     if (sum(!main) == 0) {
-      main <- TRUE
+      marginal <- FALSE
     } else if (sum(main) != 0 && !marginal) {
       g <- g[main]
+      W <- W[main, , drop = FALSE]
       m <- m[main, , drop = FALSE]
       cli::cli_inform(
         c(
@@ -518,7 +658,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "Interactive effects are excluded from this calculation."
         )
       )
-      main <- TRUE
+      marginal <- FALSE
     } else {
       cli::cli_inform(
         c(
@@ -526,8 +666,9 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
           "involving the target term."
         )
       )
-      main <- FALSE
+      marginal <- TRUE
     }
+    active_g <- NULL
   } else {
     cli::cli_inform(
       c(
@@ -535,42 +676,24 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
         "Estimation is restricted to the defined strata."
       )
     )
-    main <- FALSE
-    m <- build_new_Z(model, target, stratification) |> t()
+    marginal <- FALSE
+    W <- build_new_Z(model, target, stratification)
+    active_g <- attr(W, "active")
   }
 
-  gnames <- colnames(m)
+  gnames <- colnames(W)
   n_g <- length(gnames)
 
-  if (calc_V || calc_C22) {
-    # Get random terms
-    grp_names <- sapply(model$G.param, function(x) {
-      facnam <- lapply(x[-1], function(y) y[["facnam"]])
-      paste0(do.call(c, facnam), collapse = ":")
-    })
-
-    ran_terms <- lapply(model$G.param, function(x) {
-      facnam <- lapply(x[-1], function(y) {
-        y <- paste0(y[["facnam"]], "_", y[["levels"]])
-        factor(y, levels = y)
-      })
-      facnam <- do.call(
-        expand.grid,
-        c(rev(facnam), list(stringsAsFactors = FALSE))
-      )
-      facnam <- facnam[, rev(seq_len(ncol(facnam))), drop = FALSE]
-      facnam <- apply(facnam, 1, function(x) paste0(x, collapse = ":"))
-    })
-    ran_terms <- do.call(c, ran_terms)
+  if (calc_V || calc_C22 || calc_C11) {
+    n_comp <- length(model$G.param)
 
     # Build variance
-    G_list <- lapply(seq_along(grp_names), function(x) {
-      phrase_G(model$G.param[[x]])
+    G_list <- lapply(seq_len(n_comp), function(x) {
+      phrase_G(model$G.param[[x]], source = source)
     })
     G <- Matrix::bdiag(G_list)
     G <- G * model$sigma2
     dimnames(G) <- list(ran_terms, ran_terms)
-    Q <- ncol(G)
 
     # Identify missing terms.
     col_design <- colnames(design)
@@ -578,44 +701,97 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
       Matrix::colSums(design[, intersect(ran_terms, col_design)] != 0) == 0
     ) |> names()
     missing_terms <- unique(c(missing_terms, setdiff(ran_terms, col_design)))
-    if (length(missing_terms) > 1) {
+    if (length(missing_terms) > 0) {
       G[missing_terms, ] <- 0
       G[, missing_terms] <- 0
     }
 
-    G_g <- crossprod(m, G[g, g, drop = FALSE]) %*% m
+    G_g <- crossprod(W, G[g, g, drop = FALSE]) %*% W
     dimnames(G_g) <- list(gnames, gnames)
 
-    # Build design matrix
-    N <- nrow(design)
-    Z <- Matrix::Matrix(0, N, Q)
-    colnames(Z) <- ran_terms
-    common_col <- intersect(colnames(design), ran_terms)
-    Z[, common_col] <- design[, common_col]
-    X <- design[, !colnames(design) %in% ran_terms]
-
     # Build R matrix
-    R <- asremlPlus::estimateV.asreml(model, which.matrix = "R") |>
+    tmp_data_call <- model$call$data
+    model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
+    R <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
       Matrix::Matrix()
+    model$call$data <- tmp_data_call
 
     V <- R + Z %*% G %*% t(Z)
 
     if(calc_C22) {
-      Vinv <- ginv_sym_sparse(V)
-      P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
-      C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+
+      if(solver == "direct"){
+        Vinv <- ginv_sym_sparse(V)
+        P <- Vinv - Vinv %*% X %*% ginv_sym_sparse(t(X) %*% Vinv %*% X) %*% t(X) %*% Vinv
+        C22 <- G - G %*% t(Z) %*% P %*% Z %*% G
+      }else{
+        C22 <- solve_LMM(X, Z, G, R)$C22
+      }
+
       dimnames(C22) <- list(colnames(Z), colnames(Z))
-      C22_g <- crossprod(m, C22[g, g, drop = FALSE]) %*% m
+      C22_g <- crossprod(W, C22[g, g, drop = FALSE]) %*% W
       dimnames(C22_g) <- list(gnames, gnames)
     } else {
       C22_g <- NULL
+    }
+
+    if(calc_C11){
+
+      if(solver == "direct"){
+        Z_g <-  Z[, g, drop=FALSE]
+        V_tilde <- V - Z_g %*% G[g,g,drop=FALSE] %*% t(Z_g)
+        X_tilde <- cbind(X, Z_g)
+
+        C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(V_tilde) %*% X_tilde)
+      } else {
+        X_tilde <- cbind(X, Z[, g, drop=FALSE])
+        if(length(g) != ncol(Z)){
+          Z_tilde <-  Z[, -g, drop=FALSE]
+          G_tilde <- G[-g,-g,drop=FALSE]
+          C11 <- solve_LMM(X_tilde, Z_tilde, G_tilde, R)$C11
+        } else {
+          C11 <- ginv_sym_sparse(t(X_tilde) %*% ginv_sym_sparse(R) %*% X_tilde)
+        }
+      }
+
+      XTX <- crossprod(X_tilde)
+      P <- ginv_sym_sparse(XTX) %*% XTX
+      W_tilde <- t(crossprod(W, P[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]))
+
+      # Genetic variance matrix in the conterpart model
+      G_g_tilde <- crossprod(W_tilde, G[g, g, drop = FALSE]) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      # Genetic variance matrix in the conterpart model without considering genetic covariance
+      ij <- apply(m, 2, function(z) {
+        active <- which(z)
+        expand.grid(active, active)
+      }) |>
+        do.call(rbind, args = _)
+      G_g_no_cov <- G[g, g, drop=FALSE] * Matrix::sparseMatrix(
+        i = ij[, 1],
+        j = ij[, 2],
+        x = 1,
+        dims = c(nrow(m), nrow(m))
+      )
+      G_g_tilde_no_cov <- crossprod(W_tilde, G_g_no_cov) %*% W_tilde
+      dimnames(G_g_tilde) <- list(gnames, gnames)
+
+      C11_g <- crossprod(W, C11[-seq_len(ncol(X)),-seq_len(ncol(X)),drop=FALSE]) %*% W
+      dimnames(C11_g) <- list(gnames, gnames)
+    } else {
+      C11_g <- NULL
+      G_g_tilde <- NULL
+      G_g_tilde_no_cov <- NULL
     }
 
     if(!calc_V) {
       V <- NULL
       G <- NULL
       Z <- NULL
+      X <- NULL
       idx <- NULL
+      W <- NULL
     } else {
       idx <- g
     }
@@ -628,7 +804,7 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
     }) |> which()
 
     G_list <- lapply(matched_grp, function(x) {
-      phrase_G(model$G.param[[x]])
+      phrase_G(model$G.param[[x]], source = source)
     })
     G <- Matrix::bdiag(G_list)
     G <- G * model$sigma2
@@ -641,45 +817,112 @@ var_comp.asreml <- function(model, target, calc_C22 = TRUE,
       Matrix::colSums(design[, intersect(terms, col_design)] != 0) == 0
     ) |> names()
     missing_terms <- unique(c(missing_terms, setdiff(terms, col_design)))
-    if (length(missing_terms) > 1) {
+    if (length(missing_terms) > 0) {
       G[missing_terms, ] <- 0
       G[, missing_terms] <- 0
     }
 
-    G_g <- crossprod(m, G[rownames(m), rownames(m), drop = FALSE]) %*% m
+    G_g <- crossprod(W, G[rownames(W), rownames(W), drop = FALSE]) %*% W
     dimnames(G_g) <- list(gnames, gnames)
 
     V <- NULL
     G <- NULL
     Z <- NULL
+    X <- NULL
     idx <- NULL
+    W <- NULL
     C22_g <- NULL
+    C11_g <- NULL
+    G_g_tilde <- NULL
+    G_g_tilde_no_cov <- NULL
   }
 
-  list(n_g = n_g, G_g = G_g, C22_g = C22_g,
-       V = V, G = G, Z = Z, idx = idx, gnames = gnames, main = main)
+  if(!is.null(active_g) && any(!active_g)){
+    cli::cli_inform(
+      c(
+        "Following genotypes are not presented in the specified strat: {.code {gnames[!active_g]}}.",
+        "They are excluded from the estimation."
+      )
+    )
+
+    n_g <- sum(active_g)
+    gnames <- gnames[active_g]
+    G_g <- G_g[active_g,active_g, drop = FALSE]
+    if(calc_C22){
+      C22_g <- C22_g[active_g,active_g, drop = FALSE]
+    }
+    if(calc_C11){
+      G_g_tilde <- G_g_tilde[active_g,active_g, drop = FALSE]
+      G_g_tilde_no_cov <- G_g_tilde_no_cov[active_g,active_g, drop = FALSE]
+      C11_g <- C11_g[active_g,active_g, drop = FALSE]
+    }
+  }
+
+  list(n_g = n_g, gnames = gnames,
+       G_g = G_g, C22_g = C22_g,
+       G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
+       V = V, G = G, Z = Z, X = X, idx = idx, W = W,
+       marginal = marginal, stratification = stratification)
 }
 
-#' Build variance components for genotype-level heritability calculations
+#' Extract variance components
 #'
-#' Construct the variance components required to compute heritability for a
-#' target random factor representing genotype effects in a fitted mixed model.
+#' This function provides the variance matrix quantities needed to evaluate heritability
+#' with respect to a target random-effect term in a fitted linear mixed model.
 #'
-#' For the requested `target` random factor, this function returns:
-#' \itemize{
-#'   \item the estimated variance–covariance matrix of genotype effects, `G_g`, and
-#'   \item (optionally) the corresponding prediction error variance matrix, `C22_g`.
+#' @param model Model object of class `lmerMod/merMod` or `asreml`
+#' @param target The name of the random effect for which heritability is to be calculated.
+#' @param calc_C22 Logical; whether to compute the prediction error
+#'   variance (PEV) matrix for the transformed target effect.
+#' @param calc_V Logical; whether to retain the marginal variance
+#'   matrix of the response and supporting quantities (`V`, `G`, `Z`, `X`, `idx`,
+#'   and `m`) in the output.
+#' @param calc_C11 Logical; whether to compute the variance
+#'   matrix of the fixed-effect counterpart estimator for the transformed target
+#'   effect.
+#' @param marginal Logical; if `TRUE`, construct marginal (strata-averaged)
+#'   mappings so that each genotype receives a single averaged effect per term.
+#'   If `FALSE`, mappings will only consider the main genotype effect and ignore the
+#'   iteracting terms.
+#' @param stratification A one-row data frame defining the stratum in which
+#'   genotype effects should be evaluated. The columns must correspond
+#'   to model terms that interact with `target`.
+#' @param solver A string specifying the solver for the PEV matrix. Can be
+#' either `"direct"` (directly invert `V`) or `"LMM"` (Solve the LMM equation).
+#' @param ... Additional arguments passed to downstream helper functions.
+#' @return A named list with the following elements:
+#'
+#' \describe{
+#'   \item{`n_g`}{Number of transformed genetic coefficients after applying the
+#'   mapping matrix `m`.}
+#'   \item{`gnames`}{Names of the transformed genetic coefficients.}
+#'   \item{`G_g`}{Variance matrix of the transformed target genetic effect.}
+#'   \item{`C22_g`}{Prediction error variance matrix of the transformed target
+#'   effect, if `calc_C22 = TRUE`; otherwise `NULL`.}
+#'   \item{`G_g_tilde`}{Variance matrix of the fixed-effect counterpart estimator for
+#'   the transformed target effect, if `calc_C11 = TRUE`; otherwise `NULL`.}
+#'   \item{`G_g_tilde_no_cov`}{Variance matrix of the fixed-effect counterpart estimator for
+#'   the transformed target effect, without considering target covariance, if `calc_C11 = TRUE`; otherwise `NULL`.}
+#'   \item{`C11_g`}{Estimation error variance matrix of the fixed-effect counterpart estimator for
+#'   the transformed target effect, if `calc_C11 = TRUE`; otherwise `NULL`.}
+#'   \item{`V`}{Marginal covariance matrix of the response, if `calc_V = TRUE`;
+#'   otherwise `NULL`.}
+#'   \item{`G`}{Variance matrix of all random effects, if `calc_V = TRUE`;
+#'   otherwise `NULL`.}
+#'   \item{`Z`}{Random-effect design matrix, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`X`}{Fixed-effect design matrix, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`idx`}{Indices of the random-effect coefficients associated with the
+#'   target term, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`W`}{Linear mapping from the original target coefficients to the
+#'   transformed target effect, if `calc_V = TRUE`; otherwise `NULL`.}
+#'   \item{`marginal`}{Logical scalar indicating whether the returned quantities
+#'   correspond to a marginal definition of the target effect.}
+#'   \item{`stratification`}{The user-supplied stratification object, if any.}
 #' }
-#'
-#' Argument `marginal` and `stratification` will be passed to the internal function
-#' `map_target_terms` and `build_new_Z`, respectively for strata-averaged and
-#' strata-specific heritability calculation.
-#'
-#' @keywords internal
-#' @noRd
-var_comp <- function(model, target, calc_C22 = TRUE,
-                     calc_V = TRUE,
-                     marginal = TRUE, stratification = NULL,...) {
+#' @export
+var_comp <- function(model, target,
+                     calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
+                     marginal = TRUE, stratification = NULL, solver = c("direct", "LMM"), ...) {
   UseMethod("var_comp")
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
@@ -687,24 +930,33 @@ var_comp <- function(model, target, calc_C22 = TRUE,
 
 #' @noRd
 #' @keywords internal
-
 map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
   mf <- stats::model.frame(model)
   mmlist <- lme4::getME(model, "mmList")
-
   grp_list <- lme4::getME(model, "flist")
-  grp_names <- names(lme4::getME(model, "cnms"))
+  cnms <- lme4::getME(model, "cnms")
+  grp_names <- names(cnms)
   Z <- lme4::getME(model, "Z")
   Gp <- lme4::getME(model, "Gp")
 
+  # Match mm and Gp
+  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
+        sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
+        sep = "|"
+        )
+  Gpid <- paste(
+    names(cnms),
+    sapply(cnms, function(x) paste(x, collapse = ":")),
+    sep = "|"
+  )
+  mmlist <- mmlist[match(Gpid, mmid)]
+
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
-
   idx <- lapply(matched_grp, function(x) (Gp[x] + 1):Gp[x + 1])
   idx_all <- do.call(c, idx)
   terms <- colnames(Z[, idx_all])
   target_grp <- levels(mf[[target]])
-
   n_tg <- length(target_grp)
 
   w_list <- list()
@@ -712,7 +964,6 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
   main_idx <- c()
 
   for (itr in seq_along(matched_grp)) {
-
     g_idx <- matched_grp[itr]
     mm <- Matrix::Matrix(mmlist[[g_idx]])
     grp <- levels(grp_list[[grp_names[g_idx]]])
@@ -723,7 +974,6 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
     q <- length(grp)
 
     # Get weighting matrix
-
     if (grp_names[g_idx] != target) {
       grp_names_split <- stringr::str_split(grp_names[g_idx], ":", simplify = TRUE)
       target_order <- which(stringr::str_split(grp_names_split, ":", simplify = TRUE) == target)
@@ -739,8 +989,10 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
 
         z <- Z[, idx[[itr]]]
         w <- numeric(p * q)
+
         for (id in unique(stra_id)) {
           s <- which(stra_id == id)
+
           if (length(s) > 0) {
             w[s] <- sum(z[, s]) / n
           }
@@ -787,7 +1039,6 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
     idx = setNames(idx_all, terms),
     main = setNames(main, terms)
   )
-
 }
 
 #' @keywords internal
@@ -944,9 +1195,9 @@ map_target_terms <- function(model, target, marginal = TRUE) {
 .S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)
 .S3method("map_target_terms", "asreml", map_target_terms.asreml)
 
+
 #' @keywords internal
 #' @noRd
-
 build_new_Z.lmerMod <- function(model, target, new_data) {
   trms <- colnames(new_data)
   mf <- stats::model.frame(model)
@@ -974,7 +1225,7 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     new_data <- data.frame(rep(new_data[, 1], n_g))
     colnames(new_data) <- trms
   } else {
-    new_data <- rep(new_data, n_g)
+    new_data <- new_data[rep(1, n_g), , drop = FALSE]
   }
   new_data[[target]] <- factor(gnames, levels = gnames)
 
@@ -992,7 +1243,20 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
   frm <- paste("~", frm)
 
   grp_list <- lme4::getME(model, "flist")
-  grp_names <- names(lme4::getME(model, "cnms"))
+  cnms <- lme4::getME(model, "cnms")
+  grp_names <- names(cnms)
+
+  # Match mm and Gp
+  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
+                sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
+                sep = "|"
+  )
+  Gpid <- paste(
+    names(cnms),
+    sapply(cnms, function(x) paste(x, collapse = ":")),
+    sep = "|"
+  )
+  mmlist <- mmlist[match(Gpid, mmid)]
 
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
@@ -1011,11 +1275,11 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     cli::cli_abort("No stratification needed.")
   }
   if (length(missing_trms) > 0) {
-
     cli::cli_abort("Terms {.code {missing_trms}} interact with {.code {target}} but were not provided.")
   }
 
   Z_list <- list()
+  active_g <- rep(TRUE, n_g)
 
   for (itr in seq_along(matched_grp)) {
     g_idx <- matched_grp[itr]
@@ -1029,16 +1293,19 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     n <- nrow(mm)
     p <- ncol(mm)
     q <- length(grp)
-
     grp_new <- apply(new_data[, grp_names_split[[g_idx]], drop = FALSE], 1, paste, collapse = ":")
     mm_grp <- build_f_mat(grp_new, grp)
 
+    # Check which factor levels are missing
+    active_g <- active_g & (grp_new %in% grp)
 
     z <- Matrix::KhatriRao(t(mm_grp), t(mm)) |> t()
     dimnames(z) <- list(gnames, rep(grp, each = p))
     Z_list[[itr]] <- z
   }
-  do.call(cbind, Z_list)
+  Z <- do.call(cbind, Z_list) |> t()
+  attr(Z, "active") <- active_g
+  Z
 }
 
 #' @keywords internal
@@ -1125,7 +1392,7 @@ build_new_Z.asreml <- function(model, target, new_data) {
     new_data <- data.frame(rep(new_data[, 1], n_g))
     colnames(new_data) <- trms
   } else {
-    new_data <- rep(new_data, n_g)
+    new_data <- new_data[rep(1, n_g), , drop = FALSE]
   }
   new_data[[target]] <- factor(gnames, levels = gnames)
 
@@ -1143,6 +1410,8 @@ build_new_Z.asreml <- function(model, target, new_data) {
 
   Z_list <- list()
 
+  active_g <- rep(TRUE, n_g)
+
   for (i in seq_along(matched_grp)) {
     g_idx <- matched_grp[i]
     term <- grp_names[g_idx]
@@ -1158,6 +1427,12 @@ build_new_Z.asreml <- function(model, target, new_data) {
     grp_split <- grp_terms[[g_idx]]
     target_key <- grp_split[, target_idx]
     target_levs <- levels(target_key)
+
+    # Check which factor levels are missing
+    factor_name <- vars[factor_idx]
+    available_factor_levs <- apply(mf[,factor_name, drop=FALSE],1, function(x) paste(x, collapse = ":"))
+    required_factor_levs <- apply(new_data[,factor_name, drop=FALSE],1, function(x) paste(x, collapse = ":"))
+    active_g <- active_g & (required_factor_levs %in% available_factor_levs)
 
     if (length(numeric_var_idx) > 0 && any(specs[numeric_var_idx] != "id")) {
       cli::cli_inform(
@@ -1210,12 +1485,14 @@ build_new_Z.asreml <- function(model, target, new_data) {
     }
   }
 
-  Z <- do.call(cbind, Z_list)
-  colnames(Z) <- unname(terms)
-  rownames(Z) <- gnames
+  Z <- do.call(cbind, Z_list) |> t()
+  rownames(Z) <- unname(terms)
+  colnames(Z) <- gnames
+
+  attr(Z, "active") <- active_g
+
   Z
 }
-
 
 #' Construct a strata-specific random-effects design matrix
 #'
@@ -1269,12 +1546,74 @@ build_f_mat <- function(x, level) {
 
 #' @keywords internal
 #' @noRd
-ginv_sym_sparse <- function(A, tol = 1e-10) {
-  A <- Matrix::forceSymmetric(A)
+ginv_sym_sparse <- function(A, tol = .Machine$double.eps,
+                            exact_psd_inv = getOption("exact_psd_inv", TRUE)) {
 
-  e <- eigen(as.matrix(A), symmetric = TRUE)
+  if(!exact_psd_inv) {
+    A <- Matrix::forceSymmetric(A)
+    n <- nrow(A)
+    I <- Matrix::Diagonal(n)
 
-  d_inv <- ifelse(e$values > tol, 1 / e$values, 0)
+    if(n == 1) return(1/A)
 
-  e$vectors %*% (d_inv * t(e$vectors))
+    smax <- irlba::irlba(A, nv = 1, nu = 1)$d[1]
+    lambda <- tol * smax^2 + tol
+
+    Matrix::solve(
+      Matrix::crossprod(A) + lambda * I,
+      Matrix::t(A), tol = -Inf
+    )
+  } else {
+    A <- Matrix::forceSymmetric(A)
+
+    e <- eigen(as.matrix(A), symmetric = TRUE)
+
+    d_inv <- ifelse(e$values > sqrt(.Machine$double.eps), 1 / e$values, 0)
+
+    e$vectors %*% (d_inv * t(e$vectors))
+  }
+
+}
+
+
+#' @keywords internal
+#' @noRd
+solve_LMM <- function(X, Z, G, R){
+  zero_idx <- Matrix::diag(G) == 0
+  keep_idx <- !zero_idx
+
+  Z_reduce <- Z[, keep_idx, drop = FALSE]
+  G_reduce <- G[keep_idx, keep_idx, drop = FALSE]
+
+  Rinv <- ginv_sym_sparse(R)
+  Ginv <- ginv_sym_sparse(G_reduce)
+
+  XtRinvX <- crossprod(X, Rinv) %*% X
+  XtRinvZ <- crossprod(X, Rinv) %*% Z_reduce
+  ZtRinvZ <- crossprod(Z_reduce, Rinv) %*% Z_reduce
+
+  C <- rbind(
+    cbind(XtRinvX, XtRinvZ),
+    cbind(t(XtRinvZ), ZtRinvZ + Ginv)
+  )
+
+  Cinv <- ginv_sym_sparse(Matrix::forceSymmetric(C))
+
+  p <- ncol(X)
+  q <- ncol(Z)
+
+  C11 <- Cinv[seq_len(p), seq_len(p), drop = FALSE]
+
+  C22_reduce <- Cinv[p + seq_len(ncol(Z_reduce)),
+                     p + seq_len(ncol(Z_reduce)),
+                     drop = FALSE]
+
+  C22 <- Matrix::Matrix(0, nrow = q, ncol = q, dimnames = dimnames(G))
+  C22[keep_idx, keep_idx] <- C22_reduce
+  C22 <- Matrix::forceSymmetric(C22)
+
+  dimnames(C22) <- list(colnames(Z), colnames(Z))
+
+  list(C11 = C11,
+       C22 = C22)
 }
