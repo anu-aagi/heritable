@@ -6,18 +6,16 @@ differences between two BLUPs/BLUEs
 ## Usage
 
 ``` r
-h2_Delta_parameters(G_g, vd_matrix, type)
-
-H2_Delta_parameters(vc_g, vd_matrix, type)
+H2_Delta_parameters(delta_g, delta_pev, type = c("BLUP", "BLUE"))
 ```
 
 ## Arguments
 
-- vc_g:
+- delta_g:
 
-  Numeric. Genotype variance component
+  Numeric. Genotypic variance-covariance matrix.
 
-- vd_matrix:
+- delta_pev:
 
   Matrix. Variance of pairwise differences among BLUES or BLUPs
 
@@ -25,10 +23,6 @@ H2_Delta_parameters(vc_g, vd_matrix, type)
 
   Character. Either BLUES or BLUPS used to compute the variance of
   pairwise differences.
-
-- G_g:
-
-  Numeric. Genotypic variance-covariance matrix.
 
 ## Value
 
@@ -50,13 +44,12 @@ https://doi.org/10.2135/cropsci2018.06.0376
 ## Examples
 
 ``` r
-h2_Delta_parameters(G_g = diag(0.15, 2, 2), vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), type = "BLUP")
-#>           [,1]      [,2]
-#> [1,]        NA 0.3333333
-#> [2,] 0.3333333        NA
 
-H2_Delta_parameters(vc_g = 0.01, vd_matrix = matrix(c(NA,0.2,0.2,NA),2,2), "BLUE")
-#>            [,1]       [,2]
-#> [1,]         NA 0.09090909
-#> [2,] 0.09090909         NA
+H2_Delta_parameters(delta_g = diag(0.15, 2, 2),
+                    delta_pev = matrix(c(NA,0.2,0.2,NA),2,2),
+                    type = "BLUP"
+                    )
+#>      [,1] [,2]
+#> [1,]   NA -Inf
+#> [2,] -Inf   NA
 ```

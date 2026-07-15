@@ -6,7 +6,20 @@ genotypic and phenotypic variance. See Falconer & Mackay (1996)
 ## Usage
 
 ``` r
-H2_Standard(model, target, options)
+h2_Standard(model,
+            target,
+            options = NULL,
+            marginal = TRUE,
+            stratification = NULL,
+            vc = NULL,
+            ...)
+H2_Standard(model,
+            target,
+            options = NULL,
+            marginal = TRUE,
+            stratification = NULL,
+            vc = NULL,
+            ...)
 ```
 
 ## Arguments
@@ -25,13 +38,37 @@ H2_Standard(model, target, options)
   NULL by default, for internal checking of model object before
   calculations
 
+- marginal:
+
+  Logical; if `TRUE`, construct marginal (strata-averaged) mappings so
+  that each genotype receives a single averaged effect per term. If
+  `FALSE`, mappings will only consider the main genotype effect and
+  ignore the iteracting terms.
+
+- stratification:
+
+  A one-row data frame defining the stratum in which genotype effects
+  should be evaluated. The columns must correspond to model terms that
+  interact with `target`.
+
+- vc:
+
+  A list of precomputed variance components. Should be in the same
+  structure as the output of
+  [`var_comp()`](https://anu-aagi.github.io/heritable/reference/var_comp.md)
+
+- ...:
+
+  Additional arguments that specify heritability calculation when
+  interactions with genotype effects are modelled
+
 ## Value
 
 Numeric value
 
 ## Details
 
-The equation used to calculate standard heritability is:
+The equation used to calculate standard heritability (broad-sense) is:
 \$\$H^2\_{Standard} = \frac{\sigma^2_g}{\sigma^2_g +
 \frac{1}{n_g}\sum\_{n_g}^{i=1} \sigma^2_p / n\_{gi}}\$\$ where:
 
@@ -43,10 +80,22 @@ The equation used to calculate standard heritability is:
 
 - \\\sigma_p\\ is the variance attributed to phenotypic differences
 
+The equation used to calculate standard heritability (narrow-sense) is:
+\$\$h^2\_{Standard} = \frac{\operatorname{Var}(g_i -
+g_j)}{\operatorname{Var}(y_i.. - y_j..)}\$\$ where:
+
+- \\g_i\\ is the random effect of the \\i^{th}\\ genotype
+
+- \\y_i..\\ is the sample average of the \\i^{th}\\ genotype
+
 ## References
 
 Falconer, D. S., & Mackay, T. F. C. (1996). Introduction to quantitative
 genetics (4th ed.). Longman.
+
+## See also
+
+`H2_Standard()`, h2_Standard()
 
 ## Examples
 

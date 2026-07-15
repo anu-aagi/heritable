@@ -23,6 +23,7 @@ development version of heritable from [GitHub](https://github.com/)
 with:
 
 ``` r
+
 # install.packages("pak")
 # pak::pak("anu-aagi/heritable")
 library(heritable)
@@ -37,6 +38,7 @@ purposes, we will use a subset of single environment (`loc == L2`),
 which is displayed in the plot below.
 
 ``` r
+
 library(dplyr)
 head(lettuce_phenotypes)
 #> # A tibble: 6 × 4
@@ -59,6 +61,7 @@ We also have access to a genomic relationship matrix (GRM) calculated
 from 300 genetic markers that we will use for narrow-sense heritability.
 
 ``` r
+
 # View the structure of the GRM
 dim(lettuce_GRM)
 #> [1] 89 89
@@ -82,6 +85,7 @@ with genotype as a random effect. **Note** that all heritability
 estimates should be the same as the data is balanced.
 
 ``` r
+
 # Fit an asreml model with genotype as random effect
 library(asreml)
 lettuce_asreml <- asreml(
@@ -96,7 +100,7 @@ library(lme4)
 lettuce_lme4 <- lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 ```
 
-Use the [`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
+Use the [`H2()`](https://anu-aagi.github.io/heritable/reference/H2.md)
 wrapper to compute **broad-sense heritability**.
 
 The wrapper has three key inputs
@@ -108,6 +112,7 @@ The wrapper has three key inputs
   all methods are computed.
 
 ``` r
+
 # Calculate broad-sense heritability using multiple methods
 H2(lettuce_asreml, target = "gen", method = c("Standard", "Cullis", "Oakey"))
 #>  Standard    Cullis     Oakey 
@@ -122,6 +127,7 @@ function directly. These are named with the `H2_` prefix, followed up
 the method name.
 
 ``` r
+
 H2_Cullis(lettuce_asreml, target = "gen")
 #> [1] 0.8294971
 H2_Delta(lettuce_lme4, target = "gen")
@@ -131,60 +137,11 @@ H2_Delta(lettuce_lme4, target = "gen")
 > Learn more about each method by looking up their help file
 > [`?H2_Cullis`](https://anu-aagi.github.io/heritable/reference/H2_Cullis.md)
 
-### Narrow-sense heritability
-
-Narrow-sense heritability is currently only implemented for **`asreml`**
-model object as there is no native workflow to fit a GRM using `lme4`.
-However it is possible using other extension packages such as
-[`lme4qtl`](https://dx.doi.org/10.1186/s12859-018-2057-x) and
-[`lme4breeding`](https://CRAN.R-project.org/package=lme4breeding)
-
-In the following model, we will fit the `lettuce_GRM` genomic
-relationship matrix using `asreml::vm()`
-
-``` r
-# Fit model with GRM for narrow-sense heritability
-lettuce_asreml_grm <- asreml(
-  fixed = y ~ loc,
-  random = ~ vm(gen, lettuce_GRM) + rep,
-  data = lettuce_phenotypes,
-  trace = FALSE
-)
-```
-
-Similar to
-[`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md), we can
-use the `h2()` wrapper to compute narrow-sense heritability. Remembering
-to specify:
-
-- `model`, your `asreml` object
-- `target`, the name of your genotype/varietal/line variable in your
-  model e.g. `"gen"`
-- `method`, which method of `h2()` calculation do you want. By default,
-  the function will compute all available methods. Currently only
-  `"Oakey"` and `"Delta"` are implemented for `h2()`
-
-``` r
-# Calculate narrow-sense heritability
-h2(lettuce_asreml_grm, target = "gen", method = "Oakey")
-#> Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml"
-```
-
-Similarly, you can call the single method sub-functions using the prefix
-`h2_` followed by the method name. Here we are calculating pairwise
-heritability between every genotype. See `?h2_Delta_pairwise()` to learn
-more.
-
-``` r
-h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP")
-#> Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml"
-```
-
 ## Alternative output formats
 
 Depending on which `heritable` function, the output will vary:
 
-- [`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
+- [`H2()`](https://anu-aagi.github.io/heritable/reference/H2.md)
   wrappers will return a named vector by `method`
 - [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md)
   will return a numeric value
@@ -199,6 +156,7 @@ models or methods, we can leverage `tidyverse` functions to wrangle the
 output as a dataframe/tibble
 
 ``` r
+
 library(purrr)
 library(tidyr)
 

@@ -14,6 +14,7 @@ development version of heritable from
 [GitHub](https://github.com/anu-aagi/heritable) with:
 
 ``` r
+
 # install.packages("pak")
 pak::pak("anu-aagi/heritable")
 ```
@@ -24,6 +25,7 @@ This is a basic example which shows you how to calculate broad-sense
 heritability for a single environment trial using `asreml` and `lme4`.
 
 ``` r
+
 library(heritable)  
 
 fit_asreml <- asreml::asreml(yield ~ rep,
@@ -36,23 +38,25 @@ fit_lme4 <- lme4::lmer(yield ~ rep + (1|gen) + (1|rep:block),
                        data = agridat::john.alpha)
 ```
 
-The [`H2()`](https://anu-aagi.github.io/heritable/reference/h2.md)
+The [`H2()`](https://anu-aagi.github.io/heritable/reference/H2.md)
 function refers to broad-sense heritability and by default, it will
 compute all the available heritability methods for you.
 
 ``` r
+
 H2(fit_asreml, target = "gen")
 #>    Cullis     Oakey    Piepho     Delta  Standard 
 #> 0.8090841 0.8090841 0.8029760 0.8090841 0.8400648
 H2(fit_lme4, target = "gen")
 #>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8091338 0.8091338 0.7966375 0.8091338 0.8400678
+#> 0.8091339 0.8091339 0.7966376 0.8091339 0.8400679
 ```
 
 Alternatively, with the help of tidyverse functions, you can return all
 the measures for different models as a tibble.
 
 ``` r
+
 library(tidyverse)
 tibble(model = list(fit_lme4, fit_asreml)) |> 
   mutate(H2 = map(model, ~H2(.x, target = "gen"))) |> 
@@ -67,6 +71,7 @@ tibble(model = list(fit_lme4, fit_asreml)) |>
 ## Support our work!
 
 ``` r
+
 citation("heritable")
 #> To cite package 'heritable' in publications use:
 #> 

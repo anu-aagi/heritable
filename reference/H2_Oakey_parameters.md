@@ -6,7 +6,7 @@ compute this heritability measure.
 ## Usage
 
 ``` r
-H2_Oakey_parameters(Gg_inv, C_gg)
+H2_Oakey_parameters(Gg_inv, C22_g)
 ```
 
 ## Arguments
@@ -15,7 +15,7 @@ H2_Oakey_parameters(Gg_inv, C_gg)
 
   The inverse of the genotypic variance-covariance matrix.
 
-- C_gg:
+- C22_g:
 
   Prediction error variance matrix associated with the genotype effects.
 
@@ -27,7 +27,7 @@ Numeric value
 
 ``` r
 Gg_inv = diag(1/0.15, 3, 3)
-C_gg <- matrix(
+C22_g <- matrix(
   c(
     0.08, 0.01, 0.00,
     0.01, 0.07, 0.01,
@@ -35,6 +35,6 @@ C_gg <- matrix(
   ),
   nrow = 3, byrow = TRUE
 )
-H2_Oakey_parameters(Gg_inv, C_gg)
+H2_Oakey_parameters(Gg_inv, C22_g)
 #> [1] 0.4666667
 ```

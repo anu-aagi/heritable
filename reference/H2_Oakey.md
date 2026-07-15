@@ -6,7 +6,20 @@ matrix of the genotype BLUPs as described by Oakey et al. (2006).
 ## Usage
 
 ``` r
-H2_Oakey(model, target, options)
+h2_Oakey(model,
+            target,
+            options = NULL,
+            marginal = TRUE,
+            stratification = NULL,
+            vc = NULL,
+            ...)
+H2_Oakey(model,
+            target,
+            options = NULL,
+            marginal = TRUE,
+            stratification = NULL,
+            vc = NULL,
+            ...)
 ```
 
 ## Arguments
@@ -25,13 +38,37 @@ H2_Oakey(model, target, options)
   NULL by default, for internal checking of model object before
   calculations
 
+- marginal:
+
+  Logical; if `TRUE`, construct marginal (strata-averaged) mappings so
+  that each genotype receives a single averaged effect per term. If
+  `FALSE`, mappings will only consider the main genotype effect and
+  ignore the iteracting terms.
+
+- stratification:
+
+  A one-row data frame defining the stratum in which genotype effects
+  should be evaluated. The columns must correspond to model terms that
+  interact with `target`.
+
+- vc:
+
+  A list of precomputed variance components. Should be in the same
+  structure as the output of
+  [`var_comp()`](https://anu-aagi.github.io/heritable/reference/var_comp.md)
+
+- ...:
+
+  Additional arguments that specify heritability calculation when
+  interactions with genotype effects are modelled
+
 ## Value
 
 Numeric
 
 ## Details
 
-\$\$H^2\_{Oakey} = \frac{\sum\_{i = n_z+1}^{n_g}
+\$\$h^2\_{Oakey} = \frac{\sum\_{i = n_z+1}^{n_g}
 \lambda_i}{\sum\_{n_g}^{\lambda_i\neq 0}}\$\$ where:
 
 - \\n_g\\ is the number of genotypes
@@ -54,6 +91,10 @@ Joint modeling of additive and non-additive genetic line effects in
 single field trials. Theoretical and Applied Genetics, 113(5), 809–819.
 https://doi.org/10.1007/s00122-006-0333-z
 
+## See also
+
+`H2_Oakey()`, h2_Oakey()
+
 ## Examples
 
 ``` r
@@ -62,15 +103,4 @@ lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Oakey(lettuce_lme4, target = "gen")
 #> [1] 0.8294971
-
-# asreml model (Requires license)
-if (FALSE) { # \dontrun{
-lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
-                                 random = ~ gen,
-                                 data = lettuce_subset,
-                                 trace = FALSE
-                                 )
-
-H2_Oakey(lettuce_asreml, target = "gen")
-} # }
 ```

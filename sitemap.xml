@@ -6,6 +6,7 @@
 <url><loc>https://anu-aagi.github.io/heritable/authors.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/index.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/news/index.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/H2.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/H2_Cullis.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/H2_Cullis_parameters.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/H2_Delta.html</loc></url>
@@ -18,10 +19,16 @@
 <url><loc>https://anu-aagi.github.io/heritable/reference/H2_Piepho_parameters.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/H2_Standard.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/H2_Standard_parameters.html</loc></url>
-<url><loc>https://anu-aagi.github.io/heritable/reference/h2.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/bootstrap_asreml.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/check_all_random_terms_match_target.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/confint.heritable.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/get_fixed_fit_asreml.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/index.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/lettuce_markers.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/lettuce_phenotypes.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/lizard_markers.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/lizard_phenotypes.html</loc></url>
 <url><loc>https://anu-aagi.github.io/heritable/reference/pull_terms.asreml.html</loc></url>
+<url><loc>https://anu-aagi.github.io/heritable/reference/var_comp.html</loc></url>
 </urlset>
 

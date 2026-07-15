@@ -9,7 +9,22 @@ variants
 ## Usage
 
 ``` r
-H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
+h2_Delta_pairwise(model,
+                  target,
+                  type = c("BLUP", "BLUE"),
+                  options = NULL,
+                  marginal = TRUE,
+                  stratification = NULL,
+                  vc = NULL,
+                  ...)
+H2_Delta_pairwise(model,
+                  target,
+                  type = c("BLUP", "BLUE"),
+                  options = NULL,
+                  marginal = TRUE,
+                  stratification = NULL,
+                  vc = NULL,
+                  ...)
 ```
 
 ## Arguments
@@ -32,6 +47,30 @@ H2_Delta_pairwise(model, target, type = c("BLUE", "BLUP"), options)
   NULL by default, for internal checking of model object before
   calculations
 
+- marginal:
+
+  Logical; if `TRUE`, construct marginal (strata-averaged) mappings so
+  that each genotype receives a single averaged effect per term. If
+  `FALSE`, mappings will only consider the main genotype effect and
+  ignore the iteracting terms.
+
+- stratification:
+
+  A one-row data frame defining the stratum in which genotype effects
+  should be evaluated. The columns must correspond to model terms that
+  interact with `target`.
+
+- vc:
+
+  A list of precomputed variance components. Should be in the same
+  structure as the output of
+  [`var_comp()`](https://anu-aagi.github.io/heritable/reference/var_comp.md)
+
+- ...:
+
+  Additional arguments that specify heritability calculation when
+  interactions with genotype effects are modelled
+
 ## Value
 
 A `dspMatrix`
@@ -45,7 +84,9 @@ https://doi.org/10.2135/cropsci2018.06.0376
 
 ## See also
 
+[`h2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md),
 [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md),
+[`h2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md),
 [`H2_Delta()`](https://anu-aagi.github.io/heritable/reference/H2_Delta.md)
 
 ## Examples
@@ -55,6 +96,7 @@ https://doi.org/10.2135/cropsci2018.06.0376
 lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
 lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 H2_Delta_pairwise(lettuce_lme4, target = "gen", type = "BLUP")
+#> 89 x 89 Matrix of class "dgeMatrix"
 #>            G1        G2        G3        G4        G5        G6        G7
 #> G1         NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971
 #> G2  0.8294971        NA 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971

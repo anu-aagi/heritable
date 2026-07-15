@@ -6,7 +6,20 @@ See Cullis, Smith and Coombes (2006) for derivation.
 ## Usage
 
 ``` r
-H2_Cullis(model, target, options)
+H2_Cullis(model,
+          target,
+          options = NULL,
+          marginal = TRUE,
+          stratification = NULL,
+          vc = NULL,
+          ...)
+h2_Cullis(model,
+          target,
+          options = NULL,
+          marginal = TRUE,
+          stratification = NULL,
+          vc = NULL,
+          ...)
 ```
 
 ## Arguments
@@ -24,6 +37,30 @@ H2_Cullis(model, target, options)
 
   NULL by default, for internal checking of model object before
   calculations
+
+- marginal:
+
+  Logical; if `TRUE`, construct marginal (strata-averaged) mappings so
+  that each genotype receives a single averaged effect per term. If
+  `FALSE`, mappings will only consider the main genotype effect and
+  ignore the iteracting terms.
+
+- stratification:
+
+  A one-row data frame defining the stratum in which genotype effects
+  should be evaluated. The columns must correspond to model terms that
+  interact with `target`.
+
+- vc:
+
+  A list of precomputed variance components. Should be in the same
+  structure as the output of
+  [`var_comp()`](https://anu-aagi.github.io/heritable/reference/var_comp.md)
+
+- ...:
+
+  Additional arguments that specify heritability calculation when
+  interactions with genotype effects are modelled
 
 ## Value
 

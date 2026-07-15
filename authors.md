@@ -2,12 +2,16 @@
 
 ## Authors
 
-- **Fonti Kar**. Author, maintainer.
+- **Fonti Kar**. Author, contributor.
   [](https://orcid.org/0000-0002-2760-3974)
 
-- **Yidi Deng**. Author. [](https://orcid.org/0000-0003-0380-2124)
+- **Yidi Deng**. Author, contributor.
+  [](https://orcid.org/0000-0003-0380-2124)
 
-- **Emi Tanaka**. Author, copyright holder.
+- **Weihao (Patrick) Li**. Author, contributor.
+  [](https://orcid.org/0000-0003-4959-106X)
+
+- **Emi Tanaka**. Maintainer, author, copyright holder.
   [](https://orcid.org/0000-0002-1455-259X)
 
 ## Citation

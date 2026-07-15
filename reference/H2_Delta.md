@@ -3,17 +3,28 @@
 Instead of computing heritability on a "entry-mean" basis, this method
 calculates heritability using "entry-differences". Entry here is
 referring to the genotype, line or variety of interest. See reference
-for origin and interpretation of `H2_Delta` and it's variants
+for origin and interpretation of `h2/H2_Delta` and it's variants
 
 ## Usage
 
 ``` r
+h2_Delta(model,
+         target,
+         type = c("BLUP", "BLUE"),
+         options = NULL,
+         marginal = TRUE,
+         stratification = NULL,
+         vc = NULL,
+         ...)
+
 H2_Delta(model,
          target,
          type = c("BLUP", "BLUE"),
-         aggregate = c("arithmetic", "harmonic"),
-         options
-         )
+         options = NULL,
+         marginal = TRUE,
+         stratification = NULL,
+         vc = NULL,
+         ...)
 ```
 
 ## Arguments
@@ -31,15 +42,34 @@ H2_Delta(model,
 
   character, whether heritability is calculated using BLUEs or BLUPs
 
-- aggregate:
-
-  character, when taking means in the calculation, should harmonic or
-  arithmetic mean be used?
-
 - options:
 
   NULL by default, for internal checking of model object before
   calculations
+
+- marginal:
+
+  Logical; if `TRUE`, construct marginal (strata-averaged) mappings so
+  that each genotype receives a single averaged effect per term. If
+  `FALSE`, mappings will only consider the main genotype effect and
+  ignore the iteracting terms.
+
+- stratification:
+
+  A one-row data frame defining the stratum in which genotype effects
+  should be evaluated. The columns must correspond to model terms that
+  interact with `target`.
+
+- vc:
+
+  A list of precomputed variance components. Should be in the same
+  structure as the output of
+  [`var_comp()`](https://anu-aagi.github.io/heritable/reference/var_comp.md)
+
+- ...:
+
+  Additional arguments that specify heritability calculation when
+  interactions with genotype effects are modelled
 
 ## Value
 
@@ -47,7 +77,8 @@ Numeric
 
 ## Details
 
-The heritability of differences between genotypes is given by:
+The broad-sense heritability of differences between genotypes is given
+by:
 
 \$\$H^2\_{\Delta ..} = 1 - \frac{PEV^{BLUP}\_{\overline\Delta
 ..}}{2\sigma^2_g}\$\$
@@ -61,6 +92,16 @@ where:
 - \\\sigma^2\\ is the variance attributed to differences between
   genotype
 
+The narrow-sense heritability of differences between genotypes is given
+by:
+
+\$\$h^2\_{\Delta ij} = 1 - \frac{PEV^{BLUP}\_{\overline\Delta
+ij}}{\operatorname{Var}(g_i - g_j)}\$\$
+
+where:
+
+- \\g_i\\ is the random effect of the \\i^{th}\\ genotype
+
 See reference page 995 - 997 for full derivation of this heritability
 measure and related variants
 
@@ -73,7 +114,9 @@ https://doi.org/10.2135/cropsci2018.06.0376
 
 ## See also
 
+[`h2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md),
 [`H2_Delta_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_by_genotype.md),
+[`h2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md),
 [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
 
 ## Examples
