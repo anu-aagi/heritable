@@ -66,3 +66,8 @@ inst/doc
 /Meta/
 docs
 CRAN-SUBMISSION
+
+# Allow html embedding
+!pkgdown/assets/slides/heritable-slide-for-aagiverse-meeting.html
+!pkgdown/assets/slides/heritable-slide-for-aagiverse-meeting_files/
+!pkgdown/assets/slides/heritable-slide-for-aagiverse-meeting_files/**
