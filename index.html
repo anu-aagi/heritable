@@ -61,75 +61,94 @@
 </h1></div>
 <!-- badges: start -->
 
-<p><code>heritable</code> is to be the one-stop shop for heritability calculations in R. Our goal is to implement existing methods for heritability to aid reproducibility and reporting of it’s calculations.<code>heritable</code> works with model outputs from <code>asreml</code> and <code>lme4</code> and support the calculations of broad and narrow sense heritability of a variety of method for single environment breeding trials.</p>
+<p><code>heritable</code> provides flexible and interpretable heritability estimation from linear mixed models in R. Given genotypes and their observed traits, it helps breeders assess whether a trial contains enough genetic signal for selection.</p>
+<p>The package brings commonly used estimators into a unified interface and supports:</p>
+<ul>
+<li>broad-sense (<code><a href="reference/H2.html">H2()</a></code>) and narrow-sense (<code><a href="reference/H2.html">h2()</a></code>) heritability;</li>
+<li>Cullis, Oakey, Piepho, Standard, and Delta estimators, including BLUP- and BLUE-based Delta formulations;</li>
+<li>models fitted with <a href="https://cran.r-project.org/package=lme4" class="external-link"><code>lme4</code></a> and <a href="https://vsni.co.uk/software/asreml-r/" class="external-link"><code>asreml</code></a>;</li>
+<li>marginal (environment-averaged) and stratified (environment-specific) heritability for genotype-by-environment models; and</li>
+<li>confidence intervals based on parametric bootstrap.</li>
+</ul>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Note that this package is under active development. You can install the development version of heritable from <a href="https://github.com/anu-aagi/heritable" class="external-link">GitHub</a> with:</p>
+<p>The released version is available from CRAN:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"heritable"</span><span class="op">)</span></span></code></pre></div>
+<p>The package is under active development. You can install the development version from <a href="https://github.com/anu-aagi/heritable" class="external-link">GitHub</a> with:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># install.packages("pak")</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"anu-aagi/heritable"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="a-simple-demo">A simple demo<a class="anchor" aria-label="anchor" href="#a-simple-demo"></a>
 </h2>
-<p>This is a basic example which shows you how to calculate broad-sense heritability for a single environment trial using <code>asreml</code> and <code>lme4</code>.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://anu-aagi.github.io/heritable/">heritable</a></span><span class="op">)</span>  </span>
-<span></span>
-<span><span class="va">fit_asreml</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">asreml</span><span class="op">(</span><span class="va">yield</span> <span class="op">~</span> <span class="va">rep</span>,</span>
-<span>    random <span class="op">=</span> <span class="op">~</span> <span class="va">gen</span> <span class="op">+</span> <span class="va">rep</span><span class="op">:</span><span class="va">block</span>,</span>
-<span>    data <span class="op">=</span> <span class="fu">agridat</span><span class="fu">::</span><span class="va"><a href="https://kwstat.github.io/agridat/reference/john.alpha.html" class="external-link">john.alpha</a></span>,</span>
-<span>    trace <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span>  <span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit_lme4</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">yield</span> <span class="op">~</span> <span class="va">rep</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">gen</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">rep</span><span class="op">:</span><span class="va">block</span><span class="op">)</span>,</span>
-<span>                       data <span class="op">=</span> <span class="fu">agridat</span><span class="fu">::</span><span class="va"><a href="https://kwstat.github.io/agridat/reference/john.alpha.html" class="external-link">john.alpha</a></span><span class="op">)</span></span></code></pre></div>
-<p>The <code><a href="reference/H2.html">H2()</a></code> function refers to broad-sense heritability and by default, it will compute all the available heritability methods for you.</p>
+<p>This basic example calculates broad-sense heritability for a single-environment trial. The same <code><a href="reference/H2.html">H2()</a></code> interface works with <code>lme4</code> and <code>asreml</code> model objects.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_asreml</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
-<span><span class="co">#&gt; 0.8090841 0.8090841 0.8029760 0.8090841 0.8400648</span></span>
-<span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
-<span><span class="co">#&gt; 0.8091339 0.8091339 0.7966376 0.8091339 0.8400679</span></span></code></pre></div>
-<p>Alternatively, with the help of tidyverse functions, you can return all the measures for different models as a tibble.</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://anu-aagi.github.io/heritable/">heritable</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">lettuce_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lettuce_phenotypes</span>, <span class="va">loc</span> <span class="op">==</span> <span class="st">"L2"</span><span class="op">)</span></span>
+<span><span class="va">fit_lme4</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">rep</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">lettuce_subset</span><span class="op">)</span></span></code></pre></div>
+<p>Uppercase <code><a href="reference/H2.html">H2()</a></code> calculates broad-sense heritability. Use <code>method</code> to select one or more estimators:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyverse.tidyverse.org" class="external-link">tidyverse</a></span><span class="op">)</span></span>
-<span><span class="fu">tibble</span><span class="op">(</span>model <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">fit_lme4</span>, <span class="va">fit_asreml</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">mutate</span><span class="op">(</span>H2 <span class="op">=</span> <span class="fu">map</span><span class="op">(</span><span class="va">model</span>, <span class="op">~</span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">.x</span>, target <span class="op">=</span> <span class="st">"gen"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu">unnest_wider</span><span class="op">(</span><span class="va">H2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; # A tibble: 2 × 6</span></span>
-<span><span class="co">#&gt;   model     Cullis Oakey Piepho Delta Standard</span></span>
-<span><span class="co">#&gt;   &lt;list&gt;     &lt;dbl&gt; &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 &lt;lmerMod&gt;  0.809 0.809  0.797 0.809    0.840</span></span>
-<span><span class="co">#&gt; 2 &lt;asreml&gt;   0.809 0.809  0.803 0.809    0.840</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit_lme4</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"gen"</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Oakey"</span>, <span class="st">"Piepho"</span>, <span class="st">"Delta"</span>, <span class="st">"Standard"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span></span></code></pre></div>
+<p>Lowercase <code><a href="reference/H2.html">h2()</a></code> calculates narrow-sense heritability when the fitted model includes a known additive genetic covariance structure, such as a genomic relationship matrix. With <code>asreml</code>, this can be specified using <code>vm()</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_genomic</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">asreml</span><span class="op">(</span></span>
+<span>  fixed <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">rep</span>,</span>
+<span>  random <span class="op">=</span> <span class="op">~</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">vm</span><span class="op">(</span><span class="va">gen</span>, source <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span> <span class="op">*</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">idv</span><span class="op">(</span><span class="va">loc</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">lettuce_phenotypes</span>,</span>
+<span>  trace <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="reference/H2.html">h2</a></span><span class="op">(</span></span>
+<span>  <span class="va">fit_genomic</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"gen"</span>,</span>
+<span>  marginal <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lettuce_GRM <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For genotype-by-environment models, <code>marginal = TRUE</code> estimates heritability averaged across environments. Alternatively, supply a one-row data frame to <code>stratification</code> to estimate heritability within a particular environment:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, marginal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, stratification <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>loc <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p>Estimates returned by <code><a href="reference/H2.html">H2()</a></code> and <code><a href="reference/H2.html">h2()</a></code> retain the fitted model, allowing parametric-bootstrap confidence intervals through the standard <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> generic:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">estimate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">500</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span></code></pre></div>
+<p>See the <a href="https://anu-aagi.github.io/heritable/articles/heritable.html">Get started guide</a> for further examples and the <a href="https://anu-aagi.github.io/heritable/slides/heritable-slide-for-aagiverse-meeting.html">presentation</a> for the motivation and statistical framework.</p>
 </div>
 <div class="section level2">
 <h2 id="support-our-work">Support our work!<a class="anchor" aria-label="anchor" href="#support-our-work"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"heritable"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; To cite package 'heritable' in publications use:</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt;   Kar F, Tanaka E (2025). _heritable: R package for heritability</span></span>
-<span><span class="co">#&gt;   calculations for plant breeding trials_. R package version 0.0.9000,</span></span>
+<span><span class="co">#&gt;   Kar F, Deng Y, Li W, Tanaka E (2025). _heritable: R package for heritability</span></span>
+<span><span class="co">#&gt;   calculations for plant breeding trials_. R package version 0.2.0,</span></span>
 <span><span class="co">#&gt;   &lt;https://github.com/anu-aagi/heritable&gt;.</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; A BibTeX entry for LaTeX users is</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;   @Manual{,</span></span>
 <span><span class="co">#&gt;     title = {heritable: R package for heritability calculations for plant breeding trials},</span></span>
-<span><span class="co">#&gt;     author = {Fonti Kar and Emi Tanaka},</span></span>
-<span><span class="co">#&gt;     year = {2025},</span></span>
-<span><span class="co">#&gt;     note = {R package version 0.0.9000},</span></span>
+<span><span class="co">#&gt;     author = {Fonti Kar and Yidi Deng and Weihao (Patrick) Li and Emi Tanaka},</span></span>
+<span><span class="co">#&gt;     year = {2026},</span></span>
+<span><span class="co">#&gt;     note = {R package version 0.2.0},</span></span>
 <span><span class="co">#&gt;     url = {https://github.com/anu-aagi/heritable},</span></span>
 <span><span class="co">#&gt;   }</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="found-a-bug-want-to-contribute">Found a bug? Want to contribute?<a class="anchor" aria-label="anchor" href="#found-a-bug-want-to-contribute"></a>
 </h2>
-<p>We welcome feedback and contributions of all shapes and sizes! Take a look at our existing <a href="https://github.com/anu-aagi/heritable/issues" class="external-link">backlog</a> and add to a relevant discussion or lodge a new issue.</p>
+<p>We welcome feedback and contributions of all shapes and sizes! Take a look at our existing <a href="https://github.com/anu-aagi/heritable/issues" class="external-link">backlog</a>, add to a relevant discussion, or lodge a new issue.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -169,8 +188,8 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://lifecycle.r-lib.org/articles/stages.html#experimental" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></li>
+<li><a href="https://CRAN.R-project.org/package=heritable" class="external-link"><img src="https://www.r-pkg.org/badges/version/heritable.png" alt="CRAN status"></a></li>
 <li><a href="https://app.codecov.io/gh/anu-aagi/heritable" class="external-link"><img src="https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg" alt="Codecov test coverage"></a></li>
-<li><a href="https://CRAN.R-project.org/package=heritable" class="external-link"><img src="https://www.r-pkg.org/badges/version/heritable" alt="CRAN status"></a></li>
 </ul>
 </div>
 
