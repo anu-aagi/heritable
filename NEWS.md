@@ -1,4 +1,4 @@
-# heritable 0.2.0
+# heritable 0.1.1
 
 * Update Maintainer to Dr. Emi Tanaka
 * Refactored `asreml` integration [#37](https://github.com/anu-aagi/heritable/issues/37), [#32](https://github.com/anu-aagi/heritable/issues/32)

@@ -1,6 +1,6 @@
 ## R CMD check results
 
-0 errors ✔ | 1 warnings ✔ | 1 note ✖
+0 errors ✔ | 1 warnings ✖ | 0 note ✔
 
 - This is a resubmission
 - This is a major update extends the package beyond broad-sense heritability by adding support for narrow-sense, marginal, and stratified heritability estimation. It also updates the underlying model-processing framework, documentation, examples, and tests to support the expanded heritability definitions.
