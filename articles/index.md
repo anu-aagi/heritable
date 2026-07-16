@@ -2,5 +2,5 @@
 
 ### Slides
 
-- [Slides for AGGIverse Community
+- [Slides for AAGIverse Community
   Event](https://anu-aagi.github.io/heritable/articles/slides.md):

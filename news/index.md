@@ -1,5 +1,22 @@
 # Changelog
 
+## heritable 0.2.0
+
+- Added narrow-sense heritability estimation through
+  [`h2()`](https://anu-aagi.github.io/heritable/reference/H2.md) and the
+  `h2_*()` estimator functions for models with a known additive genetic
+  covariance structure.
+- Added a consistent interface across broad-sense
+  ([`H2()`](https://anu-aagi.github.io/heritable/reference/H2.md)),
+  narrow-sense
+  ([`h2()`](https://anu-aagi.github.io/heritable/reference/H2.md)), and
+  their Standard, Cullis, Oakey, Piepho, and Delta estimators.
+- Added support for more complex `asreml` and `lme4` random-effect
+  structures, including known genomic relationship matrices and
+  structured residuals.
+- Added richer `heritable` objects that retain the fitted model and
+  calculation metadata for downstream methods.
+
 ## heritable 0.1.1
 
 - Update Maintainer to Dr. Emi Tanaka
