@@ -7,7 +7,7 @@ bibentry(
     person(given = "Weihao (Patrick)", family = "Li", role = c("aut", "ctb"), comment = c(ORCID = "0000-0003-4959-106X")),
     person(given = "Emi", family = "Tanaka", role = c("cre", "aut", "cph"), email = c("dr.emi.tanaka@gmail.com"), comment = c(ORCID = "0000-0002-1455-259X"))
     ),
-    year = {2025},
-    note = {"R package version 0.0.9000"},
+    year = {2026},
+    note = {"R package version 0.2.0"},
     url = {"https://github.com/anu-aagi/heritable"},
 )

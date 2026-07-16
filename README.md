@@ -8,23 +8,39 @@
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![CRAN
+status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test
 coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
-[![CRAN status](https://www.r-pkg.org/badges/version/heritable)](https://CRAN.R-project.org/package=heritable)
 <!-- badges: end -->
 
-`heritable` is to be the one-stop shop for heritability calculations in
-R. Our goal is to implement existing methods for heritability to aid
-reproducibility and reporting of it’s calculations.`heritable` works
-with model outputs from `asreml` and `lme4` and support the calculations
-of broad and narrow sense heritability of a variety of method for single
-environment breeding trials.
+`heritable` provides flexible and interpretable heritability estimation
+from linear mixed models in R. Given genotypes and their observed
+traits, it helps breeders assess whether a trial contains enough genetic
+signal for selection.
+
+The package brings commonly used estimators into a unified interface and
+supports:
+
+- broad-sense (`H2()`) and narrow-sense (`h2()`) heritability;
+- Cullis, Oakey, Piepho, Standard, and Delta estimators, including BLUP-
+  and BLUE-based Delta formulations;
+- models fitted with [`lme4`](https://cran.r-project.org/package=lme4)
+  and [`asreml`](https://vsni.co.uk/software/asreml-r/);
+- marginal (environment-averaged) and stratified (environment-specific)
+  heritability for genotype-by-environment models; and
+- confidence intervals based on parametric bootstrap.
 
 ## Installation
 
-Note that this package is under active development. You can install the
-development version of heritable from
-[GitHub](https://github.com/anu-aagi/heritable) with:
+The released version is available from CRAN:
+
+``` r
+install.packages("heritable")
+```
+
+The package is under active development. You can install the development
+version from [GitHub](https://github.com/anu-aagi/heritable) with:
 
 ``` r
 # install.packages("pak")
@@ -33,48 +49,75 @@ pak::pak("anu-aagi/heritable")
 
 ## A simple demo
 
-This is a basic example which shows you how to calculate broad-sense
-heritability for a single environment trial using `asreml` and `lme4`.
+This basic example calculates broad-sense heritability for a
+single-environment trial. The same `H2()` interface works with `lme4`
+and `asreml` model objects.
 
 ``` r
-library(heritable)  
+library(heritable)
 
-fit_asreml <- asreml::asreml(yield ~ rep,
-    random = ~ gen + rep:block,
-    data = agridat::john.alpha,
-    trace = FALSE
-  )
-
-fit_lme4 <- lme4::lmer(yield ~ rep + (1|gen) + (1|rep:block),
-                       data = agridat::john.alpha)
+lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
+fit_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 ```
 
-The `H2()` function refers to broad-sense heritability and by default,
-it will compute all the available heritability methods for you.
+Uppercase `H2()` calculates broad-sense heritability. Use `method` to
+select one or more estimators:
 
 ``` r
-H2(fit_asreml, target = "gen")
+H2(
+  fit_lme4,
+  target = "gen",
+  method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard")
+)
 #>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8090841 0.8090841 0.8029760 0.8090841 0.8400648
-H2(fit_lme4, target = "gen")
-#>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8091339 0.8091339 0.7966376 0.8091339 0.8400679
+#> 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971
 ```
 
-Alternatively, with the help of tidyverse functions, you can return all
-the measures for different models as a tibble.
+Lowercase `h2()` calculates narrow-sense heritability when the fitted
+model includes a known additive genetic covariance structure, such as a
+genomic relationship matrix. With `asreml`, this can be specified using
+`vm()`:
 
 ``` r
-library(tidyverse)
-tibble(model = list(fit_lme4, fit_asreml)) |> 
-  mutate(H2 = map(model, ~H2(.x, target = "gen"))) |> 
-  unnest_wider(H2)
-#> # A tibble: 2 × 6
-#>   model     Cullis Oakey Piepho Delta Standard
-#>   <list>     <dbl> <dbl>  <dbl> <dbl>    <dbl>
-#> 1 <lmerMod>  0.809 0.809  0.797 0.809    0.840
-#> 2 <asreml>   0.809 0.809  0.803 0.809    0.840
+fit_genomic <- asreml::asreml(
+  fixed = y ~ rep,
+  random = ~ asreml::vm(gen, source = lettuce_GRM) * asreml::idv(loc),
+  data = lettuce_phenotypes,
+  trace = FALSE
+)
+
+h2(
+  fit_genomic,
+  target = "gen",
+  marginal = TRUE,
+  source = list(lettuce_GRM = lettuce_GRM)
+)
 ```
+
+For genotype-by-environment models, `marginal = TRUE` estimates
+heritability averaged across environments. Alternatively, supply a
+one-row data frame to `stratification` to estimate heritability within a
+particular environment:
+
+``` r
+H2(fit_gxe, target = "gen", marginal = TRUE)
+H2(fit_gxe, target = "gen", stratification = data.frame(loc = "L1"))
+```
+
+Estimates returned by `H2()` and `h2()` retain the fitted model,
+allowing parametric-bootstrap confidence intervals through the standard
+`confint()` generic:
+
+``` r
+estimate <- H2(fit_lme4, target = "gen", method = c("Cullis", "Standard"))
+confint(estimate, B = 500, seed = 2026)
+```
+
+See the [Get started
+guide](https://anu-aagi.github.io/heritable/articles/heritable.html) for
+further examples and the
+[presentation](https://anu-aagi.github.io/heritable/slides/heritable-slide-for-aagiverse-meeting.html)
+for the motivation and statistical framework.
 
 ## Support our work!
 
@@ -82,17 +125,17 @@ tibble(model = list(fit_lme4, fit_asreml)) |>
 citation("heritable")
 #> To cite package 'heritable' in publications use:
 #> 
-#>   Kar F, Tanaka E (2025). _heritable: R package for heritability
-#>   calculations for plant breeding trials_. R package version 0.0.9000,
+#>   Kar F, Deng Y, Li W, Tanaka E (2025). _heritable: R package for heritability
+#>   calculations for plant breeding trials_. R package version 0.2.0,
 #>   <https://github.com/anu-aagi/heritable>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
 #>     title = {heritable: R package for heritability calculations for plant breeding trials},
-#>     author = {Fonti Kar and Emi Tanaka},
-#>     year = {2025},
-#>     note = {R package version 0.0.9000},
+#>     author = {Fonti Kar and Yidi Deng and Weihao (Patrick) Li and Emi Tanaka},
+#>     year = {2026},
+#>     note = {R package version 0.2.0},
 #>     url = {https://github.com/anu-aagi/heritable},
 #>   }
 ```
@@ -101,5 +144,5 @@ citation("heritable")
 
 We welcome feedback and contributions of all shapes and sizes! Take a
 look at our existing
-[backlog](https://github.com/anu-aagi/heritable/issues) and add to a
-relevant discussion or lodge a new issue.
+[backlog](https://github.com/anu-aagi/heritable/issues), add to a
+relevant discussion, or lodge a new issue.
