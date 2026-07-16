@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<script src="heritable-slide-for-aagiverse-meeting_files/libs/clipboard/clipboard.min.js"></script>
+<script src="heritable-slide-for-aagiverse-meeting_files/libs/quarto-html/tabby.min.js"></script>
+<script src="heritable-slide-for-aagiverse-meeting_files/libs/quarto-html/popper.min.js"></script>
+<script src="heritable-slide-for-aagiverse-meeting_files/libs/quarto-html/tippy.umd.min.js"></script>
+<link href="heritable-slide-for-aagiverse-meeting_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="heritable-slide-for-aagiverse-meeting_files/libs/quarto-html/light-border.css" rel="stylesheet">
+<link href="heritable-slide-for-aagiverse-meeting_files/libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+  <meta name="generator" content="quarto-1.7.33">
+
+  <meta name="author" content="Yidi Deng, Fonti Kar, Patrick Li, Emi Tanaka">
+  <title>heritable - Flexible heritability estimation from complex linear mixed models</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+  <link rel="stylesheet" href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/dist/reset.css">
+  <link rel="stylesheet" href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/dist/reveal.css">
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      { color: #003b4f; background-color: #f1f3f5; }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span { color: #003b4f; } /* Normal */
+    code span.al { color: #ad0000; } /* Alert */
+    code span.an { color: #5e5e5e; } /* Annotation */
+    code span.at { color: #657422; } /* Attribute */
+    code span.bn { color: #ad0000; } /* BaseN */
+    code span.bu { } /* BuiltIn */
+    code span.cf { color: #003b4f; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #20794d; } /* Char */
+    code span.cn { color: #8f5902; } /* Constant */
+    code span.co { color: #5e5e5e; } /* Comment */
+    code span.cv { color: #5e5e5e; font-style: italic; } /* CommentVar */
+    code span.do { color: #5e5e5e; font-style: italic; } /* Documentation */
+    code span.dt { color: #ad0000; } /* DataType */
+    code span.dv { color: #ad0000; } /* DecVal */
+    code span.er { color: #ad0000; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #ad0000; } /* Float */
+    code span.fu { color: #4758ab; } /* Function */
+    code span.im { color: #00769e; } /* Import */
+    code span.in { color: #5e5e5e; } /* Information */
+    code span.kw { color: #003b4f; font-weight: bold; } /* Keyword */
+    code span.op { color: #5e5e5e; } /* Operator */
+    code span.ot { color: #003b4f; } /* Other */
+    code span.pp { color: #ad0000; } /* Preprocessor */
+    code span.sc { color: #5e5e5e; } /* SpecialChar */
+    code span.ss { color: #20794d; } /* SpecialString */
+    code span.st { color: #20794d; } /* String */
+    code span.va { color: #111111; } /* Variable */
+    code span.vs { color: #20794d; } /* VerbatimString */
+    code span.wa { color: #5e5e5e; font-style: italic; } /* Warning */
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+      margin-bottom: 0em;
+    }
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }  </style>
+  <link rel="stylesheet" href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/dist/theme/quarto-77f86c4bd16bb7e99dad6551774066b3.css">
+  <link rel="stylesheet" href="custom.css">
+  <script>window.backupDefine = window.define; window.define = undefined;</script><script src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", function () {
+ var mathElements = document.getElementsByClassName("math");
+ var macros = [];
+ for (var i = 0; i < mathElements.length; i++) {
+  var texText = mathElements[i].firstChild;
+  if (mathElements[i].tagName == "SPAN") {
+   katex.render(texText.data, mathElements[i], {
+    displayMode: mathElements[i].classList.contains('display'),
+    throwOnError: false,
+    macros: macros,
+    fleqn: false
+   });
+}}});
+  </script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+  <link href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.css" rel="stylesheet">
+  <link href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-menu/menu.css" rel="stylesheet">
+  <link href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-menu/quarto-menu.css" rel="stylesheet">
+  <link href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-chalkboard/font-awesome/css/all.css" rel="stylesheet">
+  <link href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-chalkboard/style.css" rel="stylesheet">
+  <link href="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/quarto-support/footer.css" rel="stylesheet">
+  <style type="text/css">
+    .reveal div.sourceCode {
+      margin: 0;
+      overflow: auto;
+    }
+    .reveal div.hanging-indent {
+      margin-left: 1em;
+      text-indent: -1em;
+    }
+    .reveal .slide:not(.center) {
+      height: 100%;
+    }
+    .reveal .slide.scrollable {
+      overflow-y: auto;
+    }
+    .reveal .footnotes {
+      height: 100%;
+      overflow-y: auto;
+    }
+    .reveal .slide .absolute {
+      position: absolute;
+      display: block;
+    }
+    .reveal .footnotes ol {
+      counter-reset: ol;
+      list-style-type: none; 
+      margin-left: 0;
+    }
+    .reveal .footnotes ol li:before {
+      counter-increment: ol;
+      content: counter(ol) ". "; 
+    }
+    .reveal .footnotes ol li > p:first-child {
+      display: inline-block;
+    }
+    .reveal .slide ul,
+    .reveal .slide ol {
+      margin-bottom: 0.5em;
+    }
+    .reveal .slide ul li,
+    .reveal .slide ol li {
+      margin-top: 0.4em;
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide ul[role="tablist"] li {
+      margin-bottom: 0;
+    }
+    .reveal .slide ul li > *:first-child,
+    .reveal .slide ol li > *:first-child {
+      margin-block-start: 0;
+    }
+    .reveal .slide ul li > *:last-child,
+    .reveal .slide ol li > *:last-child {
+      margin-block-end: 0;
+    }
+    .reveal .slide .columns:nth-child(3) {
+      margin-block-start: 0.8em;
+    }
+    .reveal blockquote {
+      box-shadow: none;
+    }
+    .reveal .tippy-content>* {
+      margin-top: 0.2em;
+      margin-bottom: 0.7em;
+    }
+    .reveal .tippy-content>*:last-child {
+      margin-bottom: 0.2em;
+    }
+    .reveal .slide > img.stretch.quarto-figure-center,
+    .reveal .slide > img.r-stretch.quarto-figure-center {
+      display: block;
+      margin-left: auto;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-left,
+    .reveal .slide > img.r-stretch.quarto-figure-left  {
+      display: block;
+      margin-left: 0;
+      margin-right: auto; 
+    }
+    .reveal .slide > img.stretch.quarto-figure-right,
+    .reveal .slide > img.r-stretch.quarto-figure-right  {
+      display: block;
+      margin-left: auto;
+      margin-right: 0; 
+    }
+  </style>
+</head>
+<body class="quarto-light">
+  <div class="reveal">
+    <div class="slides">
+
+<section id="title-slide" data-background-image="_extensions/anuopensci/anu-light/logo/anu-title-slide.png" data-background-size="contain" class="quarto-title-block center">
+  <h1 class="title">heritable - Flexible heritability estimation from complex linear mixed models</h1>
+  <p class="subtitle">AAGIverse Community Event</p>
+
+<div class="quarto-title-authors">
+<div class="quarto-title-author">
+<div class="quarto-title-author-name">
+Yidi Deng, Fonti Kar, Patrick Li, Emi Tanaka 
+</div>
+        <p class="quarto-title-affiliation">
+            Research School of Finance, Actuarial Studies and Statistics, ANU
+          </p>
+    </div>
+</div>
+
+  <p class="date">16th July 2026</p>
+</section>
+<section id="project-overview" class="slide level2">
+<h2>Project overview</h2>
+<p>Given genotypes and their observed traits in a trial, heritability helps breeders decide <strong>whether the trial contains enough genetic signal for selection</strong>.</p>
+<p><br></p>
+<p>This project aims to make heritability estimation from LMMs more accessible, flexible, and interpretable.</p>
+<p><br></p>
+<h3 id="it-brings-together">It brings together:</h3>
+<ul>
+<li>6 commonly used heritability estimators <span class="citation" data-cites="schmidt_2019">(<a href="#/reference" role="doc-biblioref" onclick="">Paul Schmidt et al. 2019</a>)</span></li>
+<li>confidence interval based on parametric bootstrap</li>
+<li>support for different model object (<code>asreml</code> and <code>lme4</code>), with flexible model constructs</li>
+<li>G×E extensions for environment-specific and environment-averaged heritability</li>
+<li>a companion paper on estimator relationships and statistical properties</li>
+</ul>
+</section>
+<section id="acknowledgement" class="slide level2">
+<h2>Acknowledgement</h2>
+<p><br><br></p>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/fonti.jpg" class="circle-photo quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+<p><br><br></p>
+<p><strong>Dr.&nbsp;Fonti Kar</strong> made the foundational contribution to this project.</p>
+</section>
+<section id="software-availability" class="slide level2">
+<h2>Software availability</h2>
+<h3 id="thanks-to-fontis-earlier-work-heritable-is-already-available-on-cran.">Thanks to Fonti’s earlier work, <strong><code>heritable</code> is already available on CRAN</strong>.</h3>
+<p>The CRAN version only supports <strong>broad-sense heritability</strong> estimation on relatively simple model.</p>
+<p><br></p>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href=""></a><span class="co"># # Install the CRAN version</span></span>
+<span id="cb1-2"><a href=""></a><span class="co"># install.packages("heritable")</span></span>
+<span id="cb1-3"><a href=""></a></span>
+<span id="cb1-4"><a href=""></a>fit <span class="ot">&lt;-</span> lme4<span class="sc">::</span><span class="fu">lmer</span>(y <span class="sc">~</span> rep <span class="sc">+</span> (<span class="dv">1</span><span class="sc">|</span>gen), <span class="at">data =</span> heritable<span class="sc">::</span>lettuce_phenotypes)</span>
+<span id="cb1-5"><a href=""></a></span>
+<span id="cb1-6"><a href=""></a>heritable<span class="sc">::</span><span class="fu">H2</span>(fit, <span class="at">target =</span> <span class="st">"gen"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.7737597 0.7737597 0.7725430 0.7737597 0.7725517 </code></pre>
+</div>
+</div>
+</div>
+<p><br></p>
+<p>The current development version is maintained on GitHub, mainly on the <strong><code>narrow-sense</code></strong> branch (<a href="https://github.com/anu-aagi/heritable/tree/narrow-sense" class="uri">https://github.com/anu-aagi/heritable/tree/narrow-sense</a>).</p>
+</section>
+<section id="manuscript-in-preparation" class="slide level2">
+<h2>Manuscript in preparation</h2>
+<div class="columns">
+<div class="column" style="width:35%;">
+<p><br><br></p>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/manuscript.jpg" class="quarto-figure quarto-figure-center"></p>
+</figure>
+</div>
+</div><div class="column" style="width:65%;">
+<p><br></p>
+<h3 id="beyond-implementing-existing-estimators">Beyond implementing existing estimators</h3>
+<p>We re-derive different heritability estimators within <strong>a unified mathematical framework</strong> that:</p>
+<ul>
+<li><p>connects different estimators</p></li>
+<li><p>provides a comprehensive understanding of their underlying estimands</p></li>
+<li><p>extends heritability definitions to more flexible model settings</p></li>
+</ul>
+<p><br></p>
+<p>Extensive numerical studies show that heritability estimation is strongly <strong>design-dependent</strong>.</p>
+</div></div>
+</section>
+<section id="heritability-as-variance-partitioning" class="slide level2">
+<h2>Heritability as variance partitioning</h2>
+<h3 id="heritability-estimation-is-fundamentally-about-partitioning-variation-under-a-lmm.">Heritability estimation is fundamentally about <em>partitioning variation</em> under a LMM.</h3>
+<p><span class="math display">
+\mathbf{y}
+=
+\mathbf{X}\boldsymbol{\beta}
++
+\mathbf{Z}_g\mathbf{u}_g
++
+\mathbf{Z}_{ge}\mathbf{u}_{ge}
++
+\boldsymbol{\varepsilon}
+</span></p>
+<p>where</p>
+<p><span class="math display">
+\mathbf{u}_g \sim N(\mathbf{0}, \mathbf{G}_g),
+\qquad
+\mathbf{u}_{ge} \sim N(\mathbf{0}, \mathbf{G}_{ge}),
+\qquad
+\boldsymbol{\varepsilon} \sim N(\mathbf{0}, \mathbf{R})
+</span></p>
+<p>This model gives arise to three related variance quantities:</p>
+<ul>
+<li><p>Phenotypic variance: <span class="math inline">V_P = \mathrm{Var}(\mathbf{d}^\top \mathbf{y})</span></p></li>
+<li><p>Genetic variance: <span class="math inline">V_G = \mathrm{Var}(\mathbf{c}^\top \mathbf{u}_g)</span></p></li>
+<li><p>Prediction error variance: <span class="math inline">V_{\mathrm{PEV}} =\mathrm{Var}\left[\mathbf{c}^\top\left(\mathbf{u}_g - \hat{\mathbf{u}}_g\right)\right]</span>, <span class="math inline">\hat{\mathbf{u}}_g</span> is the BLUP of <span class="math inline">\mathbf{u}_g</span></p></li>
+</ul>
+</section>
+<section id="two-classes-of-heritability-estimators" class="slide level2">
+<h2>Two classes of heritability estimators</h2>
+<p>Two classes of estimators emerge from decomposing two different notions of variance:</p>
+<p><br></p>
+<h3 id="phenotypic-variance-partition">Phenotypic variance partition</h3>
+<p><span class="math display">
+V_P = \mathrm{Var}(\mathbf{d}^\top \mathbf{y}) =
+\underbrace{\mathrm{Var}(\mathbf{d}^\top \mathbf{Z}_g\mathbf{u}_g)}_{V_G} +
+\mathrm{Var}(\mathbf{d}^\top \mathbf{Z}_{ge} \mathbf{u}_{ge}) +  
+\mathrm{Var}(\mathbf{d}^\top \mathbf{\epsilon})
+</span> <span class="math display">
+H^2 = V_G/V_P
+</span></p>
+<h3 id="genetic-variance-partition">Genetic variance partition</h3>
+<p><span class="math display">
+V_G = \mathrm{Var}(\mathbf{c}^\top \mathbf{u}_g) =\mathrm{Var}(\mathbf{c}^\top \hat{\mathbf{u}}_g) + \underbrace{\mathrm{Var}\left[\mathbf{c}^\top\left(\mathbf{u}_g - \hat{\mathbf{u}}_g\right)\right]}_{V_{\text{PEV}}}
+</span> <span class="math display">
+H^2 = 1 - V_{\text{PEV}}/V_G
+</span></p>
+</section>
+<section id="phenotypic-variance-partition-1" class="slide level2">
+<h2>Phenotypic variance partition</h2>
+<p>This class includes the <code>Standard</code>, <code>Delta (BLUE)</code>, and <code>Piepho</code> estimators. Different estimator differs by how the linear functionals are defined:</p>
+<ul>
+<li><p><code>Standard</code> <span class="citation" data-cites="falconer1996introduction">(<a href="#/reference" role="doc-biblioref" onclick="">Falconer 1996</a>)</span>: <span class="math inline">\mathbf{d}_{ij}</span> is defined for a genotype pair <span class="math inline">(i, j)</span> such that <span class="math inline">\mathbf{d}_{ij}^\top \mathbf{y}</span> represents the phenotypic mean difference between genotypes <span class="math inline">i</span> and <span class="math inline">j</span>: <span class="math display">
+\mathbf{d}_{ij}^\top \mathbf{y} = \bar{y}_i - \bar{y}_j.
+</span></p></li>
+<li><p><code>Delta (BLUE)</code> <span class="citation" data-cites="schmidt2019estimating">(<a href="#/reference" role="doc-biblioref" onclick="">P. Schmidt et al. 2019</a>)</span>: same pairwise idea, but <span class="math inline">\mathbf{d}_{ij}</span> maps <span class="math inline">\mathbf{y}</span> to BLUE contrasts from a <strong>counterpart model</strong> where genetic effects are fitted as fixed: <span class="math display">
+\mathbf{d}_{ij}^\top \mathbf{y}
+=
+\hat{\beta}_{g_i} - \hat{\beta}_{g_j}.
+</span></p></li>
+<li><p><code>Piepho</code> <span class="citation" data-cites="piepho2007computing">(<a href="#/reference" role="doc-biblioref" onclick="">Piepho and Mohring 2007</a>)</span>: aggregated <span class="math inline">\Delta^{\text{BLUE}}</span> heritability for isotropic <span class="math inline">\mathbf{G}_g</span></p></li>
+</ul>
+</section>
+<section id="genetic-variance-partition-1" class="slide level2">
+<h2>Genetic variance partition</h2>
+<p>Similarly, the <code>Delta (BLUP)</code>, <code>Cullis</code>, and <code>Oakey</code> estimators differ in how they define linear functionals of genetic effects.</p>
+<ul>
+<li><p><code>Delta (BLUP)</code> <span class="citation" data-cites="schmidt2019estimating">(<a href="#/reference" role="doc-biblioref" onclick="">P. Schmidt et al. 2019</a>)</span>: <span class="math inline">\mathbf{c}_{ij}</span> is defined for genotype pair <span class="math inline">(i, j)</span> for genetic effect contrast: <span class="math display">
+\mathbf{c}_{ij}^\top\mathbf{u}_g = u_{g_i} - u_{g_j}
+</span></p></li>
+<li><p><code>Cullis</code> <span class="citation" data-cites="cullis2006design">(<a href="#/reference" role="doc-biblioref" onclick="">Cullis, Smith, and Coombes 2006</a>)</span>: aggregated <span class="math inline">\Delta^{\text{BLUP}}</span> heritability for isotropic <span class="math inline">\mathbf{G}_g</span></p></li>
+<li><p><code>Oakey</code> <span class="citation" data-cites="oakey2006joint">(<a href="#/reference" role="doc-biblioref" onclick="">Oakey et al. 2006</a>)</span>: <span class="math inline">\mathbf{c}</span> is defined in a model dependent way to maximize heritability: <span class="math display">
+\arg\max_\mathbf{c} 1- \frac{\mathrm{Var}\left[\mathbf{c}^\top\left(\mathbf{u}_g - \hat{\mathbf{u}}_g\right)\right]}{\mathrm{Var}(\mathbf{c}^\top \mathbf{u}_g)}
+</span></p></li>
+</ul>
+</section>
+<section id="back-to-the-original-formulation" class="slide level2">
+<h2>Back to the original formulation</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure>
+<p><img data-src="images/slide.JPG"></p>
+<figcaption><em>A slide from Fonti’s talk</em></figcaption>
+</figure>
+</div>
+</section>
+<section id="we-can-define-our-own-linear-functionals" class="slide level2">
+<h2>We can define our own linear functionals</h2>
+<p>The calculation follows the same principle as long as the genetic effect of interest can be isolated as a random effect component.</p>
+<p><br></p>
+<p><span class="math display">
+\mathbf{y}
+=
+\mathbf{X}\boldsymbol{\beta}
++
+\color{red}{\mathbf{Z}_g\mathbf{u}_g}
+\color{black}
++
+\mathbf{Z}_{ge}\mathbf{u}_{ge}
++
+\boldsymbol{\varepsilon}
+</span></p>
+</section>
+<section id="extension-to-ge-is-straightforward" class="slide level2">
+<h2>Extension to G×E is straightforward</h2>
+<p>G×E effects can be incorporated into the heritability definition by defining and decomposing variance of the full random effect vector <span class="math display">
+\mathbf{u} = \begin{bmatrix} \mathbf{u}_g \\ \mathbf{u}_{ge} \end{bmatrix},
+</span> Let <span class="math inline">\tilde{\mathbf{c}}</span> be a linear functional defined on <span class="math inline">\mathbf{u}</span>, then <span class="math display">
+H^2_{\text{GVP}} = 1 - \frac{V_{\text{PEV}}}{V_G} = 1- \frac{\mathrm{Var}\left[\tilde{\mathbf{c}}^\top\left(\mathbf{u} - \hat{\mathbf{u}}\right)\right]}{\mathrm{Var}(\tilde{\mathbf{c}}^\top \mathbf{u})}.
+</span></p>
+<p>This extension can be applied also to phenotypic variance partitioning.</p>
+</section>
+<section id="stratified-and-marginal-heritability" class="slide level2">
+<h2>Stratified and marginal heritability</h2>
+<h3 id="stratified-heritability">Stratified heritability</h3>
+<p>We can define stratified heritability with a functional <span class="math inline">\tilde{\mathbf{c}}_{ijk}</span> that contrasts genetic effects within an environment <span class="math inline">k</span>, such that <span class="math display">
+\tilde{\mathbf{c}}_{ijk}^\top\mathbf{u} = u_{g_i} + u_{ge_{ik}} - (u_{g_j} + u_{ge_{jk}})
+</span></p>
+<h3 id="marginal-heritability">Marginal heritability</h3>
+<p>We can also define marginal heritability by <span class="math inline">\tilde{\mathbf{c}}_{ij}</span> that contrasts genetic effects averaged across environments, such that <span class="math display">
+\tilde{\mathbf{c}}_{ij}^\top\mathbf{u} = \left( u_{g_i} + \sum_k \mathbb{E}[z_{ge_{ik}}] u_{ge_{ik}} \right) - \left(u_{g_j} + \sum_k \mathbb{E}[z_{ge_{jk}}] u_{ge_{jk}} \right)
+</span></p>
+</section>
+<section id="usage" class="slide level2">
+<h2>Usage</h2>
+<p>There are three important arguments for the key functions <code>H2</code> and <code>h2</code>:</p>
+<ul>
+<li><p><code>target</code>: specifying the model component on which heritability is estimated</p></li>
+<li><p><code>marginal</code>: whether to compute marginal heritability</p></li>
+<li><p><code>stratification</code>: specifying the environmental strata at which heritability is estimated</p></li>
+</ul>
+<p><br></p>
+<p>We use a lettuce breeding dataset for resistance to downy mildew for demonstration <span class="citation" data-cites="hadasch2016comparing">(<a href="#/reference" role="doc-biblioref" onclick="">Hadasch et al. 2016</a>)</span></p>
+<p><br></p>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href=""></a><span class="co"># gen: genotype</span></span>
+<span id="cb3-2"><a href=""></a><span class="co"># loc: location</span></span>
+<span id="cb3-3"><a href=""></a><span class="co"># rep: replicates</span></span>
+<span id="cb3-4"><a href=""></a><span class="co"># Fit a asreml model</span></span>
+<span id="cb3-5"><a href=""></a>model <span class="ot">&lt;-</span> asreml<span class="sc">::</span><span class="fu">asreml</span>(</span>
+<span id="cb3-6"><a href=""></a>  <span class="at">fixed =</span> y <span class="sc">~</span> rep,</span>
+<span id="cb3-7"><a href=""></a>  <span class="at">random =</span> <span class="sc">~</span> gen <span class="sc">+</span> loc <span class="sc">+</span> gen<span class="sc">:</span>loc,</span>
+<span id="cb3-8"><a href=""></a>  <span class="at">trace =</span> <span class="cn">FALSE</span>, <span class="at">data =</span> heritable<span class="sc">::</span>lettuce_phenotypes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Online License checked out Thu Jul 16 20:59:44 2026</code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="board-sense-heritability" class="slide level2">
+<h2>Board-sense heritability</h2>
+<h3 id="main-heritability">Main heritability</h3>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href=""></a>heritable<span class="sc">::</span><span class="fu">H2</span>(model, <span class="at">target =</span> <span class="st">"gen"</span>, <span class="at">marginal =</span> <span class="cn">FALSE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.7818483 0.7818483 0.7806164 0.7818483 0.7750432 </code></pre>
+</div>
+</div>
+</div>
+<p><br></p>
+<h3 id="marginal-heritability-1">Marginal heritability</h3>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href=""></a>heritable<span class="sc">::</span><span class="fu">H2</span>(model, <span class="at">target =</span> <span class="st">"gen"</span>, <span class="at">marginal =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.8918403 0.8816483 0.8895923 0.8918403 0.8895923 </code></pre>
+</div>
+</div>
+</div>
+<p><br></p>
+<h3 id="stratified-heritability-at-location-l1">Stratified heritability at location <code>L1</code></h3>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href=""></a>heritable<span class="sc">::</span><span class="fu">H2</span>(model, <span class="at">target =</span> <span class="st">"gen"</span>, <span class="at">stratification =</span> <span class="fu">data.frame</span>(<span class="at">loc =</span> <span class="st">"L1"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.7870171 0.7780585 0.7250283 0.7870171 0.7250283 </code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="narrow-sense-heritability" class="slide level2">
+<h2>Narrow-sense heritability</h2>
+<h3 id="same-usage-differs-in-the-modelling-stage">Same usage, differs in the modelling stage</h3>
+<p>We model known additive genetic variance structure using the <code>vm</code> special in <code>asreml</code>:</p>
+<p><br></p>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href=""></a><span class="co"># lettuce_GRM: genomic relationship matrix defining the known variance structure</span></span>
+<span id="cb11-2"><a href=""></a><span class="co"># Fit a asreml model</span></span>
+<span id="cb11-3"><a href=""></a>model <span class="ot">&lt;-</span> asreml<span class="sc">::</span><span class="fu">asreml</span>(</span>
+<span id="cb11-4"><a href=""></a>  <span class="at">fixed =</span> y <span class="sc">~</span> rep,</span>
+<span id="cb11-5"><a href=""></a>  <span class="at">random =</span> <span class="sc">~</span> <span class="fu">vm</span>(gen, <span class="at">source =</span> heritable<span class="sc">::</span>lettuce_GRM)<span class="sc">*</span><span class="fu">idv</span>(loc),</span>
+<span id="cb11-6"><a href=""></a>  <span class="at">trace =</span> <span class="cn">FALSE</span>, <span class="at">data =</span> heritable<span class="sc">::</span>lettuce_phenotypes)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</div>
+<p><br></p>
+<p>An additional argument <code>source</code> is required by <code>h2</code>:</p>
+<p><br></p>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href=""></a>heritable<span class="sc">::</span><span class="fu">h2</span>(model, <span class="at">target =</span> <span class="st">"gen"</span>, <span class="at">marginal =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb12-2"><a href=""></a>              <span class="at">source =</span> <span class="fu">list</span>(<span class="st">`</span><span class="at">heritable::lettuce_GRM</span><span class="st">`</span> <span class="ot">=</span> heritable<span class="sc">::</span>lettuce_GRM))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.8757316 0.6572500 0.8528437 0.8748936 0.8468753 </code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="confidence-interval" class="slide level2">
+<h2>Confidence Interval</h2>
+<p>To compute CI, simply run <code>confint</code> on saved <code>heritable</code> objects</p>
+<p><br></p>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href=""></a><span class="co"># Store the `heritable` object</span></span>
+<span id="cb14-2"><a href=""></a>my_h2 <span class="ot">&lt;-</span> heritable<span class="sc">::</span><span class="fu">h2</span>(model, <span class="at">target =</span> <span class="st">"gen"</span>, <span class="at">marginal =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb14-3"><a href=""></a>              <span class="at">source =</span> <span class="fu">list</span>(<span class="st">`</span><span class="at">heritable::lettuce_GRM</span><span class="st">`</span> <span class="ot">=</span> heritable<span class="sc">::</span>lettuce_GRM))</span>
+<span id="cb14-4"><a href=""></a></span>
+<span id="cb14-5"><a href=""></a><span class="co"># Run confint generic!</span></span>
+<span id="cb14-6"><a href=""></a><span class="fu">confint</span>(my_h2, <span class="at">parallel =</span> <span class="st">"snow"</span>, <span class="at">ncpus =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>             2.5 %    97.5 %
+Cullis   0.8323671 0.9374830
+Oakey    0.5911317 0.7334316
+Piepho   0.8028306 0.9190309
+Delta    0.8283260 0.9346294
+Standard 0.7888382 0.9111070</code></pre>
+</div>
+</div>
+</div>
+<p><br></p>
+<p>The function supports parallel computing to accelerate parametric bootstrap.</p>
+</section>
+<section id="works-for-complex-models" class="slide level2">
+<h2>Works for complex models</h2>
+<h3 id="deep-nesting">Deep nesting</h3>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href=""></a>lme4<span class="sc">::</span><span class="fu">lmer</span>(</span>
+<span id="cb16-2"><a href=""></a>  y <span class="sc">~</span> Type <span class="sc">*</span> Treatment <span class="sc">*</span> Stage <span class="sc">+</span></span>
+<span id="cb16-3"><a href=""></a>    (<span class="dv">1</span> <span class="sc">|</span> Genotype) <span class="sc">+</span> (Stage <span class="sc">|</span> Genotype <span class="sc">/</span> Treatment) <span class="sc">+</span></span>
+<span id="cb16-4"><a href=""></a>    (<span class="dv">1</span> <span class="sc">|</span> Date) <span class="sc">+</span> (<span class="dv">1</span> <span class="sc">|</span> Plot <span class="sc">/</span> Replicate),</span>
+<span id="cb16-5"><a href=""></a>  <span class="at">data =</span> df</span>
+<span id="cb16-6"><a href=""></a>) <span class="sc">|&gt;</span></span>
+<span id="cb16-7"><a href=""></a>  heritable<span class="sc">::</span><span class="fu">H2</span>(<span class="at">target =</span> <span class="st">"genotype"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.5793787 0.5969357 0.4619369 0.5793787 0.4592437 </code></pre>
+</div>
+</div>
+</div>
+<p><br></p>
+<h3 id="residual-modeling">Residual modeling</h3>
+<div class="small-code">
+<div class="cell">
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href=""></a><span class="fu">asreml</span>(</span>
+<span id="cb18-2"><a href=""></a>  <span class="at">fixed =</span> y <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb18-3"><a href=""></a>  <span class="at">random =</span> <span class="sc">~</span> Line <span class="sc">+</span> Range <span class="sc">+</span> Row <span class="sc">+</span> RowRep<span class="sc">:</span>ColRep,</span>
+<span id="cb18-4"><a href=""></a>  <span class="at">residual =</span> <span class="fu">ar1</span>(Range)<span class="sc">:</span><span class="fu">ar1</span>(Row),</span>
+<span id="cb18-5"><a href=""></a>  <span class="at">data =</span> df</span>
+<span id="cb18-6"><a href=""></a>) <span class="sc">|&gt;</span></span>
+<span id="cb18-7"><a href=""></a>  heritable<span class="sc">::</span><span class="fu">H2</span>(<span class="at">target =</span> <span class="st">"Line"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code>   Cullis     Oakey    Piepho     Delta  Standard 
+0.9545024 0.9545024 0.9544771 0.9545024 0.9518358 </code></pre>
+</div>
+</div>
+</div>
+</section>
+<section id="future-development" class="slide level2">
+<h2>Future development</h2>
+<h3 id="more-variance-structures">More variance structures</h3>
+<p><code>heritable</code> needs to parse <code>asreml</code> variance modeling specials and convert variance estimates into variance matrices.</p>
+<ul>
+<li><p>Some structures are already supported</p></li>
+<li><p>More structures can be added</p></li>
+</ul>
+<p><br></p>
+<h3 id="custom-heritability-definitions">Custom heritability definitions</h3>
+<p>Future versions could allow users to provide their own linear functionals, such as <span class="math inline">\mathbf{d}</span> or <span class="math inline">\mathbf{c}</span>.</p>
+<p>This would support custom heritability definitions for user-defined contrasts.</p>
+<p><br></p>
+<h3 id="more-model-objects">More model objects</h3>
+<p>Patrick is working on <code>glmmTMB</code></p>
+</section>
+<section id="reference" class="slide level2 smaller scrollable">
+<h2>Reference</h2>
+<div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-cullis2006design" class="csl-entry" role="listitem">
+Cullis, Brian R, Alison B Smith, and Neil E Coombes. 2006. <span>“On the Design of Early Generation Variety Trials with Correlated Data.”</span> <em>Journal of Agricultural, Biological, and Environmental Statistics</em> 11 (4): 381–93.
+</div>
+<div id="ref-falconer1996introduction" class="csl-entry" role="listitem">
+Falconer, Douglas Scott. 1996. <em>Introduction to Quantitative Genetics</em>. Pearson Education India.
+</div>
+<div id="ref-hadasch2016comparing" class="csl-entry" role="listitem">
+Hadasch, Steffen, Ivan Simko, Ryan J Hayes, Joseph O Ogutu, and Hans-Peter Piepho. 2016. <span>“Comparing the Predictive Abilities of Phenotypic and Marker-Assisted Selection Methods in a Biparental Lettuce Population.”</span> <em>The Plant Genome</em> 9 (1): plantgenome2015–03.
+</div>
+<div id="ref-oakey2006joint" class="csl-entry" role="listitem">
+Oakey, Helena, Arūnas Verbyla, Wayne Pitchford, Brian Cullis, and Haydn Kuchel. 2006. <span>“Joint Modeling of Additive and Non-Additive Genetic Line Effects in Single Field Trials.”</span> <em>Theoretical and Applied Genetics</em> 113 (5): 809–19.
+</div>
+<div id="ref-piepho2007computing" class="csl-entry" role="listitem">
+Piepho, Hans-Peter, and Jens Mohring. 2007. <span>“Computing Heritability and Selection Response from Unbalanced Plant Breeding Trials.”</span> <em>Genetics</em> 177 (3): 1881–88.
+</div>
+<div id="ref-schmidt_2019" class="csl-entry" role="listitem">
+Schmidt, Paul, Jens Hartung, Jörn Bennewitz, and Hans-Peter Piepho. 2019. <span>“Heritability in <span>Plant Breeding</span> on a <span>Genotype-Difference Basis</span>.”</span> <em>Genetics</em> 212 (4): 991–1008. <a href="https://doi.org/10.1534/genetics.119.302134">https://doi.org/10.1534/genetics.119.302134</a>.
+</div>
+<div id="ref-schmidt2019estimating" class="csl-entry" role="listitem">
+Schmidt, P, J Hartung, J Rath, and H-P Piepho. 2019. <span>“Estimating Broad-Sense Heritability with Unbalanced Data from Agricultural Cultivar Trials.”</span> <em>Crop Science</em> 59 (2): 525–36.
+</div>
+</div>
+
+</section>
+    </div>
+  <div class="quarto-auto-generated-content" style="display: none;">
+<p><img src="_extensions/anuopensci/anu-light/logo/ANU_ Crest_Gold.png" class="slide-logo"></p>
+<div class="footer footer-default">
+
+</div>
+</div></div>
+
+  <script>window.backupDefine = window.define; window.define = undefined;</script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/dist/reveal.js"></script>
+  <!-- reveal.js plugins -->
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/quarto-line-highlight/line-highlight.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/pdf-export/pdfexport.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-menu/menu.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-menu/quarto-menu.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/reveal-chalkboard/plugin.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/quarto-support/support.js"></script>
+  
+
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/notes/notes.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/search/search.js"></script>
+  <script src="heritable-slide-for-aagiverse-meeting_files/libs/revealjs/plugin/zoom/zoom.js"></script>
+  <script>window.define = window.backupDefine; window.backupDefine = undefined;</script>
+
+  <script>
+
+      // Full list of configuration options available at:
+      // https://revealjs.com/config/
+      Reveal.initialize({
+'controlsAuto': true,
+'previewLinksAuto': false,
+'pdfSeparateFragments': false,
+'autoAnimateEasing': "ease",
+'autoAnimateDuration': 1,
+'autoAnimateUnmatched': true,
+'jumpToSlide': true,
+'menu': {"side":"left","useTextContentForMissingTitles":true,"markers":false,"loadIcons":false,"custom":[{"title":"Tools","icon":"<i class=\"fas fa-gear\"></i>","content":"<ul class=\"slide-menu-items\">\n<li class=\"slide-tool-item active\" data-item=\"0\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.fullscreen(event)\"><kbd>f</kbd> Fullscreen</a></li>\n<li class=\"slide-tool-item\" data-item=\"1\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.speakerMode(event)\"><kbd>s</kbd> Speaker View</a></li>\n<li class=\"slide-tool-item\" data-item=\"2\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.overview(event)\"><kbd>o</kbd> Slide Overview</a></li>\n<li class=\"slide-tool-item\" data-item=\"3\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.togglePdfExport(event)\"><kbd>e</kbd> PDF Export Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"4\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleScrollView(event)\"><kbd>r</kbd> Scroll View Mode</a></li>\n<li class=\"slide-tool-item\" data-item=\"5\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleChalkboard(event)\"><kbd>b</kbd> Toggle Chalkboard</a></li>\n<li class=\"slide-tool-item\" data-item=\"6\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.toggleNotesCanvas(event)\"><kbd>c</kbd> Toggle Notes Canvas</a></li>\n<li class=\"slide-tool-item\" data-item=\"7\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.downloadDrawings(event)\"><kbd>d</kbd> Download Drawings</a></li>\n<li class=\"slide-tool-item\" data-item=\"8\"><a href=\"#\" onclick=\"RevealMenuToolHandlers.keyboardHelp(event)\"><kbd>?</kbd> Keyboard Help</a></li>\n</ul>"}],"openButton":true},
+'chalkboard': {"buttons":true},
+'smaller': false,
+ 
+        // Display controls in the bottom right corner
+        controls: false,
+
+        // Help the user learn the controls by providing hints, for example by
+        // bouncing the down arrow when they first encounter a vertical slide
+        controlsTutorial: false,
+
+        // Determines where controls appear, "edges" or "bottom-right"
+        controlsLayout: 'edges',
+
+        // Visibility rule for backwards navigation arrows; "faded", "hidden"
+        // or "visible"
+        controlsBackArrows: 'faded',
+
+        // Display a presentation progress bar
+        progress: true,
+
+        // Display the page number of the current slide
+        slideNumber: 'c/t',
+
+        // 'all', 'print', or 'speaker'
+        showSlideNumber: 'all',
+
+        // Add the current slide number to the URL hash so that reloading the
+        // page/copying the URL will return you to the same slide
+        hash: true,
+
+        // Start with 1 for the hash rather than 0
+        hashOneBasedIndex: false,
+
+        // Flags if we should monitor the hash and change slides accordingly
+        respondToHashChanges: true,
+
+        // Push each slide change to the browser history
+        history: true,
+
+        // Enable keyboard shortcuts for navigation
+        keyboard: true,
+
+        // Enable the slide overview mode
+        overview: true,
+
+        // Disables the default reveal.js slide layout (scaling and centering)
+        // so that you can use custom CSS layout
+        disableLayout: false,
+
+        // Vertical centering of slides
+        center: false,
+
+        // Enables touch navigation on devices with touch input
+        touch: true,
+
+        // Loop the presentation
+        loop: false,
+
+        // Change the presentation direction to be RTL
+        rtl: false,
+
+        // see https://revealjs.com/vertical-slides/#navigation-mode
+        navigationMode: 'linear',
+
+        // Randomizes the order of slides each time the presentation loads
+        shuffle: false,
+
+        // Turns fragments on and off globally
+        fragments: true,
+
+        // Flags whether to include the current fragment in the URL,
+        // so that reloading brings you to the same fragment position
+        fragmentInURL: false,
+
+        // Flags if the presentation is running in an embedded mode,
+        // i.e. contained within a limited portion of the screen
+        embedded: false,
+
+        // Flags if we should show a help overlay when the questionmark
+        // key is pressed
+        help: true,
+
+        // Flags if it should be possible to pause the presentation (blackout)
+        pause: true,
+
+        // Flags if speaker notes should be visible to all viewers
+        showNotes: false,
+
+        // Global override for autoplaying embedded media (null/true/false)
+        autoPlayMedia: null,
+
+        // Global override for preloading lazy-loaded iframes (null/true/false)
+        preloadIframes: null,
+
+        // Number of milliseconds between automatically proceeding to the
+        // next slide, disabled when set to 0, this value can be overwritten
+        // by using a data-autoslide attribute on your slides
+        autoSlide: 0,
+
+        // Stop auto-sliding after user input
+        autoSlideStoppable: true,
+
+        // Use this method for navigation when auto-sliding
+        autoSlideMethod: null,
+
+        // Specify the average time in seconds that you think you will spend
+        // presenting each slide. This is used to show a pacing timer in the
+        // speaker view
+        defaultTiming: null,
+
+        // Enable slide navigation via mouse wheel
+        mouseWheel: false,
+
+        // The display mode that will be used to show slides
+        display: 'block',
+
+        // Hide cursor if inactive
+        hideInactiveCursor: true,
+
+        // Time before the cursor is hidden (in ms)
+        hideCursorTime: 5000,
+
+        // Opens links in an iframe preview overlay
+        previewLinks: false,
+
+        // Transition style (none/fade/slide/convex/concave/zoom)
+        transition: 'none',
+
+        // Transition speed (default/fast/slow)
+        transitionSpeed: 'default',
+
+        // Transition style for full page slide backgrounds
+        // (none/fade/slide/convex/concave/zoom)
+        backgroundTransition: 'none',
+
+        // Number of slides away from the current that are visible
+        viewDistance: 3,
+
+        // Number of slides away from the current that are visible on mobile
+        // devices. It is advisable to set this to a lower number than
+        // viewDistance in order to save resources.
+        mobileViewDistance: 2,
+
+        // The "normal" size of the presentation, aspect ratio will be preserved
+        // when the presentation is scaled to fit different resolutions. Can be
+        // specified using percentage units.
+        width: 1920,
+
+        height: 1080,
+
+        // Factor of the display size that should remain empty around the content
+        margin: 0.1,
+
+        // reveal.js plugins
+        plugins: [QuartoLineHighlight, PdfExport, RevealMenu, RevealChalkboard, QuartoSupport,
+
+          RevealNotes,
+          RevealSearch,
+          RevealZoom
+        ]
+      });
+    </script>
+    
+    <script type="text/javascript">
+        Reveal.on('ready', event => {
+          if (event.indexh === 0) {
+            document.querySelector("div.has-logo > img.slide-logo").style.display = "none";
+          }
+        });
+        Reveal.addEventListener('slidechanged', (event) => {
+          if (event.indexh === 0) {
+            Reveal.configure({ slideNumber: null });
+            document.querySelector("div.has-logo > img.slide-logo").style.display = "none";
+          }
+          if (event.indexh === 1) {
+            Reveal.configure({ slideNumber: 'c/t' });
+            document.querySelector("div.has-logo > img.slide-logo").style.display = null;
+          }
+        });
+    </script>
+    
+
+    <script>
+
+      // htmlwidgets need to know to resize themselves when slides are shown/hidden.
+
+      // Fire the "slideenter" event (handled by htmlwidgets.js) when the current
+
+      // slide changes (different for each slide format).
+
+      (function () {
+
+        // dispatch for htmlwidgets
+
+        function fireSlideEnter() {
+
+          const event = window.document.createEvent("Event");
+
+          event.initEvent("slideenter", true, true);
+
+          window.document.dispatchEvent(event);
+
+        }
+
+    
+
+        function fireSlideChanged(previousSlide, currentSlide) {
+
+          fireSlideEnter();
+
+    
+
+          // dispatch for shiny
+
+          if (window.jQuery) {
+
+            if (previousSlide) {
+
+              window.jQuery(previousSlide).trigger("hidden");
+
+            }
+
+            if (currentSlide) {
+
+              window.jQuery(currentSlide).trigger("shown");
+
+            }
+
+          }
+
+        }
+
+    
+
+        // hookup for slidy
+
+        if (window.w3c_slidy) {
+
+          window.w3c_slidy.add_observer(function (slide_num) {
+
+            // slide_num starts at position 1
+
+            fireSlideChanged(null, w3c_slidy.slides[slide_num - 1]);
+
+          });
+
+        }
+
+    
+
+      })();
+
+    </script>
+
+    
+
+    <script id="quarto-html-after-body" type="application/javascript">
+      window.document.addEventListener("DOMContentLoaded", function (event) {
+        const tabsets =  window.document.querySelectorAll(".panel-tabset-tabby")
+        tabsets.forEach(function(tabset) {
+          const tabby = new Tabby('#' + tabset.id);
+        });
+        const isCodeAnnotation = (el) => {
+          for (const clz of el.classList) {
+            if (clz.startsWith('code-annotation-')) {                     
+              return true;
+            }
+          }
+          return false;
+        }
+        const onCopySuccess = function(e) {
+          // button target
+          const button = e.trigger;
+          // don't keep focus
+          button.blur();
+          // flash "checked"
+          button.classList.add('code-copy-button-checked');
+          var currentTitle = button.getAttribute("title");
+          button.setAttribute("title", "Copied!");
+          let tooltip;
+          if (window.bootstrap) {
+            button.setAttribute("data-bs-toggle", "tooltip");
+            button.setAttribute("data-bs-placement", "left");
+            button.setAttribute("data-bs-title", "Copied!");
+            tooltip = new bootstrap.Tooltip(button, 
+              { trigger: "manual", 
+                customClass: "code-copy-button-tooltip",
+                offset: [0, -8]});
+            tooltip.show();    
+          }
+          setTimeout(function() {
+            if (tooltip) {
+              tooltip.hide();
+              button.removeAttribute("data-bs-title");
+              button.removeAttribute("data-bs-toggle");
+              button.removeAttribute("data-bs-placement");
+            }
+            button.setAttribute("title", currentTitle);
+            button.classList.remove('code-copy-button-checked');
+          }, 1000);
+          // clear code selection
+          e.clearSelection();
+        }
+        const getTextToCopy = function(trigger) {
+            const codeEl = trigger.previousElementSibling.cloneNode(true);
+            for (const childEl of codeEl.children) {
+              if (isCodeAnnotation(childEl)) {
+                childEl.remove();
+              }
+            }
+            return codeEl.innerText;
+        }
+        const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+          text: getTextToCopy
+        });
+        clipboard.on('success', onCopySuccess);
+        if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+          const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+            text: getTextToCopy,
+            container: window.document.getElementById('quarto-embedded-source-code-modal')
+          });
+          clipboardModal.on('success', onCopySuccess);
+        }
+          var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+          var mailtoRegex = new RegExp(/^mailto:/);
+            var filterRegex = new RegExp('/' + window.location.host + '/');
+          var isInternal = (href) => {
+              return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+          }
+          // Inspect non-navigation links and adorn them if external
+         var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+          for (var i=0; i<links.length; i++) {
+            const link = links[i];
+            if (!isInternal(link.href)) {
+              // undo the damage that might have been done by quarto-nav.js in the case of
+              // links that we want to consider external
+              if (link.dataset.originalHref !== undefined) {
+                link.href = link.dataset.originalHref;
+              }
+            }
+          }
+        function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+          const config = {
+            allowHTML: true,
+            maxWidth: 500,
+            delay: 100,
+            arrow: false,
+            appendTo: function(el) {
+                return el.closest('section.slide') || el.parentElement;
+            },
+            interactive: true,
+            interactiveBorder: 10,
+            theme: 'light-border',
+            placement: 'bottom-start',
+          };
+          if (contentFn) {
+            config.content = contentFn;
+          }
+          if (onTriggerFn) {
+            config.onTrigger = onTriggerFn;
+          }
+          if (onUntriggerFn) {
+            config.onUntrigger = onUntriggerFn;
+          }
+            config['offset'] = [0,0];
+            config['maxWidth'] = 700;
+          window.tippy(el, config); 
+        }
+        const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+        for (var i=0; i<noterefs.length; i++) {
+          const ref = noterefs[i];
+          tippyHover(ref, function() {
+            // use id or data attribute instead here
+            let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+            try { href = new URL(href).hash; } catch {}
+            const id = href.replace(/^#\/?/, "");
+            const note = window.document.getElementById(id);
+            if (note) {
+              return note.innerHTML;
+            } else {
+              return "";
+            }
+          });
+        }
+        const findCites = (el) => {
+          const parentEl = el.parentElement;
+          if (parentEl) {
+            const cites = parentEl.dataset.cites;
+            if (cites) {
+              return {
+                el,
+                cites: cites.split(' ')
+              };
+            } else {
+              return findCites(el.parentElement)
+            }
+          } else {
+            return undefined;
+          }
+        };
+        var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+        for (var i=0; i<bibliorefs.length; i++) {
+          const ref = bibliorefs[i];
+          const citeInfo = findCites(ref);
+          if (citeInfo) {
+            tippyHover(citeInfo.el, function() {
+              var popup = window.document.createElement('div');
+              citeInfo.cites.forEach(function(cite) {
+                var citeDiv = window.document.createElement('div');
+                citeDiv.classList.add('hanging-indent');
+                citeDiv.classList.add('csl-entry');
+                var biblioDiv = window.document.getElementById('ref-' + cite);
+                if (biblioDiv) {
+                  citeDiv.innerHTML = biblioDiv.innerHTML;
+                }
+                popup.appendChild(citeDiv);
+              });
+              return popup.innerHTML;
+            });
+          }
+        }
+      });
+      </script>
+    
+
+</body></html>
