@@ -16,13 +16,13 @@
 
 ## Citation
 
-Kar F, Tanaka E (2025). *heritable: R package for heritability
-calculations for plant breeding trials*. R package version 0.0.9000,
-<https://github.com/anu-aagi/heritable>.
+Kar F, Deng Y, Li W, Tanaka E (2025). *heritable: R package for
+heritability calculations for plant breeding trials*. R package version
+0.0.9000, <https://github.com/anu-aagi/heritable>.
 
     @Manual{,
       title = {heritable: R package for heritability calculations for plant breeding trials},
-      author = {Fonti Kar and Emi Tanaka},
+      author = {Fonti Kar and Yidi Deng and Weihao (Patrick) Li and Emi Tanaka},
       year = {2025},
       note = {R package version 0.0.9000},
       url = {https://github.com/anu-aagi/heritable},

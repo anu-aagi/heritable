@@ -1,6 +1,6 @@
 # Changelog
 
-## heritable 0.2.0
+## heritable 0.1.1
 
 - Update Maintainer to Dr. Emi Tanaka
 - Refactored `asreml` integration

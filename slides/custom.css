@@ -1,0 +1,11 @@
+.circle-photo {
+  width: 400px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.reveal .small-code pre code {
+  font-size: 0.7em !important;
+  line-height: 1.15 !important;
+}

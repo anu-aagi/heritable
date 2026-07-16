@@ -1,5 +1,6 @@
 # Articles
 
-### All vignettes
+### Slides
 
-- [heritable](https://anu-aagi.github.io/heritable/articles/heritable.md):
+- [Slides for AGGIverse Community
+  Event](https://anu-aagi.github.io/heritable/articles/slides.md):
