@@ -1,15 +1,15 @@
 ---
-title: "Slides for AGGIverse Community Event"
+title: "Slides for AAGIverse Community Event"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Slides for AGGIverse Community Event}
+  %\VignetteIndexEntry{Slides for AAGIverse Community Event}
   %\VignetteEncoding{UTF-8}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
 <iframe
   src="../slides/heritable-slide-for-aagiverse-meeting.html"
-  title="Slides for AGGIverse Community Event"
+  title="Slides for AAGIverse Community Event"
   style="width: 100%; height: 900px; border: 1px solid #ddd;"
   loading="lazy">
 </iframe>

@@ -8,10 +8,14 @@ Authors@R:
     person(given = "Weihao (Patrick)", family = "Li", role = c("aut", "ctb"), comment = c(ORCID = "0000-0003-4959-106X")),
     person(given = "Emi", family = "Tanaka", role = c("cre", "aut", "cph"), email = c("dr.emi.tanaka@gmail.com"), comment = c(ORCID = "0000-0002-1455-259X"))
     )
-Description: Reporting heritability estimates is an important to quantitative genetics 
-  studies and breeding experiments. Here we provide functions to calculate various broad-sense
-  heritabilities from 'asreml' and 'lme4' model objects. All methods we have implemented 
-  in this package have extensively discussed in the article by Schmidt et al. (2019) <doi:10.1534/genetics.119.302134>.
+Description: Provides flexible estimation of broad- and narrow-sense
+  heritability from linear mixed models fitted with 'asreml' or 'lme4'.
+  Implements commonly used estimators, including the Standard, Cullis,
+  Oakey, Piepho, and Delta methods. Supports complex model structures,
+  marginal and environment-specific heritability for genotype-by-environment
+  models, and confidence intervals based on parametric bootstrap. The
+  implemented estimators include methods discussed by Schmidt et al. (2019)
+  <doi:10.1534/genetics.119.302134>.
 License: GPL (>= 3)
 Imports: 
     asremlPlus,
