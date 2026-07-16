@@ -9,7 +9,7 @@
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![CRAN
-status](https://www.r-pkg.org/badges/version/heritable.png)](https://CRAN.R-project.org/package=heritable)
+status](https://img.shields.io/cran/v/heritable.svg)](https://CRAN.R-project.org/package=heritable)
 [![Codecov test
 coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
 <!-- badges: end -->
@@ -125,9 +125,9 @@ for the motivation and statistical framework.
 citation("heritable")
 #> To cite package 'heritable' in publications use:
 #> 
-#>   Kar F, Deng Y, Li W, Tanaka E (2025). _heritable: R package for heritability
-#>   calculations for plant breeding trials_. R package version 0.2.0,
-#>   <https://github.com/anu-aagi/heritable>.
+#>   Kar F, Deng Y, Li W, Tanaka E (2026). _heritable: R package for
+#>   heritability calculations for plant breeding trials_. R package
+#>   version 0.2.0, <https://github.com/anu-aagi/heritable>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
