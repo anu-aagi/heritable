@@ -128,9 +128,9 @@ for the motivation and statistical framework.
 citation("heritable")
 #> To cite package 'heritable' in publications use:
 #> 
-#>   Kar F, Deng Y, Li W, Tanaka E (2025). _heritable: R package for heritability
-#>   calculations for plant breeding trials_. R package version 0.2.0,
-#>   <https://github.com/anu-aagi/heritable>.
+#>   Kar F, Deng Y, Li W, Tanaka E (2026). _heritable: R package for
+#>   heritability calculations for plant breeding trials_. R package
+#>   version 0.2.0, <https://github.com/anu-aagi/heritable>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 

@@ -4,7 +4,7 @@ pkgdown_sha: ~
 articles:
   heritable: heritable.html
   articles/slides: slides.html
-last_built: 2026-07-16T12:11Z
+last_built: 2026-07-16T12:23Z
 urls:
   reference: https://anu-aagi.github.io/heritable/reference
   article: https://anu-aagi.github.io/heritable/articles
