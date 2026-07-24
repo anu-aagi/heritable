@@ -66,21 +66,6 @@ confint.heritable <- function(object,
                               seed = NULL,
                               ...) {
 
-  parallel <- list(...)[["parallel"]]
-  if (!is.null(parallel) && parallel != "no") {
-    if (inherits(model, "lmerMod") &&
-        !requireNamespace("lme4", quietly = TRUE)) {
-      stop("Package 'lme4' is required for parallel bootstrapping of lme4 models.")
-    }
-
-    if (inherits(model, "asreml") &&
-        !requireNamespace("asreml", quietly = TRUE)) {
-      stop(
-        "Package 'asreml' is required for parallel bootstrapping of ",
-        "asreml models and must be installed separately."
-      )
-    }
-  }
   # basic: bias corrected percentile interval
   # norm: bias corrected normal interval
   # perc: percentile interval
@@ -98,6 +83,24 @@ confint.heritable <- function(object,
   model <- args[["model"]]
   all_method <- args[["method"]]
   all_method <- all_method[!is.na(object)]
+
+  # Configure parallel computing
+  parallel <- list(...)[["parallel"]]
+  if (!is.null(parallel) && parallel != "no") {
+    if (inherits(model, "lmerMod") &&
+        !requireNamespace("lme4", quietly = TRUE)) {
+      stop("Package 'lme4' is required for parallel bootstrapping of lme4 models.")
+    }
+
+    if (inherits(model, "asreml") &&
+        !requireNamespace("asreml", quietly = TRUE)) {
+      stop(
+        "Package 'asreml' is required for parallel bootstrapping of ",
+        "asreml models and must be installed separately."
+      )
+    }
+  }
+
 
   if(is.null(parm)){
     method <- all_method

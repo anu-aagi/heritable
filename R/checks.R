@@ -159,13 +159,6 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE, sou
     }
   }
 
-  if(build_design ||  build_mf){
-    source <- check_GRM_exists(model = model, source = source, return = TRUE)
-    if(length(source) > 0){
-      list2env(source, environment())
-    }
-  }
-
   if(build_design && build_mf){
     design_default <- asreml::asreml.options()$design
     asreml::asreml.options(design = TRUE)

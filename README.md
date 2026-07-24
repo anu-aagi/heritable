@@ -57,60 +57,107 @@ and `asreml` model objects.
 library(heritable)
 
 lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
-fit_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+fit <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 ```
 
-Uppercase `H2()` calculates broad-sense heritability. Use `method` to
-select one or more estimators:
+Uppercase `H2()` calculates broad-sense heritability. Use `target` to
+specify the variable encoding genetic effects, `method` to select one or
+more estimators:
 
 ``` r
-H2(
-  fit_lme4,
-  target = "gen",
-  method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard")
-)
-#>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971
+H2(fit, target = "gen", method = c("Cullis", "Standard"))
+#>    Cullis  Standard 
+#> 0.8294971 0.8294971
 ```
 
-Lowercase `h2()` calculates narrow-sense heritability when the fitted
-model includes a known additive genetic covariance structure, such as a
-genomic relationship matrix. With `asreml`, this can be specified using
-`vm()`:
+`heritable` also supports multi-environment trial (MET) models. In the
+example below, we use `asreml` to fit a genotype-by-environment (G×E)
+model in which genotype, environment, and G×E interaction effects are
+all treated as random.
 
 ``` r
-fit_genomic <- asreml::asreml(
+fit_gxe <- asreml::asreml(
   fixed = y ~ rep,
-  random = ~ asreml::vm(gen, source = lettuce_GRM) * asreml::idv(loc),
-  data = lettuce_phenotypes,
-  trace = FALSE
-)
-
-h2(
-  fit_genomic,
-  target = "gen",
-  marginal = TRUE,
-  source = list(lettuce_GRM = lettuce_GRM)
+  random = ~ gen + loc + gen:loc,
+  trace = FALSE,
+  data = lettuce_phenotypes
 )
 ```
 
-For genotype-by-environment models, `marginal = TRUE` estimates
-heritability averaged across environments. Alternatively, supply a
-one-row data frame to `stratification` to estimate heritability within a
-particular environment:
+For G×E models, `H2()` supports multiple definitions of heritability.
+
+The classical definition treats the G×E interaction as a nuisance source
+of variation. To calculate this form of heritability, set
+`marginal = FALSE`:
+
+``` r
+H2(fit_gxe, target = "gen", marginal = FALSE)
+#>    Cullis     Oakey    Piepho     Delta  Standard 
+#> 0.7818483 0.7818483 0.7806164 0.7818483 0.7750432
+```
+
+Alternatively, setting `marginal = TRUE` treats the G×E interaction as
+part of the genetic variation expressed across environments. In this
+case, `H2()` estimates heritability averaged over the target
+environments.
 
 ``` r
 H2(fit_gxe, target = "gen", marginal = TRUE)
-H2(fit_gxe, target = "gen", stratification = data.frame(loc = "L1"))
+#>    Cullis     Oakey    Piepho     Delta  Standard 
+#> 0.8918403 0.8816483 0.8895923 0.8918403 0.8895923
 ```
 
-Estimates returned by `H2()` and `h2()` retain the fitted model,
-allowing parametric-bootstrap confidence intervals through the standard
-`confint()` generic:
+You can also estimate stratified heritability for a specific environment
+by supplying a one-row data frame to the `stratification` argument:
 
 ``` r
-estimate <- H2(fit_lme4, target = "gen", method = c("Cullis", "Standard"))
-confint(estimate, B = 500, seed = 2026)
+H2(fit_gxe, target = "gen", stratification = data.frame(loc = "L1"))
+#>    Cullis     Oakey    Piepho     Delta  Standard 
+#> 0.7870171 0.7780585 0.7250283 0.7870171 0.7250283
+```
+
+In this example, heritability is defined and estimated specifically for
+environment `"L1"`.
+
+Lowercase `h2()` estimates **narrow-sense heritability** for models that
+include a known additive genetic covariance structure, such as a genomic
+relationship matrix (GRM). In `asreml`, this is specified using `vm()`.
+Below, we fit a G×E model in which the additive genetic effects are
+modelled using the GRM.
+
+``` r
+fit_grm <- asreml::asreml(
+  fixed = y ~ rep,
+  random = ~ vm(gen, source = lettuce_GRM) * idv(loc),
+  data = lettuce_phenotypes,
+  trace = FALSE
+)
+```
+
+The interface of `h2()` is nearly identical to that of `H2()`. The only
+additional argument is `source`, which specifies the genetic covariance
+structure used when fitting the model. This information is required
+because the fitted model does not retain the covariance matrix itself.
+
+``` r
+h2(fit_grm, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
+#>    Cullis     Oakey    Piepho     Delta  Standard 
+#> 0.9233324 0.6867032 0.8980665 0.9228154 0.8974431
+```
+
+Like `H2()`, `h2()` supports both `marginal` and `stratification`
+arguments for G×E models.
+
+The returned estimate retains the fitted model, allowing parametric
+bootstrap confidence intervals to be obtained using the standard
+`confint()` generic.
+
+``` r
+estimate <- H2(fit, target = "gen", method = c("Cullis", "Standard"))
+confint(estimate, B = 100, seed = 2026)
+#>              2.5 %    97.5 %
+#> Cullis   0.7792096 0.9395049
+#> Standard 0.7792096 0.9395049
 ```
 
 See the [Get started
@@ -118,6 +165,25 @@ guide](https://anu-aagi.github.io/heritable/articles/heritable.html) for
 further examples and the
 [presentation](https://anu-aagi.github.io/heritable/slides/heritable-slide-for-aagiverse-meeting.html)
 for the motivation and statistical framework.
+
+## Too slow to run?
+
+For large or complex models, heritability estimation can be
+computationally intensive. Runtime can be reduced by approximating the
+required matrix pseudoinverses and computing error-variance matrices
+from the mixed-model equations:
+
+``` r
+options(exact_psd_inv = FALSE)
+H2(fit, target = "gen", solver = "LMM")
+#>    Cullis     Oakey    Piepho     Delta  Standard 
+#> 0.8294971 0.8294971 0.8294913 0.8294971 0.8294971
+```
+
+This approach can substantially reduce runtime, although it may be less
+numerically stable than the default calculation. The speed improvement
+is generally more apparent for models with many observations, random
+effects, or environments.
 
 ## Support our work!
 
