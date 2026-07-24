@@ -80,9 +80,11 @@ methods for heritability to aid more reproducible and transparent
 reporting of it’s calculations. This vignette is a brief overview of
 <code>heritable</code>’s workflow and key features.</p>
 <p><code>heritable</code> is compatible with model outputs from <a href="https://vsni.co.uk/software/asreml-r/" class="external-link"><code>asreml</code></a> and
-<a href="https://cran.r-project.org/package=lme4" class="external-link"><code>lme4</code></a>
-and extracts the relevant variance components to calculate heritability
-for <strong>single environment trials.</strong></p>
+<a href="https://cran.r-project.org/package=lme4" class="external-link"><code>lme4</code></a>,
+extracting relevant variance components from flexible mixed-model
+specifications to estimate heritability across <strong>complex
+experimental designs</strong> including including multi-environment
+trials.</p>
 </div>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
@@ -191,32 +193,61 @@ followed up the method name.</p>
 <p>Learn more about each method by looking up their help file
 <code><a href="../reference/H2_Cullis.html">?H2_Cullis</a></code></p>
 </blockquote>
-<!-- ### Narrow-sense heritability -->
-<!-- Narrow-sense heritability is currently only implemented for **`asreml`** model object as there is no native workflow to fit a GRM using `lme4`. However it is possible using other extension packages such as [`lme4qtl`](https://dx.doi.org/10.1186/s12859-018-2057-x) and [`lme4breeding`](https://CRAN.R-project.org/package=lme4breeding) -->
-<!-- In the following model, we will fit the `lettuce_GRM` genomic relationship matrix using `asreml::vm()` -->
-<!-- ``` r -->
-<!-- # Fit model with GRM for narrow-sense heritability -->
-<!-- lettuce_asreml_grm <- asreml( -->
-<!--   fixed = y ~ loc, -->
-<!--   random = ~ vm(gen, lettuce_GRM) + rep, -->
-<!--   data = lettuce_phenotypes, -->
-<!--   trace = FALSE -->
-<!-- ) -->
-<!-- ``` -->
-<!-- Similar to `H2()`, we can use the `h2()` wrapper to compute narrow-sense heritability. Remembering to specify: -->
-<!-- - `model`, your `asreml` object -->
-<!-- - `target`, the name of your genotype/varietal/line variable in your model e.g. `"gen"` -->
-<!-- - `method`, which method of `h2()` calculation do you want. By default, the function will compute all available methods. Currently only `"Oakey"` and `"Delta"` are implemented for `h2()` -->
-<!-- ``` r -->
-<!-- # Calculate narrow-sense heritability -->
-<!-- h2(lettuce_asreml_grm, target = "gen", method = "Oakey") -->
-<!-- #> Error in UseMethod("h2_Oakey"): no applicable method for 'h2_Oakey' applied to an object of class "asreml" -->
-<!-- ``` -->
-<!-- Similarly, you can call the single method sub-functions using the prefix `h2_` followed by the method name. Here we are calculating pairwise heritability between every genotype. See `?h2_Delta_pairwise()` to learn more. -->
-<!-- ``` r -->
-<!-- h2_Delta(lettuce_asreml_grm, target = "gen", type = "BLUP") -->
-<!-- #> Error in UseMethod("h2_Delta_pairwise"): no applicable method for 'h2_Delta_pairwise' applied to an object of class "asreml" -->
-<!-- ``` -->
+</div>
+<div class="section level2">
+<h2 id="narrow-sense-heritability">Narrow-sense heritability<a class="anchor" aria-label="anchor" href="#narrow-sense-heritability"></a>
+</h2>
+<p>Narrow-sense heritability is currently only implemented for
+<strong><code>asreml</code></strong> model object as there is no native
+workflow to fit a GRM using <code>lme4</code>. However it is possible
+using other extension packages such as <a href="https://dx.doi.org/10.1186/s12859-018-2057-x" class="external-link"><code>lme4qtl</code></a>
+and <a href="https://CRAN.R-project.org/package=lme4breeding" class="external-link"><code>lme4breeding</code></a></p>
+<p>In the following model, we will fit the <code>lettuce_GRM</code>
+genomic relationship matrix (GRM) using <code>asreml::vm()</code></p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Fit model with GRM for narrow-sense heritability</span></span>
+<span><span class="va">lettuce_asreml_grm</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="op">(</span></span>
+<span>  fixed <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">rep</span>,</span>
+<span>  random <span class="op">=</span> <span class="op">~</span> <span class="fu">vm</span><span class="op">(</span><span class="va">gen</span>, source <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">lettuce_subset</span>,</span>
+<span>  trace <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Similar to <code><a href="../reference/H2.html">H2()</a></code>, we can use the <code><a href="../reference/H2.html">h2()</a></code>
+wrapper to compute narrow-sense heritability. Remembering to
+specify:</p>
+<ul>
+<li>
+<code>model</code>, your <code>asreml</code> object</li>
+<li>
+<code>target</code>, the name of your genotype/varietal/line
+variable in your model e.g. <code>"gen"</code>
+</li>
+<li>
+<code>method</code>, which method of <code><a href="../reference/H2.html">h2()</a></code> calculation
+do you want. By default, the function will compute all available
+methods. Currently only <code>"Oakey"</code> and <code>"Delta"</code>
+are implemented for <code><a href="../reference/H2.html">h2()</a></code>.</li>
+</ul>
+<p>An additional <code>source</code> argument is required to provide
+<code><a href="../reference/H2.html">h2()</a></code> with the genetic covariance structure used for model
+fitting. If this argument is not supplied, the function will attempt to
+locate the covariance structure in the global environment. Since we
+specified the structure using the GRM <code>lettuce_GRM</code>, we
+provide it explicitly to <code><a href="../reference/H2.html">h2()</a></code>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Calculate narrow-sense heritability</span></span>
+<span><span class="fu"><a href="../reference/H2.html">h2</a></span><span class="op">(</span><span class="va">lettuce_asreml_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Standard"</span>, <span class="st">"Cullis"</span>, <span class="st">"Oakey"</span><span class="op">)</span>,</span>
+<span> source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lettuce_GRM <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  Standard    Cullis     Oakey </span></span>
+<span><span class="co">#&gt; 0.8242839 0.8759621 0.5857853</span></span></code></pre></div>
+<p>Similarly, you can call the single method sub-functions using the
+prefix <code>h2_</code> followed by the method name. Here we are
+calculating pairwise heritability between every genotype. See
+<code>?h2_Delta_pairwise()</code> to learn more.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/H2_Delta.html">h2_Delta</a></span><span class="op">(</span><span class="va">lettuce_asreml_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, type <span class="op">=</span> <span class="st">"BLUP"</span>,</span>
+<span> source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lettuce_GRM <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.8751257</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="alternative-output-formats">Alternative output formats<a class="anchor" aria-label="anchor" href="#alternative-output-formats"></a>
@@ -241,7 +272,7 @@ for all pairwise combinations of <code>target</code>
 <p>If you interested in comparing heritability values across multiple
 models or methods, we can leverage <code>tidyverse</code> functions to
 wrangle the output as a dataframe/tibble</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://purrr.tidyverse.org/" class="external-link">purrr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tidyr.tidyverse.org" class="external-link">tidyr</a></span><span class="op">)</span></span>
 <span></span>
@@ -258,6 +289,256 @@ wrangle the output as a dataframe/tibble</p>
 <span><span class="co">#&gt;   &lt;list&gt;       &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
 <span><span class="co">#&gt; 1 &lt;lmerMod&gt;    0.829 0.829 0.829</span></span>
 <span><span class="co">#&gt; 2 &lt;asreml&gt;     0.829 0.829 0.829</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="heritability-in-multi-environment-trials">Heritability in multi-environment trials<a class="anchor" aria-label="anchor" href="#heritability-in-multi-environment-trials"></a>
+</h2>
+<p>Starting with version 0.2.0, <code>heritable</code> supports
+heritability estimation from flexibly specified mixed models, extending
+beyond single-environment trials. In this section, we demonstrate
+heritability estimation for a multi-environment trial using a
+genotype-by-environment (G×E) model.</p>
+<p>When a model contains a G×E interaction, the definition of
+heritability become ambiguous as each interaction term can either be
+treated as nuisance variation or genetic variation specific to the
+corresponding environment. We illustrate how we address this ambiguity
+by showing the calculation of three heritability definitions:</p>
+<ul>
+<li><p><strong>Conventional heritability</strong>, which is based only
+on the genotype main effect and treats G×E variation as nuisance
+variation.</p></li>
+<li><p><strong>Marginal heritability</strong>, which defines the effect
+of a genotype as the combination of its main effect and its G×E effects
+averaged across environments. Heritability is then calculated with
+respect to this marginalised genotype effect and can therefore be
+interpreted as a global measure of the reliability of average genotype
+performance across environments.</p></li>
+<li><p><strong>Stratified heritability</strong>, which defines the
+effect of a genotype within a particular environment as the combination
+of its main effect and its G×E effect in that environment. It therefore
+measures the reliability of genotype performance within a specified
+environment.</p></li>
+</ul>
+<p>We first fit an <code>lme4</code> model to the complete lettuce
+dataset without subsetting to a single environment:</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">lettuce_lme4_gxe</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">rep</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span> <span class="op">*</span> <span class="va">loc</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">lettuce_phenotypes</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The random-effects expression <code>(1 | gen * loc)</code> expands to
+random effects for genotype, location, and their interaction:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">loc</span><span class="op">)</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span><span class="op">:</span><span class="va">loc</span><span class="op">)</span></span></code></pre></div>
+<p>Again, we call <code><a href="../reference/H2.html">H2()</a></code> (or <code><a href="../reference/H2.html">h2()</a></code> for
+narrow-sense) on the fitted model object. For multi-environment models,
+the following arguments control which definition of heritability is
+calculated:</p>
+<ul>
+<li><p><code>marginal</code>: a logical specifies whether marginal
+heritability should be calculated.</p></li>
+<li><p><code>stratification</code>: a one-row data frame specifies the
+environmental stratum, or combination of strata, within which
+heritability should be estimated.</p></li>
+</ul>
+<p>When <code>stratification</code> is not supplied, the
+<code>marginal</code> argument determines whether conventional or
+marginal heritability is returned.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Conventional heritability</span></span>
+<span><span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span><span class="va">lettuce_lme4_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, marginal <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.7818483 0.7818483 0.7806165 0.7818483 0.7732908 </span></span>
+<span></span>
+<span><span class="co"># Marginal heritability</span></span>
+<span><span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span><span class="va">lettuce_lme4_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, marginal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.8918420 0.8816507 0.8895969 0.8918420 0.8895969 </span></span></code></pre></div>
+<p>When <code>stratification</code> is supplied, stratified heritability
+is calculated for the specified environmental conditions. For example,
+heritability within location <code>L1</code> is calculated as
+follows:</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span><span class="va">lettuce_lme4_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, stratification <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>loc <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.7870175 0.7780589 0.7250292 0.7870175 0.7250292 </span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="confidence-intervals">Confidence intervals<a class="anchor" aria-label="anchor" href="#confidence-intervals"></a>
+</h2>
+<p>To compute confidence intervals, first store the output from
+<code><a href="../reference/H2.html">H2()</a></code> or <code><a href="../reference/H2.html">h2()</a></code>. A <code>heritable</code> object
+retains the fitted model and the arguments used in the original
+heritability calculation, allowing the calculation to be repeated for
+each parametric-bootstrap sample.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">estimate</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span><span class="va">lettuce_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              2.5 %    97.5 %</span></span>
+<span><span class="co">#&gt; Cullis   0.7792096 0.9395049</span></span>
+<span><span class="co">#&gt; Standard 0.7792096 0.9395049</span></span></code></pre></div>
+<p>Here, <code>B</code> specifies the number of bootstrap replicates. A
+larger value of <code>B</code> generally provides more stable confidence
+intervals but requires additional computation.</p>
+<p>Parametric bootstrap is computationally intensive because each
+bootstrap replicate involves three main steps:</p>
+<ol style="list-style-type: decimal">
+<li>simulating a new response from the fitted mixed model;</li>
+<li>refitting the model to the simulated data; and</li>
+<li>extracting the variance components and recalculating
+heritability.</li>
+</ol>
+<p>The computational cost can therefore become substantial for large or
+complex models, particularly when a large number of bootstrap replicates
+is requested. <code>heritable</code> provides two ways to accelerate
+this calculation.</p>
+<div class="section level3">
+<h3 id="parallel-computation">Parallel computation<a class="anchor" aria-label="anchor" href="#parallel-computation"></a>
+</h3>
+<p>The first approach is to distribute the bootstrap replicates across
+multiple workers. The <code>parallel</code>, <code>ncpus</code>, and
+<code>cl</code> arguments are passed to the underlying bootstrap
+routine; see <code><a href="https://rdrr.io/pkg/boot/man/boot.html" class="external-link">?boot::boot</a></code> for further details.</p>
+<p>As a general rule of thumb, use <code>parallel = "multicore"</code>
+on non-Windows systems and <code>parallel = "snow"</code> on Windows.
+The <code>ncpus</code> argument specifies the number of workers.</p>
+<p>For example, the following code distributes 100 bootstrap replicates
+across five workers:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">100</span>, parallel <span class="op">=</span> <span class="st">"snow"</span>,ncpus <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              2.5 %    97.5 %</span></span>
+<span><span class="co">#&gt; Cullis   0.7731271 0.8911410</span></span>
+<span><span class="co">#&gt; Standard 0.7731271 0.8911410</span></span></code></pre></div>
+<p>With five workers, each worker performs approximately
+<code>B / 5</code> bootstrap replicates, although the exact allocation
+may vary.</p>
+<p>On a non-Windows system, the corresponding call is:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Not run</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">2026</span>, parallel <span class="op">=</span> <span class="st">"multicore"</span>,ncpus <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span></code></pre></div>
+<p>For more control over a snow cluster, a cluster object can be created
+explicitly and supplied through <code>cl</code>:</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Not run</span></span>
+<span><span class="va">cl</span> <span class="op">&lt;-</span> <span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">makeCluster</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">2026</span>, parallel <span class="op">=</span> <span class="st">"snow"</span>, cl <span class="op">=</span> <span class="va">cl</span><span class="op">)</span></span>
+<span><span class="fu">parallel</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/parallel/makeCluster.html" class="external-link">stopCluster</a></span><span class="op">(</span><span class="va">cl</span><span class="op">)</span></span></code></pre></div>
+<p>When using <code>asreml</code>, the number of parallel workers must
+not exceed the number of available <code>asreml</code> licences.</p>
+</div>
+<div class="section level3">
+<h3 id="algorithmic-acceleration">Algorithmic acceleration<a class="anchor" aria-label="anchor" href="#algorithmic-acceleration"></a>
+</h3>
+<p>The second approach reduces computational cost through algorithmic
+acceleration, but may be less numerically stable. It does so by:</p>
+<ol style="list-style-type: decimal">
+<li>approximating required matrix pseudoinverses using ridge penalties
+rather than exact positive-semidefinite matrix inversion; and</li>
+<li>calculating prediction- and estimation-error variance matrices by
+solving mixed-model equations rather than deriving them through direct
+inversion of marginal response covariance matrices.</li>
+</ol>
+<p>To use this approach, set the global option
+<code>exact_psd_inv</code> to <code>FALSE</code> and pass
+<code>solver = "LMM"</code> to <code><a href="../reference/H2.html">H2()</a></code> or
+<code><a href="../reference/H2.html">h2()</a></code>:</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Default, numerically stable computation</span></span>
+<span><span class="va">default_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>  <span class="va">estimate_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span></span>
+<span>    <span class="va">lettuce_lme4</span>,</span>
+<span>    target <span class="op">=</span> <span class="st">"gen"</span>,</span>
+<span>    method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">ci_default</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span></span>
+<span>    <span class="va">estimate_default</span>,</span>
+<span>    B <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>    seed <span class="op">=</span> <span class="fl">2026</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Accelerated, approximate computation</span></span>
+<span><span class="va">previous_exact_psd_inv</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"exact_psd_inv"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>exact_psd_inv <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fast_time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
+<span>  <span class="va">estimate_fast</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span></span>
+<span>    <span class="va">lettuce_lme4</span>,</span>
+<span>    target <span class="op">=</span> <span class="st">"gen"</span>,</span>
+<span>    method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span>,</span>
+<span>    solver <span class="op">=</span> <span class="st">"LMM"</span></span>
+<span>  <span class="op">)</span></span>
+<span></span>
+<span>  <span class="va">ci_fast</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span></span>
+<span>    <span class="va">estimate_fast</span>,</span>
+<span>    B <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>    seed <span class="op">=</span> <span class="fl">2026</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Restore the previous option</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>exact_psd_inv <span class="op">=</span> <span class="va">previous_exact_psd_inv</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">default_time</span> <span class="op">-</span> <span class="va">fast_time</span></span>
+<span><span class="co">#&gt; user  system elapsed </span></span>
+<span><span class="co">#&gt; 0.97    0.07    0.78 </span></span></code></pre></div>
+<p>For small models, the difference in runtime may be modest. The
+improvement generally becomes more apparent as the number of
+observations, random effects, environments, or bootstrap replicates
+increases. However, algorithmic acceleration may produce less
+numerically stable results than the default calculation.</p>
+<p>Parallel computing and algorithmic acceleration can also be used
+together.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="interested-in-complex-models">Interested in complex models?<a class="anchor" aria-label="anchor" href="#interested-in-complex-models"></a>
+</h2>
+<p>Finally, we emphasise that <code>heritable</code> is designed to work
+with complex mixed models specified by the user. This includes, for
+example, deeply nested <code>lme4</code> models:</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Not run: this model was fitted to confidential data that are not</span></span>
+<span><span class="co"># included in the vignette and is shown for demonstration only.</span></span>
+<span><span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span></span>
+<span>  <span class="va">y</span> <span class="op">~</span> <span class="va">Type</span> <span class="op">*</span> <span class="va">Treatment</span> <span class="op">*</span> <span class="va">Stage</span> <span class="op">+</span></span>
+<span>    <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Genotype</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="op">(</span><span class="va">Stage</span> <span class="op">|</span> <span class="va">Genotype</span> <span class="op">/</span> <span class="va">Treatment</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Date</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">Plot</span> <span class="op">/</span> <span class="va">Replicate</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">df</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">heritable</span><span class="fu">::</span><span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span>target <span class="op">=</span> <span class="st">"Genotype"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard</span></span>
+<span><span class="co">#&gt; 0.5793787 0.5969357 0.4619369 0.5793787 0.4592437</span></span></code></pre></div>
+<p>It also supports <code>asreml</code> models with structured residual
+variation, including spatial residual models:</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Not run: this model was fitted to confidential data that are not</span></span>
+<span><span class="co"># included in the vignette and is shown for demonstration only.</span></span>
+<span><span class="fu">asreml</span><span class="fu">::</span><span class="fu">asreml</span><span class="op">(</span></span>
+<span>  fixed <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="fl">1</span>,</span>
+<span>  random <span class="op">=</span> <span class="op">~</span> <span class="va">Line</span> <span class="op">+</span> <span class="va">Range</span> <span class="op">+</span> <span class="va">Row</span> <span class="op">+</span> <span class="va">RowRep</span><span class="op">:</span><span class="va">ColRep</span>,</span>
+<span>  residual <span class="op">=</span> <span class="op">~</span> <span class="fu">ar1</span><span class="op">(</span><span class="va">Range</span><span class="op">)</span><span class="op">:</span><span class="fu">ar1</span><span class="op">(</span><span class="va">Row</span><span class="op">)</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">df</span></span>
+<span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">heritable</span><span class="fu">::</span><span class="fu"><a href="../reference/H2.html">H2</a></span><span class="op">(</span>target <span class="op">=</span> <span class="st">"Line"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard</span></span>
+<span><span class="co">#&gt; 0.9545024 0.9545024 0.9544771 0.9545024 0.9518358</span></span></code></pre></div>
+<p>To work with an <code>asreml</code> model object,
+<code>heritable</code> must parse the variance-modeling special
+functions used in the model formula and reconstruct covariance matrices
+from the estimated variance parameters.</p>
+<p>The package currently supports several commonly used structures,
+including <code>vm()</code> and <code>ar1()</code>. However,
+<code>asreml</code> provides many additional variance structures and
+combinations that may appear in more complex models.</p>
+<p>We welcome community contributions that extend support for additional
+<code>asreml</code> variance structures. See GitHub issue <a href="https://github.com/anu-aagi/heritable/issues/51" class="external-link">#51</a> for
+details.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

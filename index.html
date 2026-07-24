@@ -89,45 +89,75 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://anu-aagi.github.io/heritable/">heritable</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">lettuce_subset</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">lettuce_phenotypes</span>, <span class="va">loc</span> <span class="op">==</span> <span class="st">"L2"</span><span class="op">)</span></span>
-<span><span class="va">fit_lme4</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">rep</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">lettuce_subset</span><span class="op">)</span></span></code></pre></div>
-<p>Uppercase <code><a href="reference/H2.html">H2()</a></code> calculates broad-sense heritability. Use <code>method</code> to select one or more estimators:</p>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">lme4</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/lme4/man/lmer.html" class="external-link">lmer</a></span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">rep</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">gen</span><span class="op">)</span>, data <span class="op">=</span> <span class="va">lettuce_subset</span><span class="op">)</span></span></code></pre></div>
+<p>Uppercase <code><a href="reference/H2.html">H2()</a></code> calculates broad-sense heritability. Use <code>target</code> to specify the variable encoding genetic effects, <code>method</code> to select one or more estimators:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit_lme4</span>,</span>
-<span>  target <span class="op">=</span> <span class="st">"gen"</span>,</span>
-<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Oakey"</span>, <span class="st">"Piepho"</span>, <span class="st">"Delta"</span>, <span class="st">"Standard"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
-<span><span class="co">#&gt; 0.8294971 0.8294971 0.8294971 0.8294971 0.8294971</span></span></code></pre></div>
-<p>Lowercase <code><a href="reference/H2.html">h2()</a></code> calculates narrow-sense heritability when the fitted model includes a known additive genetic covariance structure, such as a genomic relationship matrix. With <code>asreml</code>, this can be specified using <code>vm()</code>:</p>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis  Standard </span></span>
+<span><span class="co">#&gt; 0.8294971 0.8294971</span></span></code></pre></div>
+<p><code>heritable</code> also supports multi-environment trial (MET) models. In the example below, we use <code>asreml</code> to fit a genotype-by-environment (G×E) model in which genotype, environment, and G×E interaction effects are all treated as random.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit_genomic</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">asreml</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">fit_gxe</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">asreml</span><span class="op">(</span></span>
 <span>  fixed <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">rep</span>,</span>
-<span>  random <span class="op">=</span> <span class="op">~</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">vm</span><span class="op">(</span><span class="va">gen</span>, source <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span> <span class="op">*</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">idv</span><span class="op">(</span><span class="va">loc</span><span class="op">)</span>,</span>
+<span>  random <span class="op">=</span> <span class="op">~</span> <span class="va">gen</span> <span class="op">+</span> <span class="va">loc</span> <span class="op">+</span> <span class="va">gen</span><span class="op">:</span><span class="va">loc</span>,</span>
+<span>  trace <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  data <span class="op">=</span> <span class="va">lettuce_phenotypes</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For G×E models, <code><a href="reference/H2.html">H2()</a></code> supports multiple definitions of heritability.</p>
+<p>The classical definition treats the G×E interaction as a nuisance source of variation. To calculate this form of heritability, set <code>marginal = FALSE</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, marginal <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.7818483 0.7818483 0.7806164 0.7818483 0.7750432</span></span></code></pre></div>
+<p>Alternatively, setting <code>marginal = TRUE</code> treats the G×E interaction as part of the genetic variation expressed across environments. In this case, <code><a href="reference/H2.html">H2()</a></code> estimates heritability averaged over the target environments.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, marginal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.8918403 0.8816483 0.8895923 0.8918403 0.8895923</span></span></code></pre></div>
+<p>You can also estimate stratified heritability for a specific environment by supplying a one-row data frame to the <code>stratification</code> argument:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, stratification <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>loc <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.7870171 0.7780585 0.7250283 0.7870171 0.7250283</span></span></code></pre></div>
+<p>In this example, heritability is defined and estimated specifically for environment <code>"L1"</code>.</p>
+<p>Lowercase <code><a href="reference/H2.html">h2()</a></code> estimates <strong>narrow-sense heritability</strong> for models that include a known additive genetic covariance structure, such as a genomic relationship matrix (GRM). In <code>asreml</code>, this is specified using <code>vm()</code>. Below, we fit a G×E model in which the additive genetic effects are modelled using the GRM.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit_grm</span> <span class="op">&lt;-</span> <span class="fu">asreml</span><span class="fu">::</span><span class="fu">asreml</span><span class="op">(</span></span>
+<span>  fixed <span class="op">=</span> <span class="va">y</span> <span class="op">~</span> <span class="va">rep</span>,</span>
+<span>  random <span class="op">=</span> <span class="op">~</span> <span class="fu">vm</span><span class="op">(</span><span class="va">gen</span>, source <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span> <span class="op">*</span> <span class="fu">idv</span><span class="op">(</span><span class="va">loc</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="va">lettuce_phenotypes</span>,</span>
 <span>  trace <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="reference/H2.html">h2</a></span><span class="op">(</span></span>
-<span>  <span class="va">fit_genomic</span>,</span>
-<span>  target <span class="op">=</span> <span class="st">"gen"</span>,</span>
-<span>  marginal <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lettuce_GRM <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p>For genotype-by-environment models, <code>marginal = TRUE</code> estimates heritability averaged across environments. Alternatively, supply a one-row data frame to <code>stratification</code> to estimate heritability within a particular environment:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, marginal <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_gxe</span>, target <span class="op">=</span> <span class="st">"gen"</span>, stratification <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>loc <span class="op">=</span> <span class="st">"L1"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Estimates returned by <code><a href="reference/H2.html">H2()</a></code> and <code><a href="reference/H2.html">h2()</a></code> retain the fitted model, allowing parametric-bootstrap confidence intervals through the standard <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> generic:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">estimate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit_lme4</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">500</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span></code></pre></div>
+<p>The interface of <code><a href="reference/H2.html">h2()</a></code> is nearly identical to that of <code><a href="reference/H2.html">H2()</a></code>. The only additional argument is <code>source</code>, which specifies the genetic covariance structure used when fitting the model. This information is required because the fitted model does not retain the covariance matrix itself.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/H2.html">h2</a></span><span class="op">(</span><span class="va">fit_grm</span>, target <span class="op">=</span> <span class="st">"gen"</span>, source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lettuce_GRM <span class="op">=</span> <span class="va">lettuce_GRM</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.9233324 0.6867032 0.8980665 0.9228154 0.8974431</span></span></code></pre></div>
+<p>Like <code><a href="reference/H2.html">H2()</a></code>, <code><a href="reference/H2.html">h2()</a></code> supports both <code>marginal</code> and <code>stratification</code> arguments for G×E models.</p>
+<p>The returned estimate retains the fitted model, allowing parametric bootstrap confidence intervals to be obtained using the standard <code><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint()</a></code> generic.</p>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">estimate</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit</span>, target <span class="op">=</span> <span class="st">"gen"</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Cullis"</span>, <span class="st">"Standard"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/stats/confint.html" class="external-link">confint</a></span><span class="op">(</span><span class="va">estimate</span>, B <span class="op">=</span> <span class="fl">100</span>, seed <span class="op">=</span> <span class="fl">2026</span><span class="op">)</span></span>
+<span><span class="co">#&gt;              2.5 %    97.5 %</span></span>
+<span><span class="co">#&gt; Cullis   0.7792096 0.9395049</span></span>
+<span><span class="co">#&gt; Standard 0.7792096 0.9395049</span></span></code></pre></div>
 <p>See the <a href="https://anu-aagi.github.io/heritable/articles/heritable.html">Get started guide</a> for further examples and the <a href="https://anu-aagi.github.io/heritable/slides/heritable-slide-for-aagiverse-meeting.html">presentation</a> for the motivation and statistical framework.</p>
+</div>
+<div class="section level2">
+<h2 id="too-slow-to-run">Too slow to run?<a class="anchor" aria-label="anchor" href="#too-slow-to-run"></a>
+</h2>
+<p>For large or complex models, heritability estimation can be computationally intensive. Runtime can be reduced by approximating the required matrix pseudoinverses and computing error-variance matrices from the mixed-model equations:</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>exact_psd_inv <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/H2.html">H2</a></span><span class="op">(</span><span class="va">fit</span>, target <span class="op">=</span> <span class="st">"gen"</span>, solver <span class="op">=</span> <span class="st">"LMM"</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    Cullis     Oakey    Piepho     Delta  Standard </span></span>
+<span><span class="co">#&gt; 0.8294971 0.8294971 0.8294913 0.8294971 0.8294971</span></span></code></pre></div>
+<p>This approach can substantially reduce runtime, although it may be less numerically stable than the default calculation. The speed improvement is generally more apparent for models with many observations, random effects, or environments.</p>
 </div>
 <div class="section level2">
 <h2 id="support-our-work">Support our work!<a class="anchor" aria-label="anchor" href="#support-our-work"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/citation.html" class="external-link">citation</a></span><span class="op">(</span><span class="st">"heritable"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; To cite package 'heritable' in publications use:</span></span>
 <span><span class="co">#&gt; </span></span>
