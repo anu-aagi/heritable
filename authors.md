@@ -7,7 +7,7 @@
 
 - **Yidi Deng**. Author. [](https://orcid.org/0000-0003-0380-2124)
 
-- **Fonti Kar**. Contributor. [](https://orcid.org/0000-0002-2760-3974)
+- **Fonti Kar**. Author. [](https://orcid.org/0000-0002-2760-3974)
 
 - **Weihao (Patrick) Li**. Contributor.
   [](https://orcid.org/0000-0003-4959-106X)
@@ -16,13 +16,13 @@
 
 ## Citation
 
-Tanaka E, Deng Y (2026). *heritable: Heritability Estimation from Linear
-Mixed Models*. R package version 0.2.0,
+Tanaka E, Deng Y, Kar F (2026). *heritable: Heritability Estimation from
+Linear Mixed Models*. R package version 0.2.0,
 <https://anu-aagi.github.io/heritable/>.
 
     @Manual{,
       title = {heritable: Heritability Estimation from Linear Mixed Models},
-      author = {Emi Tanaka and Yidi Deng},
+      author = {Emi Tanaka and Yidi Deng and Fonti Kar},
       year = {2026},
       note = {R package version 0.2.0},
       url = {https://anu-aagi.github.io/heritable/},
