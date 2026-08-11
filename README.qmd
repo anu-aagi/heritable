@@ -1,7 +1,5 @@
 ---
 format: gfm
-editor_options: 
-  chunk_output_type: console
 ---
 
 <!-- README.md is generated from README.qmd. Please edit that file -->
