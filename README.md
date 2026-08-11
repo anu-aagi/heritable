@@ -16,8 +16,10 @@ coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app
 
 `heritable` provides flexible and interpretable heritability estimation
 from linear mixed models in R. Given genotypes and their observed
-traits, it helps breeders assess whether a trial contains enough genetic
-signal for selection.
+traits, it can help quantify the proportion of phenotypic variation that
+is attributable to genetic variation. This information is useful for
+understanding the genetic architecture of traits, predicting breeding
+values, and designing breeding programs.
 
 The package brings commonly used estimators into a unified interface and
 supports:
@@ -49,9 +51,11 @@ pak::pak("anu-aagi/heritable")
 
 ## A simple demo
 
-This basic example calculates broad-sense heritability for a
-single-environment trial. The same `H2()` interface works with `lme4`
-and `asreml` model objects.
+This basic example calculates broad-sense heritability for a single
+trial for a particular trait. The same `H2()` interface works with
+`lme4` and `asreml` model objects. Below we fit a simple linear mixed
+model using `lme4` in which genotype effects are treated as random and
+the `rep` term is included as a fixed effect.
 
 ``` r
 library(heritable)
@@ -60,8 +64,13 @@ lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
 fit <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 ```
 
+By the definition of heritability, the genetic effects must be treated
+as random. The `target` argument specifies the term encoding genetic
+effects in the fitted model. In this case, the random effect term is
+`"gen"`.
+
 Uppercase `H2()` calculates broad-sense heritability. Use `target` to
-specify the variable encoding genetic effects, `method` to select one or
+specify the term encoding genetic effects, `method` to select one or
 more estimators:
 
 ``` r
@@ -70,10 +79,12 @@ H2(fit, target = "gen", method = c("Cullis", "Standard"))
 #> 0.8294971 0.8294971
 ```
 
-`heritable` also supports multi-environment trial (MET) models. In the
+`heritable` also supports multi-environment trial (MET) models by
+considering either the main, marginal or stratified effects. In the
 example below, we use `asreml` to fit a genotype-by-environment (G×E)
 model in which genotype, environment, and G×E interaction effects are
-all treated as random.
+all treated as random. Currently the model must contain the main
+genotype effects and do not extend to factor analytic structures.
 
 ``` r
 fit_gxe <- asreml::asreml(
@@ -191,18 +202,18 @@ effects, or environments.
 citation("heritable")
 #> To cite package 'heritable' in publications use:
 #> 
-#>   Kar F, Deng Y, Li W, Tanaka E (2026). _heritable: R package for
-#>   heritability calculations for plant breeding trials_. R package
-#>   version 0.2.0, <https://github.com/anu-aagi/heritable>.
+#>   Tanaka E, Deng Y (2026). _heritable: Heritability Estimation from
+#>   Linear Mixed Models_. R package version 0.2.0,
+#>   <https://anu-aagi.github.io/heritable/>.
 #> 
 #> A BibTeX entry for LaTeX users is
 #> 
 #>   @Manual{,
-#>     title = {heritable: R package for heritability calculations for plant breeding trials},
-#>     author = {Fonti Kar and Yidi Deng and Weihao (Patrick) Li and Emi Tanaka},
+#>     title = {heritable: Heritability Estimation from Linear Mixed Models},
+#>     author = {Emi Tanaka and Yidi Deng},
 #>     year = {2026},
 #>     note = {R package version 0.2.0},
-#>     url = {https://github.com/anu-aagi/heritable},
+#>     url = {https://anu-aagi.github.io/heritable/},
 #>   }
 ```
 

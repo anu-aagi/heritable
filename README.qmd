@@ -21,7 +21,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/anu-aagi/heritable/graph/badge.svg)](https://app.codecov.io/gh/anu-aagi/heritable)
 <!-- badges: end -->
 
-`heritable` provides flexible and interpretable heritability estimation from linear mixed models in R. Given genotypes and their observed traits, it helps breeders assess whether a trial contains enough genetic signal for selection.
+`heritable` provides flexible and interpretable heritability estimation from linear mixed models in R. Given genotypes and their observed traits, it can help quantify the proportion of phenotypic variation that is attributable to genetic variation. This information is useful for understanding the genetic architecture of traits, predicting breeding values, and designing breeding programs.
 
 The package brings commonly used estimators into a unified interface and supports:
 
@@ -50,7 +50,7 @@ pak::pak("anu-aagi/heritable")
 
 ## A simple demo
 
-This basic example calculates broad-sense heritability for a single-environment trial. The same `H2()` interface works with `lme4` and `asreml` model objects.
+This basic example calculates broad-sense heritability for a single trial for a particular trait. The same `H2()` interface works with `lme4` and `asreml` model objects. Below we fit a simple linear mixed model using `lme4` in which genotype effects are treated as random and the `rep` term is included as a fixed effect. 
 
 ```{r example}
 #| output: false
@@ -61,15 +61,16 @@ lettuce_subset <- subset(lettuce_phenotypes, loc == "L2")
 fit <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
 ```
 
-Uppercase `H2()` calculates broad-sense heritability. Use `target` to specify the variable encoding genetic effects,  `method` to select one or more estimators:
+By the definition of heritability, the genetic effects must be treated as random. The `target` argument specifies the term encoding genetic effects in the fitted model. In this case, the random effect term is `"gen"`.
+
+Uppercase `H2()` calculates broad-sense heritability. Use `target` to specify the term encoding genetic effects,  `method` to select one or more estimators:
 
 ```{r}
 #| message: false
-
 H2(fit, target = "gen", method = c("Cullis", "Standard"))
 ```
 
-`heritable` also supports multi-environment trial (MET) models. In the example below, we use `asreml` to fit a genotype-by-environment (G×E) model in which genotype, environment, and G×E interaction effects are all treated as random.
+`heritable` also supports multi-environment trial (MET) models by considering either the main, marginal or stratified effects. In the example below, we use `asreml` to fit a genotype-by-environment (G×E) model in which genotype, environment, and G×E interaction effects are all treated as random. Currently the model must contain the main genotype effects and do not extend to factor analytic structures. 
 
 ```{r example gxe}
 #| output: false
@@ -129,7 +130,6 @@ The interface of `h2()` is nearly identical to that of `H2()`. The only addition
 
 ```{r}
 #| message: false
-
 h2(fit_grm, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
 ```
 
@@ -139,7 +139,6 @@ The returned estimate retains the fitted model, allowing parametric bootstrap co
 
 ```{r confidence-interval}
 #| message: false
-
 estimate <- H2(fit, target = "gen", method = c("Cullis", "Standard"))
 confint(estimate, B = 100, seed = 2026)
 ```
