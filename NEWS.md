@@ -1,5 +1,8 @@
 # heritable 0.2.0
 
+* `h2()` and `H2()` now fail with an informative error for non-Gaussian `lme4`
+  models (e.g. `glmer()`) instead of a cryptic method-dispatch error
+  [#48](https://github.com/anu-aagi/heritable/issues/48).
 * Added narrow-sense heritability estimation through `h2()` and the `h2_*()`
   estimator functions for models with a known additive genetic covariance
   structure.
