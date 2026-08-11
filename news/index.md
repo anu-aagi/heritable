@@ -2,6 +2,12 @@
 
 ## heritable 0.2.0
 
+- [`h2()`](https://anu-aagi.github.io/heritable/reference/H2.md) and
+  [`H2()`](https://anu-aagi.github.io/heritable/reference/H2.md) now
+  fail with an informative error for non-Gaussian `lme4` models
+  (e.g. [`glmer()`](https://rdrr.io/pkg/lme4/man/glmer.html)) instead of
+  a cryptic method-dispatch error
+  [\#48](https://github.com/anu-aagi/heritable/issues/48).
 - Added narrow-sense heritability estimation through
   [`h2()`](https://anu-aagi.github.io/heritable/reference/H2.md) and the
   `h2_*()` estimator functions for models with a known additive genetic
