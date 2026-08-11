@@ -128,6 +128,50 @@ h2_Oakey.asreml <- function(model,
   return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
 }
 
+#' Calculate reliability by genotype from asreml model
+#' @export
+#' @noRd
+#' @return Named numeric vector
+#' @examples
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ vm(gen, lettuce_GRM),
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' h2_Reliability_by_genotype.asreml(lettuce_asreml, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
+#' }
+h2_Reliability_by_genotype.asreml <- function(model,
+                                              target,
+                                              options = NULL,
+                                              marginal = TRUE,
+                                              stratification = NULL,
+                                              vc = NULL,
+                                              source = list(),
+                                              ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense", source)
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, source = source, ...)
+  }
+
+  # Parametrise is the same for broad sense and narrow sense.
+  r2 <- H2_Reliability_parameters(vc$G_g, vc$C22_g)
+  stats::setNames(r2, vc$gnames)
+}
+
 #' Calculate pairwise heritability from asreml model
 #' @export
 #' @noRd
@@ -509,6 +553,49 @@ H2_Oakey.asreml <- function(model,
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
   return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
+}
+
+#' Calculate reliability by genotype from asreml model
+#' @export
+#' @noRd
+#' @return Named numeric vector
+#' @examples
+#' \dontrun{
+#' lettuce_asreml <- asreml::asreml(fixed = y ~ rep,
+#'                                  random = ~ vm(gen, lettuce_GRM),
+#'                                  data = lettuce_subset,
+#'                                  trace = FALSE
+#'                                  )
+#'
+#' H2_Reliability_by_genotype.asreml(lettuce_asreml, target = "gen", source = list(lettuce_GRM = lettuce_GRM))
+#' }
+H2_Reliability_by_genotype.asreml <- function(model,
+                                              target = NULL,
+                                              options = NULL,
+                                              marginal = TRUE,
+                                              stratification = NULL,
+                                              vc = NULL,
+                                              source = list(),
+                                              ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense", source)
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, source = source, ...)
+  }
+
+  r2 <- H2_Reliability_parameters(vc$G_g, vc$C22_g)
+  stats::setNames(r2, vc$gnames)
 }
 
 #' Calculate Piepho's heritability from asreml model

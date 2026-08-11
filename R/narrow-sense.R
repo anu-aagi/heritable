@@ -52,6 +52,11 @@
 #' - `"Piepho"`: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 #' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{\operatorname{Var}(g_i - g_j)}}
 #' - `"Standard"`: \deqn{H^2_{Standard} = \frac{\operatorname{Var}(g_i - g_j)}{\operatorname{Var}(y_i.. - y_j..)}}
+#' - `"Reliability"`: \deqn{\bar{r}^2 = \frac{1}{n_g}\sum_{i=1}^{n_g} \left(1 - \frac{var(\hat{g}^{BLUP}_i)}{var(g_i)}\right)}
+#'
+#' `"Reliability"` is not part of the default `method` set but can be requested
+#' explicitly. Use [`h2_Reliability_by_genotype()`] / [`H2_Reliability_by_genotype()`]
+#' to obtain the per-genotype values \eqn{r^2_i} instead of their mean.
 #'
 #' The following methods are currently implemented for broad-sense heritability `H2(method = "XX")`:
 #' - `"Cullis"`: \deqn{H^2_{Cullis} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ..}}{2\sigma^2_g}}
@@ -59,6 +64,7 @@
 #' - `"Piepho"`: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 #' - `"Delta"`: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 #' - `"Standard"`: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+#' - `"Reliability"`: \deqn{\bar{r}^2 = \frac{1}{n_g}\sum_{i=1}^{n_g} \left(1 - \frac{var(\hat{g}^{BLUP}_i)}{var(g_i)}\right)}
 #'
 #' For further details of a specific method - take a look at helpfile for each subfunctions `?H2_Cullis`
 #'
@@ -109,7 +115,11 @@ h2.default <- function(model,
                        source = list(),
                        vc = NULL,
                        ...) {
-  method <- match.arg(method, several.ok = TRUE)
+  method <- match.arg(
+    method,
+    c("Cullis", "Oakey", "Piepho", "Delta", "Standard", "Reliability"),
+    several.ok = TRUE
+  )
 
   initial_checks(model, target, options = options)
 
@@ -138,6 +148,7 @@ h2.default <- function(model,
            Piepho = h2_Piepho(model, target, options = list(check = FALSE), vc = vc, ...),
            Delta = h2_Delta(model, target, options = list(check = FALSE), vc = vc, ...),
            Standard = h2_Standard(model, target, options = list(check = FALSE), vc = vc, ...),
+           Reliability = h2_Reliability(model, target, options = list(check = FALSE), vc = vc, ...),
            cli::cli_abort(
              "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
            )
@@ -283,6 +294,86 @@ h2_Oakey <- function(model,
                      vc = NULL,
                      ...) {
   UseMethod("h2_Oakey")
+}
+
+#' @title Calculate reliability from model object
+#' @description
+#' Compute the reliability (\eqn{r^2}, also known as the coefficient of
+#' determination) of the genotype BLUPs, as described by Schmidt et al. (2019).
+#' `h2_Reliability()` / `H2_Reliability()` return the overall (mean) reliability
+#' \eqn{\bar{r}^2}, while `h2_Reliability_by_genotype()` /
+#' `H2_Reliability_by_genotype()` return the per-genotype values \eqn{r^2_i}.
+#' @inheritParams H2
+#' @name H2_Reliability
+#' @aliases H2_Reliability h2_Reliability H2_Reliability_by_genotype h2_Reliability_by_genotype
+#' @details
+#' The reliability of the \eqn{i}th genotype is
+#' \deqn{r^2_i = 1 - \frac{var(\hat{g}^{BLUP}_i)}{var(g_i)}}
+#' where \eqn{var(\hat{g}^{BLUP}_i)} is the \eqn{i}th diagonal element of the
+#' prediction error variance matrix \eqn{C_{22(g)}} and \eqn{var(g_i)} is the
+#' \eqn{i}th diagonal element of the genotypic variance-covariance matrix
+#' \eqn{G_{(g)}}. As only the diagonal elements are used, \eqn{r^2_i} ignores the
+#' off-diagonal elements (covariances) of both matrices. The overall reliability
+#' is the mean across genotypes,
+#' \deqn{\bar{r}^2 = \frac{1}{n_g}\sum_{i=1}^{n_g} r^2_i.}
+#' @returns `h2_Reliability()` / `H2_Reliability()` return a numeric value;
+#'   `h2_Reliability_by_genotype()` / `H2_Reliability_by_genotype()` return a
+#'   named numeric vector.
+#' @references
+#' - Schmidt, P., Hartung, J., Bennewitz, J., & Piepho, H.-P. (2019). Heritability in Plant Breeding on a Genotype-Difference Basis. Genetics, 212(4), 991–1008. https://doi.org/10.1534/genetics.119.302134
+#' - Mrode, R. A. (2014). Linear Models for the Prediction of Animal Breeding Values (3rd ed.). CABI.
+#' @seealso [H2_Reliability_parameters()]
+#' @examples
+#' # lme4 model
+#' lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+#' lettuce_lme4 <- lme4::lmer(y ~ rep + (1 | gen), data = lettuce_subset)
+#' H2_Reliability(lettuce_lme4, target = "gen")
+#' H2_Reliability_by_genotype(lettuce_lme4, target = "gen")
+#' @export
+h2_Reliability <- function(model,
+                           target,
+                           options = NULL,
+                           marginal = TRUE,
+                           stratification = NULL,
+                           vc = NULL,
+                           ...) {
+  UseMethod("h2_Reliability")
+}
+
+#' @noRd
+#' @export
+h2_Reliability.default <- function(model,
+                                   target,
+                                   options = NULL,
+                                   marginal = TRUE,
+                                   stratification = NULL,
+                                   vc = NULL,
+                                   ...) {
+  r2 <- h2_Reliability_by_genotype(model,
+                                   target,
+                                   options = options,
+                                   marginal = marginal,
+                                   stratification = stratification,
+                                   vc = vc,
+                                   ...)
+
+  if (is.atomic(r2) && length(r2) == 1 && is.na(r2)) {
+    return(NA)
+  }
+
+  mean(r2)
+}
+
+#' @rdname H2_Reliability
+#' @export
+h2_Reliability_by_genotype <- function(model,
+                                       target,
+                                       options = NULL,
+                                       marginal = TRUE,
+                                       stratification = NULL,
+                                       vc = NULL,
+                                       ...) {
+  UseMethod("h2_Reliability_by_genotype")
 }
 
 #' Calculate average heritability of differences between genotypes from model object

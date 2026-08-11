@@ -98,6 +98,37 @@ h2_Oakey.lmerMod <- function(model,
 
 #' @noRd
 #' @export
+h2_Reliability_by_genotype.lmerMod <- function(model,
+                                               target,
+                                               options = NULL,
+                                               marginal = TRUE,
+                                               stratification = NULL,
+                                               vc = NULL,
+                                               ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "narrow_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, ...)
+  }
+
+  # Parametrise is the same for broad sense and narrow sense.
+  r2 <- H2_Reliability_parameters(vc$G_g, vc$C22_g)
+  stats::setNames(r2, vc$gnames)
+}
+
+#' @noRd
+#' @export
 h2_Delta_pairwise.lmerMod <- function(model,
                                      target,
                                      type = c("BLUP", "BLUE"),
@@ -542,6 +573,36 @@ H2_Oakey.lmerMod <- function(model,
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
   return(H2_Oakey_parameters(G_g_inv, vc$C22_g))
+}
+
+#' @noRd
+#' @export
+H2_Reliability_by_genotype.lmerMod <- function(model,
+                                               target = NULL,
+                                               options = NULL,
+                                               marginal = TRUE,
+                                               stratification = NULL,
+                                               vc = NULL,
+                                               ...) {
+  initial_checks(model, target, options)
+
+  if (options$check %||% TRUE) {
+    # Check correct model specification.
+    check_model_specification(model, target, "broad_sense")
+  }
+
+  # Check if target is random or fixed
+  if (!check_target_random(model, target)) {
+    return(NA)
+  }
+
+  if(is.null(vc)){
+    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
+                   marginal = marginal, stratification = stratification, ...)
+  }
+
+  r2 <- H2_Reliability_parameters(vc$G_g, vc$C22_g)
+  stats::setNames(r2, vc$gnames)
 }
 
 #' @noRd

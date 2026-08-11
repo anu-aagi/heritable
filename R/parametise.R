@@ -89,6 +89,76 @@ H2_Oakey_parameters <- function(Gg_inv, C22_g) {
 
 }
 
+#' Calculate reliability using variance parameters
+#'
+#' @description Compute the reliability (\eqn{r^2}, also known as the coefficient
+#' of determination) for each genotype from the genotypic variance-covariance
+#' matrix and the prediction error variance (PEV) matrix of the genotype BLUPs.
+#'
+#' @details The reliability of the \eqn{i}th genotype is
+#'
+#' \deqn{r^2_i = 1 - \frac{var(\hat{g}^{BLUP}_i)}{var(g_i)}}
+#'
+#' where:
+#' - \eqn{var(\hat{g}^{BLUP}_i)} is the \eqn{i}th diagonal element of the PEV
+#'   matrix \eqn{C_{22(g)}}
+#' - \eqn{var(g_i)} is the \eqn{i}th diagonal element of the genotypic
+#'   variance-covariance matrix \eqn{G_{(g)}}
+#'
+#' As only the diagonal elements are used, \eqn{r^2_i} does not account for the
+#' off-diagonal elements (i.e. covariances) of either matrix. The overall
+#' reliability is obtained as the mean across genotypes,
+#' \eqn{\bar{r}^2 = \frac{1}{n_g}\sum_{i=1}^{n_g} r^2_i}.
+#'
+#' Genotypes whose genotypic variance (the corresponding diagonal element of
+#' \eqn{G_{(g)}}) is not strictly positive yield an undefined reliability and are
+#' returned as `NA` (with a warning) rather than `Inf`/`NaN`.
+#'
+#' @param G_g Genotypic variance-covariance matrix.
+#' @param C22_g Prediction error variance matrix associated with the genotype effects.
+#' @return A named numeric vector of per-genotype reliabilities. Entries for
+#'   genotypes with a non-positive genotypic variance are `NA`.
+#' @examples
+#' G_g <- diag(0.15, 3, 3)
+#' C22_g <- matrix(
+#'   c(
+#'     0.08, 0.01, 0.00,
+#'     0.01, 0.07, 0.01,
+#'     0.00, 0.01, 0.09
+#'   ),
+#'   nrow = 3, byrow = TRUE
+#' )
+#' H2_Reliability_parameters(G_g, C22_g)
+#'
+#' @references
+#' - Schmidt, P., Hartung, J., Bennewitz, J., & Piepho, H.-P. (2019). Heritability in Plant Breeding on a Genotype-Difference Basis. Genetics, 212(4), 991–1008. https://doi.org/10.1534/genetics.119.302134
+#' - Mrode, R. A. (2014). Linear Models for the Prediction of Animal Breeding Values (3rd ed.). CABI.
+#'
+#' @export
+H2_Reliability_parameters <- function(G_g, C22_g) {
+  var_g <- diag(as.matrix(G_g))
+  pev <- diag(as.matrix(C22_g))
+
+  r2 <- 1 - pev / var_g
+
+  # Reliability r^2 = 1 - PEV / var(g) is undefined when the genotypic variance
+  # is not strictly positive (e.g. a degenerate genotype in a relationship
+  # matrix). Guard against silently propagating Inf/NaN into the overall (mean)
+  # reliability by setting those genotypes to NA and warning.
+  invalid <- !is.finite(var_g) | var_g <= 0
+  if (any(invalid)) {
+    r2[invalid] <- NA_real_
+    n_invalid <- sum(invalid)
+    cli::cli_warn(c(
+      "Reliability is undefined for {n_invalid} genotype{?s} with a
+       non-positive genotypic variance.",
+      "i" = "Their reliability was set to {.val {NA}}."
+    ))
+  }
+
+  r2
+}
+
 #' Calculate Piepho's heritability using variance parameters
 #'
 #' @description Compute Piepho's heritability using the variance of differences between two BLUES.

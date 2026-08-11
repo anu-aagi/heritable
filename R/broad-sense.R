@@ -26,7 +26,11 @@ H2.default <- function(model,
                        vc = NULL,
                        ...
                        ) {
-  method <- match.arg(method, several.ok = TRUE)
+  method <- match.arg(
+    method,
+    c("Cullis", "Oakey", "Piepho", "Delta", "Standard", "Reliability"),
+    several.ok = TRUE
+  )
 
   initial_checks(model, target, options = options)
 
@@ -55,6 +59,7 @@ H2.default <- function(model,
       Piepho = H2_Piepho(model, target, options = list(check = FALSE), vc = vc, ...),
       Delta = H2_Delta(model, target, options = list(check = FALSE), vc = vc, ...),
       Standard = H2_Standard(model, target, options = list(check = FALSE), vc  = vc, ...),
+      Reliability = H2_Reliability(model, target, options = list(check = FALSE), vc = vc, ...),
       cli::cli_abort("{.fn H2} is not implemented for method {.val {m}} of class{?es} {.code {class(model)}}")
     )
   })
@@ -115,6 +120,54 @@ H2_Oakey <- function(model,
                      vc = NULL,
                      ...) {
   UseMethod("H2_Oakey")
+}
+
+#' @rdname H2_Reliability
+#' @export
+H2_Reliability <- function(model,
+                           target,
+                           options = NULL,
+                           marginal = TRUE,
+                           stratification = NULL,
+                           vc = NULL,
+                           ...) {
+  UseMethod("H2_Reliability")
+}
+
+#' @noRd
+#' @export
+H2_Reliability.default <- function(model,
+                                   target,
+                                   options = NULL,
+                                   marginal = TRUE,
+                                   stratification = NULL,
+                                   vc = NULL,
+                                   ...) {
+  r2 <- H2_Reliability_by_genotype(model,
+                                   target,
+                                   options = options,
+                                   marginal = marginal,
+                                   stratification = stratification,
+                                   vc = vc,
+                                   ...)
+
+  if (is.atomic(r2) && length(r2) == 1 && is.na(r2)) {
+    return(NA)
+  }
+
+  mean(r2)
+}
+
+#' @rdname H2_Reliability
+#' @export
+H2_Reliability_by_genotype <- function(model,
+                                       target,
+                                       options = NULL,
+                                       marginal = TRUE,
+                                       stratification = NULL,
+                                       vc = NULL,
+                                       ...) {
+  UseMethod("H2_Reliability_by_genotype")
 }
 
 #' @noRd

@@ -27,6 +27,7 @@ reference:
   - H2_Delta
   - H2_Delta_by_genotype
   - H2_Delta_pairwise
+  - H2_Reliability
 - subtitle: Parameter functions for calculation
 - contents:
   - ends_with("parameters")

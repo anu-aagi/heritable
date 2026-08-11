@@ -1,5 +1,13 @@
 # heritable 0.2.0
 
+* Added reliability (`r²`, the coefficient of determination) as an
+  additional metric [#24](https://github.com/anu-aagi/heritable/issues/24).
+  `h2_Reliability()` / `H2_Reliability()` return the overall (mean) reliability
+  `r̄²`, `h2_Reliability_by_genotype()` /
+  `H2_Reliability_by_genotype()` return the per-genotype values, and
+  `H2_Reliability_parameters()` computes them from variance components. The
+  measure is also available via `h2(method = "Reliability")` and
+  `H2(method = "Reliability")` (not part of the default `method` set).
 * `h2()` and `H2()` now fail with an informative error for non-Gaussian `lme4`
   models (e.g. `glmer()`) instead of a cryptic method-dispatch error
   [#48](https://github.com/anu-aagi/heritable/issues/48).

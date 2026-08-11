@@ -71,7 +71,12 @@ The following methods are currently implemented for narrow-sense heritability \c
 \item \code{"Piepho"}: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 \item \code{"Delta"}: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{\operatorname{Var}(g_i - g_j)}}
 \item \code{"Standard"}: \deqn{H^2_{Standard} = \frac{\operatorname{Var}(g_i - g_j)}{\operatorname{Var}(y_i.. - y_j..)}}
+\item \code{"Reliability"}: \deqn{\bar{r}^2 = \frac{1}{n_g}\sum_{i=1}^{n_g} \left(1 - \frac{var(\hat{g}^{BLUP}_i)}{var(g_i)}\right)}
 }
+
+\code{"Reliability"} is not part of the default \code{method} set but can be requested
+explicitly. Use \code{\link[=h2_Reliability_by_genotype]{h2_Reliability_by_genotype()}} / \code{\link[=h2_Reliability_by_genotype]{H2_Reliability_by_genotype()}}
+to obtain the per-genotype values \eqn{r^2_i} instead of their mean.
 
 The following methods are currently implemented for broad-sense heritability \code{H2(method = "XX")}:
 \itemize{
@@ -80,6 +85,7 @@ The following methods are currently implemented for broad-sense heritability \co
 \item \code{"Piepho"}: \deqn{H^2_{Piepho} = \frac{\sigma^2_g}{\sigma^2_g + \overline{PEV_{BLUE_g}} / 2}}
 \item \code{"Delta"}: \deqn{H^2_{\Delta ij} = 1 - \frac{PEV^{BLUP}_{\overline\Delta ij}}{2\sigma^2_g}}
 \item \code{"Standard"}: \deqn{H^2_{Standard} = \frac{\sigma^2_g}{\sigma^2_g + \frac{1}{n_g}\sum_{n_g}^{i=1} \sigma^2_p / n_{gi}}}
+\item \code{"Reliability"}: \deqn{\bar{r}^2 = \frac{1}{n_g}\sum_{i=1}^{n_g} \left(1 - \frac{var(\hat{g}^{BLUP}_i)}{var(g_i)}\right)}
 }
 
 For further details of a specific method - take a look at helpfile for each subfunctions \code{?H2_Cullis}
