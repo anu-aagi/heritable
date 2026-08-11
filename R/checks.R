@@ -21,6 +21,9 @@ initial_checks <- function(model, target, options) {
     # If there is more than one target, error
     check_target_single(target)
 
+    # If the model is not Gaussian with an identity link, error
+    check_model_family(model)
+
     # If model has not converged, warn
     check_model_convergence(model)
 
@@ -65,6 +68,38 @@ check_model_convergence <- function(model) {
 }
 .S3method("check_model_convergence", "asreml", check_model_convergence.asreml)
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
+
+
+# Check the response distribution and link function
+# Only Gaussian models with an identity link are currently supported for the
+# `lme4` backend. Catches `glmer()` / `glmer.nb()` (class `glmerMod`) models,
+# which otherwise fail later with an uninformative dispatch error.
+#' @keywords internal
+check_model_family.merMod <- function(model) {
+  fam <- stats::family(model)
+  if (!identical(fam$family, "gaussian") || !identical(fam$link, "identity")) {
+    cli::cli_abort(
+      c(
+        "Only Gaussian models with an identity link are currently supported for {.pkg lme4} models.",
+        "x" = "The supplied model has family {.val {fam$family}} with link {.val {fam$link}}.",
+        "i" = "Heritability for generalized linear mixed models is not currently implemented."
+      )
+    )
+  }
+  invisible(model)
+}
+
+#' @keywords internal
+check_model_family.default <- function(model) {
+  invisible(model)
+}
+
+#' @keywords internal
+check_model_family <- function(model) {
+  UseMethod("check_model_family")
+}
+.S3method("check_model_family", "merMod", check_model_family.merMod)
+.S3method("check_model_family", "default", check_model_family.default)
 
 
 #' Check whether the fitted model contains random terms not grouped by `target`
