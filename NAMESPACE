@@ -61,20 +61,28 @@ export(h2_Oakey)
 export(h2_Piepho)
 export(h2_Standard)
 export(var_comp)
-importFrom(Matrix,crossprod)
-importFrom(Matrix,diag)
-importFrom(Matrix,t)
-importFrom(Matrix,tcrossprod)
-importFrom(methods,as)
-importFrom(methods,canCoerce)
-importFrom(methods,hasMethod)
-importFrom(stats,as.formula)
-importFrom(stats,formula)
-importFrom(stats,lm)
-importFrom(stats,model.frame)
-importFrom(stats,predict)
-importFrom(stats,setNames)
-importFrom(stats,terms)
-importFrom(stats,update)
-importFrom(vctrs,vec_cast)
-importFrom(vctrs,vec_ptype2)
+importFrom(Matrix,
+  crossprod,
+  diag,
+  t,
+  tcrossprod
+)
+importFrom(methods,
+  as,
+  canCoerce,
+  hasMethod
+)
+importFrom(stats,
+  as.formula,
+  formula,
+  lm,
+  model.frame,
+  predict,
+  setNames,
+  terms,
+  update
+)
+importFrom(vctrs,
+  vec_cast,
+  vec_ptype2
+)
