@@ -71,3 +71,4 @@ CRAN-SUBMISSION
 !pkgdown/assets/slides/heritable-slide-for-aagiverse-meeting.html
 !pkgdown/assets/slides/heritable-slide-for-aagiverse-meeting_files/
 !pkgdown/assets/slides/heritable-slide-for-aagiverse-meeting_files/**
+**/*.quarto_ipynb
