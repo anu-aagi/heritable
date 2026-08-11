@@ -16,14 +16,14 @@
 
 ## Citation
 
-Kar F, Deng Y, Li W, Tanaka E (2026). *heritable: R package for
-heritability calculations for plant breeding trials*. R package version
-0.2.0, <https://github.com/anu-aagi/heritable>.
+Tanaka E, Deng Y (2026). *heritable: Heritability Estimation from Linear
+Mixed Models*. R package version 0.2.0,
+<https://anu-aagi.github.io/heritable/>.
 
     @Manual{,
-      title = {heritable: R package for heritability calculations for plant breeding trials},
-      author = {Fonti Kar and Yidi Deng and Weihao (Patrick) Li and Emi Tanaka},
+      title = {heritable: Heritability Estimation from Linear Mixed Models},
+      author = {Emi Tanaka and Yidi Deng},
       year = {2026},
       note = {R package version 0.2.0},
-      url = {https://github.com/anu-aagi/heritable},
+      url = {https://anu-aagi.github.io/heritable/},
     }

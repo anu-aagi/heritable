@@ -188,7 +188,7 @@ from the mixed-model equations:
 options(exact_psd_inv = FALSE)
 H2(fit, target = "gen", solver = "LMM")
 #>    Cullis     Oakey    Piepho     Delta  Standard 
-#> 0.8294971 0.8294971 0.8294913 0.8294971 0.8294971
+#> 0.8294971 0.8294971 0.8294876 0.8294971 0.8294971
 ```
 
 This approach can substantially reduce runtime, although it may be less
