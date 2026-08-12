@@ -63,11 +63,21 @@ check_model_convergence.lmerMod <- function(model) {
 }
 
 #' @keywords internal
+check_model_convergence.glmmTMB <- function(model) {
+  conv <- model$fit$convergence
+  pdHess <- isTRUE(model$sdr$pdHess)
+  if ((!is.null(conv) && conv != 0) || !pdHess) {
+    warning("The input model has not converged")
+  }
+}
+
+#' @keywords internal
 check_model_convergence <- function(model) {
   UseMethod("check_model_convergence")
 }
 .S3method("check_model_convergence", "asreml", check_model_convergence.asreml)
 .S3method("check_model_convergence", "lmerMod", check_model_convergence.lmerMod)
+.S3method("check_model_convergence", "glmmTMB", check_model_convergence.glmmTMB)
 
 
 # Check the response distribution and link function
@@ -94,12 +104,124 @@ check_model_family.default <- function(model) {
   invisible(model)
 }
 
+# Gate the `glmmTMB` backend to the model structures it can currently handle.
+# The variance-component machinery assumes a plain Gaussian (identity-link)
+# model with a homoscedastic residual `R = sigma^2 * I` and simple correlated
+# random-effects blocks. Model features that break those assumptions are
+# rejected here with an informative error instead of failing later with a
+# cryptic message (or, worse, returning a silently wrong result).
+#' @keywords internal
+check_model_family.glmmTMB <- function(model) {
+  fam <- model$modelInfo$family
+  if (!identical(fam$family, "gaussian") || !identical(fam$link, "identity")) {
+    cli::cli_abort(
+      c(
+        "Only Gaussian models with an identity link are currently supported for {.pkg glmmTMB} models.",
+        "x" = "The supplied model has family {.val {fam$family}} with link {.val {fam$link}}.",
+        "i" = "Heritability for generalized linear mixed models is not currently implemented."
+      )
+    )
+  }
+
+  # Zero-inflation: var_comp() only extracts the conditional model, so a
+  # zero-inflation component would be silently dropped.
+  zi <- stats::terms(model$modelInfo$allForm$ziformula)
+  if (length(labels(zi)) > 0 || attr(zi, "intercept") == 1) {
+    cli::cli_abort(
+      c(
+        "Zero-inflated {.pkg glmmTMB} models are not currently supported.",
+        "i" = "Heritability is derived from the conditional model only; a zero-inflation component would be ignored."
+      )
+    )
+  }
+
+  # Non-constant dispersion: the backend assumes a homoscedastic residual
+  # variance `R = sigma^2 * I`. A modelled `dispformula` also makes
+  # `sigma()` return `NA`.
+  dsp <- stats::terms(model$modelInfo$allForm$dispformula)
+  if (length(labels(dsp)) > 0 || !is.finite(stats::sigma(model))) {
+    cli::cli_abort(
+      c(
+        "{.pkg glmmTMB} models with a non-constant {.code dispformula} are not currently supported.",
+        "i" = "The residual variance is assumed homoscedastic ({.code R = sigma^2 * I})."
+      )
+    )
+  }
+
+  # A weighted Gaussian fit has residual covariance `sigma^2 * diag(1 / w)`, but
+  # the shared variance-component core rebuilds it as `sigma^2 * I`, dropping the
+  # per-observation weighting, so the resulting heritability does not account for
+  # the weights. How prior weights should enter a heritability computation is
+  # itself unresolved and affects every backend alike, so a consistent fix
+  # belongs in a dedicated cross-backend change rather than here. For now we warn
+  # (rather than silently returning a weight-unaware result, or hard-blocking
+  # only this backend while lme4 accepts weights without comment).
+  # TODO(anu-aagi/heritable#52): handle prior weights consistently across backends.
+  w <- model$frame[["(weights)"]]
+  if (!is.null(w) && !isTRUE(all(w == 1))) {
+    cli::cli_warn(
+      c(
+        "Prior {.code weights} are not accounted for in {.pkg glmmTMB} heritability estimates.",
+        "i" = "The residual variance is treated as homoscedastic ({.code R = sigma^2 * I}), not the weighted fit's {.code sigma^2 * diag(1 / w)}, so the estimate ignores the weights and may be biased.",
+        "i" = "Consistent handling of prior weights is tracked in anu-aagi/heritable#52."
+      )
+    )
+  }
+
+  # This first glmmTMB backend supports only plain random-effect *intercepts*:
+  # single-column blocks whose one column is `(Intercept)`, i.e. `(1 | group)`
+  # terms (including interactions such as `(1 | gen:block)`). That is the
+  # canonical heritability setup and the model class lme4 and glmmTMB reproduce
+  # identically. Everything else glmmTMB can fit is deferred to a follow-up,
+  # because it packs more into a covariance block than the downstream term
+  # mapping (one formula bar <-> one RE block) can currently align:
+  #   * random slopes -- `(1 + x | gen)` (a multi-column "us" block) and
+  #     `(1 + x || gen)` (a single `diag` block that findbars() splits into
+  #     several bars, so bars and blocks no longer line up);
+  #   * structured G-side covariance -- `cs()`, `ar1()`, `toep()`, `us(...)`, ...
+  # TODO(anu-aagi/heritable #19 follow-up): support random slopes and structured
+  # G-/R-side covariance (in particular on non-target effects), then relax this.
+  #
+  # Gating on "single column AND that column is the intercept" (rather than on
+  # `blockCode == "us" && single column`) is deliberate and load-bearing:
+  #   * a lone random *slope* `(0 + x | g)` is ALSO a single-column "us" block,
+  #     and the uncorrelated `(1 + x || g)` can reach us pre-expanded as two
+  #     single-column blocks on the same factor, `(1 | g) + (0 + x | g)`. Both
+  #     must be rejected here, otherwise they slip through and either crash or
+  #     mis-map downstream (the very failure this guard exists to prevent).
+  #   * for a single intercept column the covariance code is necessarily plain
+  #     ("us"/"diag"/"homdiag" all coincide), so `diag(1 | g)` -- identical to
+  #     `(1 | g)` -- is correctly accepted without a special case.
+  vcc  <- glmmTMB::VarCorr(model)$cond
+  cnms <- model$modelInfo$reTrms$cond$cnms
+  code <- vapply(vcc, function(v) {
+    bc <- attr(v, "blockCode")
+    if (is.null(bc)) "us" else names(bc)
+  }, character(1))
+  is_plain_intercept <- vapply(cnms, function(cc) {
+    length(cc) == 1L && identical(unname(cc), "(Intercept)")
+  }, logical(1))
+  if (any(!is_plain_intercept)) {
+    found <- unique(ifelse(code != "us", code, "random slope")[!is_plain_intercept])
+    cli::cli_abort(
+      c(
+        "Only plain random-effect intercepts {.code (1 | group)} are currently supported for {.pkg glmmTMB} models.",
+        "x" = "Found an unsupported random-effect structure: {.val {found}}.",
+        "i" = "Random slopes and structured covariance (e.g. {.code cs()}, {.code ar1()}, {.code toep()}, {.code ||}) are planned for a future release."
+      )
+    )
+  }
+
+  invisible(model)
+}
+
 #' @keywords internal
 check_model_family <- function(model) {
   UseMethod("check_model_family")
 }
 .S3method("check_model_family", "merMod", check_model_family.merMod)
 .S3method("check_model_family", "default", check_model_family.default)
+.S3method("check_model_family", "glmmTMB", check_model_family.glmmTMB)
 
 
 #' Check whether the fitted model contains random terms not grouped by `target`
@@ -338,6 +460,15 @@ check_model_specification.lmerMod <- function(model, target,
 
 #' @keywords internal
 #' @noRd
+check_model_specification.glmmTMB <- function(model, target,
+                                              type = c("broad_sense", "narrow_sense"),
+                                              ...){
+  # Body is purely attribute-based (pull_terms), so the lme4 logic is shared.
+  check_model_specification.lmerMod(model, target, type = match.arg(type), ...)
+}
+
+#' @keywords internal
+#' @noRd
 check_model_specification <- function(model, target,
                                       type = c("broad_sense", "narrow_sense"),
                                       ...) {
@@ -345,9 +476,4 @@ check_model_specification <- function(model, target,
 }
 .S3method("check_model_specification", "asreml", check_model_specification.asreml)
 .S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
-
-#' @keywords internal
-check_glmmTMB_family <- function(model) {
-  if (model$modelInfo$family$family != "gaussian")
-    cli::cli_abort("Only the Gaussian response distribution is currently supported!")
-}
+.S3method("check_model_specification", "glmmTMB", check_model_specification.glmmTMB)

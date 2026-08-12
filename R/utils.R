@@ -63,12 +63,36 @@ pull_terms.lmerMod <- function(model) {
 
 #' @keywords internal
 pull_terms.glmmTMB <- function(model) {
-  fixed_trms <- terms(model) |>
-    attr("term.labels")
 
-  ran_trms <- glmmTMB::VarCorr(model) |>
-    _$cond |>
-    names()
+  fixed_trms <- reformulas::nobars(formula(model))
+  if(inherits(fixed_trms,"formula")){
+    fixed_trms <- terms(fixed_trms) |>
+      attr("term.labels")
+  } else {
+    fixed_trms <- character()
+  }
+
+  # Bar strings in formula order, e.g. "1 | gen", "1 | gen:block", matching the
+  # column-block order of getME(model, "Z"). This mirrors names(mmList) for lme4.
+  bars <- reformulas::findbars(formula(model))
+  ran_trms <- vapply(bars, function(b) paste(deparse(b), collapse = " "), character(1))
+
+  attr(ran_trms, "grouping_variable") <- sapply(ran_trms, function(trm) {
+    stringr::str_split(trm, " \\| ")[[1]] |> utils::tail(n = 1)
+  }, USE.NAMES = FALSE)
+
+  design_trms <- lapply(ran_trms, function(trm) {
+    trm <- stringr::str_split(trm, " \\| ")[[1]] |> utils::head(n = 1)
+    as.formula(paste("~ ", trm)) |> terms()
+  })
+
+  attr(ran_trms, "simple_intercept") <- sapply(design_trms, function(trm) {
+    length(attr(trm, "term.labels"))  == 0
+  })
+
+  attr(ran_trms, "contain_intercept") <- sapply(design_trms, function(trm) {
+    attr(trm, "intercept")  == 1
+  })
 
   return(list(fixed = fixed_trms, random = ran_trms))
 }
@@ -154,7 +178,9 @@ asreml_Spcls <- c(
 
 #' @keywords internal
 pull_terms_without_specials.glmmTMB <- function(model) {
-  pull_terms.glmmTMB(model)
+  # pull_terms.glmmTMB now returns the same bar-string format + attributes as the
+  # lme4 backend, so the string-only transformation can be shared verbatim.
+  pull_terms_without_specials.lmerMod(model)
 }
 
 #' @keywords internal
@@ -273,8 +299,8 @@ fit_counterpart_model.lmerMod <- function(model, target) {
       # Fit a lm instead
       fixed_formula <- reformulas::nobars(formula(model))
       fixed_formula <- update(fixed_formula, paste(". ~ . +", ran_trms))
-      # Pull out data
-      model_data <- model@frame %||% model.frame(model)
+      # Pull out data (model.frame() works for both lme4 and glmmTMB backends)
+      model_data <- model.frame(model)
       refit_model <- lm(fixed_formula, data = model_data)
     } else {
       ran_trms <- pull_terms(model)$random
@@ -321,6 +347,8 @@ fit_counterpart_model <- function(model, target = NULL) {
 }
 .S3method("fit_counterpart_model", "asreml", fit_counterpart_model.asreml)
 .S3method("fit_counterpart_model", "lmerMod", fit_counterpart_model.lmerMod)
+# The lme4 body is backend-agnostic (uses model.frame + dispatched pull_terms).
+.S3method("fit_counterpart_model", "glmmTMB", fit_counterpart_model.lmerMod)
 
 #' Print method for heritable objects
 #'
@@ -431,20 +459,21 @@ var_diff <- function(V) {
 }
 
 
+#' Shared variance-component machinery for the mixed-model backends
+#'
+#' Backend-agnostic core of [var_comp()]. Given the extracted design matrices and
+#' covariance structure (`X`, `Z`, `sigma2`, `G`), it builds the target mapping,
+#' the marginal variance `V`, and the coefficient-matrix blocks `C22`/`C11`. The
+#' backend methods (`var_comp.lmerMod`, `var_comp.glmmTMB`) only differ in how
+#' they extract `X`, `Z`, `sigma2` and `G`, then delegate here.
+#'
+#' @keywords internal
 #' @noRd
-#' @export
-var_comp.lmerMod <- function(model, target,
-                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
-                             marginal = TRUE, stratification = NULL,
-                             solver = c("direct", "LMM"), ...) {
+var_comp_core <- function(model, target, X, Z, sigma2, G,
+                          calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
+                          marginal = TRUE, stratification = NULL,
+                          solver = c("direct", "LMM")) {
   solver <- match.arg(solver)
-  X <- lme4::getME(model, "X")
-  Z <- lme4::getME(model, "Z")
-
-  sigma2 <- stats::sigma(model)^2
-  Lambda <- lme4::getME(model, "Lambda")
-  G <- tcrossprod(Lambda) * sigma2
-  dimnames(G) <- list(colnames(Z), colnames(Z))
 
   if(marginal || !is.null(stratification)) marginal <- TRUE
   mapper <- map_target_terms(model, target, marginal)
@@ -619,6 +648,89 @@ var_comp.lmerMod <- function(model, target,
        G_g_tilde = G_g_tilde, G_g_tilde_no_cov = G_g_tilde_no_cov, C11_g = C11_g,
        V = V, G = G, Z = Z, X = X, idx = idx, W = W,
        marginal = marginal, stratification = stratification)
+}
+
+#' @noRd
+#' @export
+var_comp.lmerMod <- function(model, target,
+                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
+                             marginal = TRUE, stratification = NULL,
+                             solver = c("direct", "LMM"), ...) {
+  X <- lme4::getME(model, "X")
+  Z <- lme4::getME(model, "Z")
+  sigma2 <- stats::sigma(model)^2
+  Lambda <- lme4::getME(model, "Lambda")
+  G <- tcrossprod(Lambda) * sigma2
+  dimnames(G) <- list(colnames(Z), colnames(Z))
+
+  var_comp_core(model, target, X = X, Z = Z, sigma2 = sigma2, G = G,
+                calc_C22 = calc_C22, calc_V = calc_V, calc_C11 = calc_C11,
+                marginal = marginal, stratification = stratification,
+                solver = solver)
+}
+
+#' Build the random-effects covariance matrix G for a Gaussian glmmTMB model
+#'
+#' Why this is done by hand rather than with an off-the-shelf accessor:
+#'
+#'   * lme4 hands you the relative covariance factor via `getME(model, "Lambda")`,
+#'     from which `G = sigma^2 * Lambda Lambda^T` follows directly. glmmTMB has no
+#'     `Lambda` in its `getME()` menu (`X, Xzi, Z, Zzi, Xdisp, theta, beta, b, Gp`),
+#'     so that route does not exist here.
+#'   * `getME(model, "Gp")` (the group pointers) is not usable either: on a fitted
+#'     glmmTMB (>= 1.1.13) it errors ("values must be type 'integer', ...").
+#'   * `insight` has `get_varcov()` and `get_variance_random()` for glmmTMB, but the
+#'     former returns the *fixed-effect* vcov and the latter a *scalar* total random
+#'     variance -- neither returns the L*k x L*k block-diagonal G that the
+#'     heritability maths needs.
+#'
+#' So G is reconstructed block by block from `VarCorr(model)$cond`. For each
+#' random-effects term the block is `kronecker(I_L, Sigma)`: block-diagonal over
+#' the L grouping levels, each level carrying the k x k term covariance `Sigma`.
+#' This matches glmmTMB's own effect-within-level ordering of the columns of
+#' `getME(model, "Z")`. `names(VarCorr(...)$cond)` follows glmmTMB's formula order,
+#' which is the same order in which the term blocks appear in `Z`.
+#'
+#' Correctness is pinned in tests/testthat/test-glmmTMB.R: the G produced here is
+#' compared spectrally against lme4's independent `Lambda`-route G on the same
+#' data (agreement to ~1e-7 across single / multiple / interaction terms), and a
+#' 2x2 random-slope block is checked to carry the correct off-diagonal covariance.
+#'
+#' @keywords internal
+#' @noRd
+build_G_glmmTMB <- function(model) {
+  Z   <- glmmTMB::getME(model, "Z")
+  vcc <- glmmTMB::VarCorr(model)$cond    # named cov matrices, formula order = Z block order
+  ref <- glmmTMB::ranef(model)$cond      # named list, L_t x k_t (rows = grouping levels)
+  blocks <- lapply(names(vcc), function(t) {
+    Sigma <- as.matrix(vcc[[t]])
+    L_t   <- nrow(ref[[t]])
+    kronecker(Matrix::Diagonal(L_t), Sigma)
+  })
+  G <- Matrix::bdiag(blocks)
+  # Guard against a silent block/column misalignment (e.g. from empty factor
+  # levels counted by nlevels() but dropped from Z).
+  stopifnot(nrow(G) == ncol(Z))
+  dimnames(G) <- list(colnames(Z), colnames(Z))
+  G
+}
+
+#' @noRd
+#' @export
+var_comp.glmmTMB <- function(model, target,
+                             calc_C22 = TRUE, calc_V = TRUE, calc_C11 = TRUE,
+                             marginal = TRUE, stratification = NULL,
+                             solver = c("direct", "LMM"), ...) {
+  X <- glmmTMB::getME(model, "X")
+  Z <- glmmTMB::getME(model, "Z")
+  sigma2 <- stats::sigma(model)^2
+  G <- build_G_glmmTMB(model)
+  dimnames(G) <- list(colnames(Z), colnames(Z))
+
+  var_comp_core(model, target, X = X, Z = Z, sigma2 = sigma2, G = G,
+                calc_C22 = calc_C22, calc_V = calc_V, calc_C11 = calc_C11,
+                marginal = marginal, stratification = stratification,
+                solver = solver)
 }
 
 #' @noRd
@@ -946,29 +1058,19 @@ var_comp <- function(model, target,
 }
 .S3method("var_comp", "lmerMod", var_comp.lmerMod)
 .S3method("var_comp", "asreml", var_comp.asreml)
+.S3method("var_comp", "glmmTMB", var_comp.glmmTMB)
 
+#' Shared target-mapping core for the mixed-model backends
+#'
+#' Backend-agnostic body of [map_target_terms()]. The backend methods extract the
+#' components below in their own way (`mmlist` = per-term raw design matrices in
+#' the same order as `cnms`/`Gp`; `grp_list` = grouping factors; `Z`/`Gp` = the
+#' random-effects design matrix and its group pointers) and delegate here.
+#'
 #' @noRd
 #' @keywords internal
-map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
-  mf <- stats::model.frame(model)
-  mmlist <- lme4::getME(model, "mmList")
-  grp_list <- lme4::getME(model, "flist")
-  cnms <- lme4::getME(model, "cnms")
-  grp_names <- names(cnms)
-  Z <- lme4::getME(model, "Z")
-  Gp <- lme4::getME(model, "Gp")
-
-  # Match mm and Gp
-  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
-        sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
-        sep = "|"
-        )
-  Gpid <- paste(
-    names(cnms),
-    sapply(cnms, function(x) paste(x, collapse = ":")),
-    sep = "|"
-  )
-  mmlist <- mmlist[match(Gpid, mmid)]
+map_target_terms_core <- function(target, marginal, mf, mmlist, grp_list, cnms,
+                                  grp_names, Z, Gp) {
 
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
@@ -1058,6 +1160,67 @@ map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
     idx = setNames(idx_all, terms),
     main = setNames(main, terms)
   )
+}
+
+#' @noRd
+#' @keywords internal
+map_target_terms.lmerMod <- function(model, target, marginal = TRUE) {
+  mf <- stats::model.frame(model)
+  mmlist <- lme4::getME(model, "mmList")
+  grp_list <- lme4::getME(model, "flist")
+  cnms <- lme4::getME(model, "cnms")
+  grp_names <- names(cnms)
+  Z <- lme4::getME(model, "Z")
+  Gp <- lme4::getME(model, "Gp")
+
+  # Match mm and Gp: reorder the formula-ordered mmList to the cnms/Gp order.
+  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
+        sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
+        sep = "|"
+        )
+  Gpid <- paste(
+    names(cnms),
+    sapply(cnms, function(x) paste(x, collapse = ":")),
+    sep = "|"
+  )
+  mmlist <- mmlist[match(Gpid, mmid)]
+
+  map_target_terms_core(target, marginal, mf, mmlist, grp_list, cnms,
+                        grp_names, Z, Gp)
+}
+
+#' @noRd
+#' @keywords internal
+map_target_terms.glmmTMB <- function(model, target, marginal = TRUE) {
+  mf <- stats::model.frame(model)
+
+  # glmmTMB has no mmList; rebuild the per-term raw design matrices from the bars.
+  # findbars() preserves formula order, which matches glmmTMB's cnms / Z blocks.
+  bars <- reformulas::findbars(formula(model))
+  mmlist <- lapply(bars, function(b) {
+    stats::model.matrix(stats::as.formula(paste("~", deparse(b[[2]]))), mf)
+  })
+
+  cnms <- model$modelInfo$reTrms$cond$cnms
+  grp_list <- model$modelInfo$reTrms$cond$flist
+  grp_names <- names(cnms)
+  Z <- glmmTMB::getME(model, "Z")
+
+  # glmmTMB's getME("Gp") is unreliable in current versions; reconstruct the group
+  # pointers from per-term column counts (k_t effects x L_t levels), formula order.
+  # TODO(glmmTMB#1318): once getME(model, "Gp") is fixed upstream, this manual
+  # reconstruction can collapse to `Gp <- glmmTMB::getME(model, "Gp")` -- but only
+  # once we can require the fixed glmmTMB version in DESCRIPTION; keep it until then
+  # for back-compat with older, still-broken glmmTMB installs.
+  term_ncol <- vapply(seq_along(cnms), function(k) {
+    length(cnms[[k]]) * nlevels(grp_list[[grp_names[k]]])
+  }, numeric(1))
+  Gp <- c(0, cumsum(term_ncol))
+  # Reconstructed group pointers must end at the true number of Z columns.
+  stopifnot(utils::tail(Gp, 1) == ncol(Z))
+
+  map_target_terms_core(target, marginal, mf, mmlist, grp_list, cnms,
+                        grp_names, Z, Gp)
 }
 
 #' @keywords internal
@@ -1213,13 +1376,21 @@ map_target_terms <- function(model, target, marginal = TRUE) {
 }
 .S3method("map_target_terms", "lmerMod", map_target_terms.lmerMod)
 .S3method("map_target_terms", "asreml", map_target_terms.asreml)
+.S3method("map_target_terms", "glmmTMB", map_target_terms.glmmTMB)
 
 
+#' Shared new-Z (stratification) core for the mixed-model backends
+#'
+#' Backend-agnostic body of [build_new_Z()]. The backend methods supply the model
+#' frame `mf`, the per-term design formulas `frm` (e.g. "~ 1"), the grouping
+#' factors `grp_list`, the grouping names `grp_names`, and the split forms used to
+#' validate that all interacting variables were provided.
+#'
 #' @keywords internal
 #' @noRd
-build_new_Z.lmerMod <- function(model, target, new_data) {
+build_new_Z_core <- function(target, new_data, mf, frm, grp_list, grp_names,
+                             grp_names_split, design_names_split) {
   trms <- colnames(new_data)
-  mf <- stats::model.frame(model)
 
   for (trm in trms) {
     if (!trm %in% colnames(mf)) {
@@ -1256,36 +1427,9 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
     }
   }
 
-  mmlist <- lme4::getME(model, "mmList")
-  mm_names <- names(mmlist)
-  frm <- stringr::str_extract(mm_names, "^.+(?=\\ \\|)")
-  frm <- paste("~", frm)
-
-  grp_list <- lme4::getME(model, "flist")
-  cnms <- lme4::getME(model, "cnms")
-  grp_names <- names(cnms)
-
-  # Match mm and Gp
-  mmid <- paste(sub(".*\\|\\s*", "", names(mmlist)),
-                sapply(mmlist, function(x) paste(colnames(x), collapse = ":")),
-                sep = "|"
-  )
-  Gpid <- paste(
-    names(cnms),
-    sapply(cnms, function(x) paste(x, collapse = ":")),
-    sep = "|"
-  )
-  mmlist <- mmlist[match(Gpid, mmid)]
-
   pattern <- paste0("(^|:)", target, "(:|$)")
   matched_grp <- which(grepl(pattern, grp_names))
 
-  # Split grouping-variable names per matched term, e.g. "gen:rep" -> c("gen","rep")
-  grp_names_split <- stringr::str_split(grp_names, ":")
-  design_names_split <- lapply(mm_names, function(trm) {
-    trm <- stringr::str_split(trm, " \\| ")[[1]] |> utils::head(n = 1)
-    as.formula(paste("~ ", trm)) |> terms() |> attr("term.labels")
-  })
   required_var <- do.call(c, grp_names_split[matched_grp]) |> unique()
   required_var <- c(required_var, do.call(c, design_names_split[matched_grp])) |> unique()
   missing_trms <- required_var[!required_var %in% trms]
@@ -1325,6 +1469,52 @@ build_new_Z.lmerMod <- function(model, target, new_data) {
   Z <- do.call(cbind, Z_list) |> t()
   attr(Z, "active") <- active_g
   Z
+}
+
+#' @keywords internal
+#' @noRd
+build_new_Z.lmerMod <- function(model, target, new_data) {
+  mf <- stats::model.frame(model)
+
+  mm_names <- names(lme4::getME(model, "mmList"))
+  frm <- stringr::str_extract(mm_names, "^.+(?=\\ \\|)")
+  frm <- paste("~", frm)
+
+  cnms <- lme4::getME(model, "cnms")
+  grp_list <- lme4::getME(model, "flist")
+  grp_names <- names(cnms)
+
+  # Split grouping-variable names per term, e.g. "gen:rep" -> c("gen","rep")
+  grp_names_split <- stringr::str_split(grp_names, ":")
+  design_names_split <- lapply(mm_names, function(trm) {
+    trm <- stringr::str_split(trm, " \\| ")[[1]] |> utils::head(n = 1)
+    as.formula(paste("~ ", trm)) |> terms() |> attr("term.labels")
+  })
+
+  build_new_Z_core(target, new_data, mf, frm, grp_list, grp_names,
+                   grp_names_split, design_names_split)
+}
+
+#' @keywords internal
+#' @noRd
+build_new_Z.glmmTMB <- function(model, target, new_data) {
+  mf <- stats::model.frame(model)
+
+  # findbars() preserves formula order, matching glmmTMB's cnms / flist order.
+  bars <- reformulas::findbars(formula(model))
+  frm <- vapply(bars, function(b) paste("~", deparse(b[[2]])), character(1))
+
+  cnms <- model$modelInfo$reTrms$cond$cnms
+  grp_list <- model$modelInfo$reTrms$cond$flist
+  grp_names <- names(cnms)
+
+  grp_names_split <- stringr::str_split(grp_names, ":")
+  design_names_split <- lapply(bars, function(b) {
+    as.formula(paste("~", deparse(b[[2]]))) |> terms() |> attr("term.labels")
+  })
+
+  build_new_Z_core(target, new_data, mf, frm, grp_list, grp_names,
+                   grp_names_split, design_names_split)
 }
 
 #' @keywords internal
@@ -1546,6 +1736,7 @@ build_new_Z <- function(model, target, new_data) {
 }
 .S3method("build_new_Z", "lmerMod", build_new_Z.lmerMod)
 .S3method("build_new_Z", "asreml", build_new_Z.asreml)
+.S3method("build_new_Z", "glmmTMB", build_new_Z.glmmTMB)
 
 #' Helper function, build factor matrix
 #' @keywords internal

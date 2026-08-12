@@ -35,6 +35,7 @@ Suggests:
     knitr,
     rmarkdown,
     lme4,
+    glmmTMB,
     pbkrtest,
     dplyr,
     ggplot2,
