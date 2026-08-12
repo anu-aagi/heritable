@@ -35,6 +35,11 @@
   [`H2_Delta_pairwise()`](https://anu-aagi.github.io/heritable/reference/H2_Delta_pairwise.md)
   : Calculate pairwise heritability of differences between genotypes
   from model object
+- [`H2_Reliability()`](https://anu-aagi.github.io/heritable/reference/H2_Reliability.md)
+  [`H2_Reliability_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Reliability.md)
+  [`h2_Reliability()`](https://anu-aagi.github.io/heritable/reference/H2_Reliability.md)
+  [`h2_Reliability_by_genotype()`](https://anu-aagi.github.io/heritable/reference/H2_Reliability.md)
+  : Calculate reliability from model object
 
 ### Parameter functions for calculation
 
@@ -47,6 +52,8 @@
   : Calculate Oakey's heritability using variance parameters
 - [`H2_Piepho_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Piepho_parameters.md)
   : Calculate Piepho's heritability using variance parameters
+- [`H2_Reliability_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Reliability_parameters.md)
+  : Calculate reliability using variance parameters
 - [`H2_Standard_parameters()`](https://anu-aagi.github.io/heritable/reference/H2_Standard_parameters.md)
   : Calculate Standard heritability using variance parameters
 
