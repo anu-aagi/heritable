@@ -2,6 +2,12 @@
 
 ## heritable 0.2.0
 
+- Added a `glmmTMB` model backend for Gaussian (identity-link) models
+  [\#19](https://github.com/anu-aagi/heritable/issues/19). All broad-
+  and narrow-sense estimators (`H2_*()` / `h2_*()`, including Standard,
+  Cullis, Oakey, Piepho, and Delta) are supported and reproduce the
+  `lme4` backend exactly. Non-Gaussian `glmmTMB` models fail with an
+  informative error.
 - Added reliability (`r²`, the coefficient of determination) as an
   additional metric
   [\#24](https://github.com/anu-aagi/heritable/issues/24).
