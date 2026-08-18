@@ -344,7 +344,7 @@ check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE, sou
 check_GRM_exists <- function(model, target = NULL, source = list(), return = FALSE) {
 
   if(!is.list(source)){
-    cli::cli_abort("souce must be a named list.")
+    cli::cli_abort("source must be a named list.")
   }
 
   trms <- pull_terms(model)$random
