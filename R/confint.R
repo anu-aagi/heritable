@@ -135,7 +135,7 @@ confint.heritable <- function(object,
       )
     )
     ci <- stats::confint(boot_mod, level = level, type = type)
-  } else {
+  } else if(inherits(model, "asreml")) {
     suppressMessages(
       boot_mod <- bootstrap_asreml(model,
         FUN = Fun_use, nsim = B, seed = seed,
