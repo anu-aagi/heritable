@@ -437,7 +437,8 @@ H2_Standard.lmerMod <- function(model,
     # Get residual variance
     s2_eps <- stats::sigma(model)^2
 
-    n_r <- table(model@flist[[target]])
+    # Replicate counts per target level (model.frame works for lme4 and glmmTMB)
+    n_r <- table(model.frame(model)[[target]])
 
     H2_Standard <- H2_Standard_parameters(s2_g, s2_eps, n_r)
   } else {
