@@ -24,6 +24,9 @@ str(lettuce_markers)
 lettuce_GRM <- tcrossprod(as.matrix(lettuce_markers[, -1]))
 dimnames(lettuce_GRM) <- list(lettuce_markers$gen, lettuce_markers$gen)
 
+
+lettuce_subset <- lettuce_phenotypes |> subset(loc == "L2")
+usethis::use_data(lettuce_subset, overwrite = TRUE)
 usethis::use_data(lettuce_phenotypes, overwrite = TRUE)
 usethis::use_data(lettuce_markers, overwrite = TRUE)
 usethis::use_data(lettuce_GRM, overwrite = TRUE)
