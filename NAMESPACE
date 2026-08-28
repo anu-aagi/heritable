@@ -89,6 +89,7 @@ importFrom(Matrix,
   t,
   tcrossprod
 )
+importFrom(asreml,asreml)
 importFrom(methods,
   as,
   canCoerce,
