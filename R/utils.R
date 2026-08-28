@@ -741,7 +741,7 @@ var_comp.asreml <- function(model, target,
                             solver = c("direct", "LMM"),
                             source = list(), ...) {
   solver <- match.arg(solver)
-  model <- check_deisgn_exsits(model)
+  model <- check_design_exists(model)
   design <- model$design
 
   if(marginal || !is.null(stratification)) marginal <- TRUE
@@ -1226,7 +1226,7 @@ map_target_terms.glmmTMB <- function(model, target, marginal = TRUE) {
 #' @keywords internal
 #' @noRd
 map_target_terms.asreml <- function(model, target, marginal = TRUE) {
-  model <- check_deisgn_exsits(model)
+  model <- check_design_exists(model)
   design <- model$design
   mf <- model$mf
 
@@ -1520,7 +1520,7 @@ build_new_Z.glmmTMB <- function(model, target, new_data) {
 #' @keywords internal
 #' @noRd
 build_new_Z.asreml <- function(model, target, new_data) {
-  model <- check_deisgn_exsits(model)
+  model <- check_design_exists(model)
   design <- model$design
   mf <- model$mf
 

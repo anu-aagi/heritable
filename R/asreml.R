@@ -33,7 +33,7 @@ h2_Standard.asreml <- function(model,
     return(NA)
   }
 
-  model <- check_deisgn_exsits(model, build_design = FALSE, source = source)
+  model <- check_design_exists(model, build_design = FALSE, source = source)
   mf <- model$mf
 
   # Get genotype variance
@@ -870,7 +870,7 @@ H2_Standard.asreml <- function(model,
     return(NA)
   }
 
-  model <- check_deisgn_exsits(model, build_design = FALSE, source = source)
+  model <- check_design_exists(model, build_design = FALSE, source = source)
   mf <- model$mf
 
   # Check if all random terms contain the target.

@@ -40,7 +40,7 @@ H2.default <- function(model,
   }
 
   # Check design exists
-  model <- check_deisgn_exsits(model, source = source)
+  model <- check_design_exists(model, source = source)
 
   # Build variance component
   if(is.null(vc)){

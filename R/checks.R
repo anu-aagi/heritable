@@ -288,7 +288,7 @@ check_target_both <- function(model, target) {
 
 # Check if the design matrix exists, otherwise builds one.
 #' @keywords internal
-check_deisgn_exsits <- function(model, build_design = TRUE, build_mf = TRUE, source = list()){
+check_design_exists <- function(model, build_design = TRUE, build_mf = TRUE, source = list()){
 
   if(!inherits(model, "asreml")){
     return(model)

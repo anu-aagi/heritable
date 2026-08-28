@@ -217,7 +217,7 @@ bootstrap_asreml <- function(model,
   # Get model frame
   design_default <- asreml::asreml.options()$design
   asreml::asreml.options(design = TRUE)
-  model <- check_deisgn_exsits(model, source = source)
+  model <- check_design_exists(model, source = source)
   mf <- model$mf
 
   mf <- as.data.frame(mf)
@@ -400,7 +400,7 @@ get_fixed_fit_asreml <- function(model, source = list()) {
   }
 
   # Get model frame
-  model <- check_deisgn_exsits(model, build_mf = FALSE, source = source)
+  model <- check_design_exists(model, build_mf = FALSE, source = source)
   design <- model$design
 
   N <- nrow(design)
