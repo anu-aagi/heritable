@@ -34,6 +34,4 @@ test_that("compare models", {
   # df <- dplyr::full_join(vc$asreml, vc$lme4, by = c("term" = "group"), suffix = c("_asreml", "_lme4"))
   # plot_hist(df)
   # waldo::compare(df$estimate_asreml, df$estimate_lme4, tolerance = 1e-4)
-
-
 })

@@ -9,84 +9,224 @@
 
 #' @noRd
 #' @export
-h2_Standard.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                                stratification = NULL, vc = NULL, ...) {
-  h2_Standard.lmerMod(model, target, options = options, marginal = marginal,
-                      stratification = stratification, vc = vc, ...)
+h2_Standard.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  h2_Standard.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-h2_Oakey.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                             stratification = NULL, vc = NULL, ...) {
-  h2_Oakey.lmerMod(model, target, options = options, marginal = marginal,
-                   stratification = stratification, vc = vc, ...)
+h2_Oakey.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  h2_Oakey.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-h2_Cullis.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                              stratification = NULL, vc = NULL, ...) {
-  h2_Cullis.lmerMod(model, target, options = options, marginal = marginal,
-                    stratification = stratification, vc = vc, ...)
+h2_Cullis.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  h2_Cullis.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-h2_Piepho.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                              stratification = NULL, vc = NULL, ...) {
-  h2_Piepho.lmerMod(model, target, options = options, marginal = marginal,
-                    stratification = stratification, vc = vc, ...)
+h2_Piepho.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  h2_Piepho.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-h2_Delta_pairwise.glmmTMB <- function(model, target, type = c("BLUP", "BLUE"),
-                                      options = NULL, marginal = TRUE,
-                                      stratification = NULL, vc = NULL, ...) {
-  h2_Delta_pairwise.lmerMod(model, target, type = type, options = options,
-                            marginal = marginal, stratification = stratification,
-                            vc = vc, ...)
+h2_Delta_pairwise.glmmTMB <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  h2_Delta_pairwise.lmerMod(
+    model,
+    target,
+    type = type,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-H2_Standard.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                                stratification = NULL, vc = NULL, ...) {
-  H2_Standard.lmerMod(model, target, options = options, marginal = marginal,
-                      stratification = stratification, vc = vc, ...)
+H2_Standard.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  H2_Standard.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-H2_Cullis.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                              stratification = NULL, vc = NULL, ...) {
-  H2_Cullis.lmerMod(model, target, options = options, marginal = marginal,
-                    stratification = stratification, vc = vc, ...)
+H2_Cullis.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  H2_Cullis.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-H2_Oakey.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                             stratification = NULL, vc = NULL, ...) {
-  H2_Oakey.lmerMod(model, target, options = options, marginal = marginal,
-                   stratification = stratification, vc = vc, ...)
+H2_Oakey.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  H2_Oakey.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-H2_Piepho.glmmTMB <- function(model, target, options = NULL, marginal = TRUE,
-                              stratification = NULL, vc = NULL, ...) {
-  H2_Piepho.lmerMod(model, target, options = options, marginal = marginal,
-                    stratification = stratification, vc = vc, ...)
+H2_Piepho.glmmTMB <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  H2_Piepho.lmerMod(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }
 
 #' @noRd
 #' @export
-H2_Delta_pairwise.glmmTMB <- function(model, target, type = c("BLUP", "BLUE"),
-                                      options = NULL, marginal = TRUE,
-                                      stratification = NULL, vc = NULL, ...) {
-  H2_Delta_pairwise.lmerMod(model, target, type = type, options = options,
-                            marginal = marginal, stratification = stratification,
-                            vc = vc, ...)
+H2_Delta_pairwise.glmmTMB <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  H2_Delta_pairwise.lmerMod(
+    model,
+    target,
+    type = type,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 }

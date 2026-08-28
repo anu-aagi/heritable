@@ -9,18 +9,37 @@ test_that("Delta method works for ASREML", {
 
   target <- "gen"
 
-  expect_equal(H2_Delta(asreml_model_random, target), 0.8090841, tolerance =  1e-3)
+  expect_equal(
+    H2_Delta(asreml_model_random, target),
+    0.8090841,
+    tolerance = 1e-3
+  )
   expect_error(H2_Delta(asreml_model_fixed, target))
   expect_error(h2_Delta(asreml_model_both, target))
 
-  res_ls <- H2_Delta_by_genotype(asreml_model_random, target = "gen", type = "BLUP")
-  expect_named(H2_Delta_by_genotype(asreml_model_random, target, type = "BLUP"), levels(asreml_model_random$mf$gen))
+  res_ls <- H2_Delta_by_genotype(
+    asreml_model_random,
+    target = "gen",
+    type = "BLUP"
+  )
+  expect_named(
+    H2_Delta_by_genotype(asreml_model_random, target, type = "BLUP"),
+    levels(asreml_model_random$mf$gen)
+  )
   expect_true(length(res_ls) == length(levels(asreml_model_random$mf[["gen"]])))
 
-  H2_mat <- H2_Delta_pairwise(asreml_model_random, target = "gen", type = "BLUP")
+  H2_mat <- H2_Delta_pairwise(
+    asreml_model_random,
+    target = "gen",
+    type = "BLUP"
+  )
   expect_true(is.matrix(as.matrix(H2_mat)))
   expected <- rowMeans(as.matrix(H2_mat), na.rm = TRUE)
 
   # compare numeric values
-  expect_equal(as.numeric(unlist(res_ls)), as.numeric(expected), tolerance = 1e-7)
+  expect_equal(
+    as.numeric(unlist(res_ls)),
+    as.numeric(expected),
+    tolerance = 1e-7
+  )
 })

@@ -23,7 +23,7 @@
 #'
 #' @export
 H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
-  H2_Standard <- vc_g / (vc_g +  mean(vc_e / n_r))
+  H2_Standard <- vc_g / (vc_g + mean(vc_e / n_r))
   return(H2_Standard)
 }
 
@@ -50,7 +50,7 @@ H2_Standard_parameters <- function(vc_g, vc_e, n_r = 1) {
 #' Cullis, B. R., Smith, A. B., & Coombes, N. E. (2006). On the design of early generation variety trials with correlated data. Journal of Agricultural, Biological, and Environmental Statistics, 11(4), 381–393. https://doi.org/10.1198/108571106X154443
 #'
 #' @export
-H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
+H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g) {
   H2_Cullis <- 1 - (vd_BLUP_avg / 2 / vc_g)
 
   return(H2_Cullis)
@@ -77,16 +77,15 @@ H2_Cullis_parameters <- function(vd_BLUP_avg, vc_g){
 #' H2_Oakey_parameters(Gg_inv, C22_g)
 #' @export
 H2_Oakey_parameters <- function(Gg_inv, C22_g) {
-   n_g <- nrow(Gg_inv)
-   svds <- svd(Gg_inv)
-   Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
-   M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
+  n_g <- nrow(Gg_inv)
+  svds <- svd(Gg_inv)
+  Gg_inv_sqrt <- sweep(svds$u, 2, sqrt(svds$d), "*") %*% t(svds$v)
+  M <- diag(n_g) - (Gg_inv_sqrt %*% C22_g %*% Gg_inv_sqrt)
 
-   eM <- eigen(M, symmetric = TRUE)
-   thres <- sqrt(.Machine$double.eps)
-   H2_Oakey <- mean(eM$values[eM$values/max(eM$values) > thres])
-   return(H2_Oakey)
-
+  eM <- eigen(M, symmetric = TRUE)
+  thres <- sqrt(.Machine$double.eps)
+  H2_Oakey <- mean(eM$values[eM$values / max(eM$values) > thres])
+  return(H2_Oakey)
 }
 
 #' Calculate reliability using variance parameters
@@ -221,7 +220,6 @@ H2_Delta_parameters <- function(delta_g, delta_pev, type = c("BLUP", "BLUE")) {
 #' @return Narrow sense heritability for the standard method.
 #' @keywords internal
 h2_Standard_parameters <- function(G_g, V, C, active_g) {
-
   # S = C' V C  (g x g)
   S <- crossprod(C, V %*% C)
 
@@ -233,11 +231,10 @@ h2_Standard_parameters <- function(G_g, V, C, active_g) {
   delta_g <- var_diff(G_g)
   # for narrow sense, use outer(diag(G_g), diag(G_g), "+") - 2 * G_g
 
-  if(!is.null(active_g) && any(!active_g)){
-    delta_y <- delta_y[active_g,active_g,drop=FALSE]
-    delta_g <- delta_g[active_g,active_g,drop=FALSE]
+  if (!is.null(active_g) && any(!active_g)) {
+    delta_y <- delta_y[active_g, active_g, drop = FALSE]
+    delta_g <- delta_g[active_g, active_g, drop = FALSE]
   }
 
-  mean(delta_g[upper.tri(delta_g)])/mean(delta_y[upper.tri(delta_y)])
-
+  mean(delta_g[upper.tri(delta_g)]) / mean(delta_y[upper.tri(delta_y)])
 }

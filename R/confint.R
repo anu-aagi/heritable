@@ -56,23 +56,24 @@
 #' }
 #' @seealso [boot::boot()], [H2()]
 #' @export
-confint.heritable <- function(object,
-                              parm = NULL,
-                              level = 0.95,
-                              B = 100,
-                              random_effect = c("resample", "conditional"),
-                              type = c("basic", "norm", "perc"),
-                              return_model = TRUE,
-                              seed = NULL,
-                              ...) {
-
+confint.heritable <- function(
+  object,
+  parm = NULL,
+  level = 0.95,
+  B = 100,
+  random_effect = c("resample", "conditional"),
+  type = c("basic", "norm", "perc"),
+  return_model = TRUE,
+  seed = NULL,
+  ...
+) {
   # basic: bias corrected percentile interval
   # norm: bias corrected normal interval
   # perc: percentile interval
   type <- match.arg(type)
   random_effect <- match.arg(random_effect)
 
-  if(random_effect == "conditional"){
+  if (random_effect == "conditional") {
     resample_u <- FALSE
   } else {
     resample_u <- TRUE
@@ -87,13 +88,19 @@ confint.heritable <- function(object,
   # Configure parallel computing
   parallel <- list(...)[["parallel"]]
   if (!is.null(parallel) && parallel != "no") {
-    if (inherits(model, "lmerMod") &&
-        !requireNamespace("lme4", quietly = TRUE)) {
-      stop("Package 'lme4' is required for parallel bootstrapping of lme4 models.")
+    if (
+      inherits(model, "lmerMod") &&
+        !requireNamespace("lme4", quietly = TRUE)
+    ) {
+      stop(
+        "Package 'lme4' is required for parallel bootstrapping of lme4 models."
+      )
     }
 
-    if (inherits(model, "asreml") &&
-        !requireNamespace("asreml", quietly = TRUE)) {
+    if (
+      inherits(model, "asreml") &&
+        !requireNamespace("asreml", quietly = TRUE)
+    ) {
       stop(
         "Package 'asreml' is required for parallel bootstrapping of ",
         "asreml models and must be installed separately."
@@ -101,19 +108,20 @@ confint.heritable <- function(object,
     }
   }
 
-
-  if(is.null(parm)){
+  if (is.null(parm)) {
     method <- all_method
   } else {
     method <- intersect(parm, all_method)
-    if(length(method) == 0){
-      cli::cli_abort("Invalid choice of method, should be one of {.code {all_method}}")
+    if (length(method) == 0) {
+      cli::cli_abort(
+        "Invalid choice of method, should be one of {.code {all_method}}"
+      )
     }
   }
 
   args[["method"]] <- method
 
-  h2.type <- attr(object, "type")  # Get the heritability type
+  h2.type <- attr(object, "type") # Get the heritability type
 
   if (h2.type == "broad_sense") {
     Fun_use <- function(x) {
@@ -129,31 +137,37 @@ confint.heritable <- function(object,
 
   if (inherits(model, "lmerMod")) {
     suppressMessages(
-      boot_mod <- lme4::bootMer(model,
-                                FUN = Fun_use, nsim = B, seed = seed,
-                                use.u = !resample_u, ...
+      boot_mod <- lme4::bootMer(
+        model,
+        FUN = Fun_use,
+        nsim = B,
+        seed = seed,
+        use.u = !resample_u,
+        ...
       )
     )
     ci <- stats::confint(boot_mod, level = level, type = type)
-  } else if(inherits(model, "asreml")) {
+  } else if (inherits(model, "asreml")) {
     suppressMessages(
-      boot_mod <- bootstrap_asreml(model,
-        FUN = Fun_use, nsim = B, seed = seed,
-        use.u = !resample_u, source = args$source, ...
+      boot_mod <- bootstrap_asreml(
+        model,
+        FUN = Fun_use,
+        nsim = B,
+        seed = seed,
+        use.u = !resample_u,
+        source = args$source,
+        ...
       )
     )
     ci <- stats::confint(boot_mod, level = level, type = type)
-    ci <- matrix(ci,
-                 nrow = length(method),
-                 dimnames = list(method, colnames(ci))
-          )
+    ci <- matrix(
+      ci,
+      nrow = length(method),
+      dimnames = list(method, colnames(ci))
+    )
   }
 
-  structure(ci,
-            class = c("heritable_ci", class(ci)),
-            boot_mod = boot_mod
-  )
-
+  structure(ci, class = c("heritable_ci", class(ci)), boot_mod = boot_mod)
 }
 
 #' Parametric bootstrap for an asreml model.
@@ -203,13 +217,15 @@ confint.heritable <- function(object,
 #'   boot::boot.ci(b, type = "perc")
 #'  }
 #' @export
-bootstrap_asreml <- function(model,
-                             FUN,
-                             nsim = 1,
-                             use.u = FALSE,
-                             source = list(),
-                             seed = NULL,
-                             ...) {
+bootstrap_asreml <- function(
+  model,
+  FUN,
+  nsim = 1,
+  use.u = FALSE,
+  source = list(),
+  seed = NULL,
+  ...
+) {
   if (!inherits(model, "asreml")) {
     stop("`model` must be an `asreml` object.")
   }
@@ -230,7 +246,7 @@ bootstrap_asreml <- function(model,
 
   # Fix for response transformation
   new_formula <- paste0(".y", "~", deparse(fixed_formula[[3]]))
-  new_formula <-  as.formula(new_formula)
+  new_formula <- as.formula(new_formula)
 
   # Get the linear predictor of fixed effect.
   if (!use.u) {
@@ -239,15 +255,17 @@ bootstrap_asreml <- function(model,
       asremlPlus::estimateV.asreml(model, which.matrix = "V"),
       error = function(e) {
         cli::cli_warn(
-          c("estimateV.asreml failed: {.code {e$message}}",
-                      "Try custom extraction of V due to the failure of estimateV.asreml.")
+          c(
+            "estimateV.asreml failed: {.code {e$message}}",
+            "Try custom extraction of V due to the failure of estimateV.asreml."
+          )
         )
         NULL
       }
     )
 
     if (is.null(V)) {
-      get_V <- function(model, source){
+      get_V <- function(model, source) {
         grp_names <- sapply(model$G.param, function(x) {
           facnam <- lapply(x[-1], function(y) y[["facnam"]])
           paste0(do.call(c, facnam), collapse = ":")
@@ -283,7 +301,7 @@ bootstrap_asreml <- function(model,
 
         tmp_data_call <- model$call$data
         model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
-        R <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
+        R <- asremlPlus::estimateV.asreml(model, which.matrix = "R") |>
           Matrix::Matrix()
         model$call$data <- tmp_data_call
 
@@ -312,7 +330,7 @@ bootstrap_asreml <- function(model,
 
     tmp_data_call <- model$call$data
     model$call$data <- Matrix::Matrix(0, nrow = N, ncol = N)
-    V <- asremlPlus::estimateV.asreml(model, which.matrix = "R")|>
+    V <- asremlPlus::estimateV.asreml(model, which.matrix = "R") |>
       Matrix::Matrix()
     model$call$data <- tmp_data_call
   }
@@ -325,7 +343,7 @@ bootstrap_asreml <- function(model,
   # Bootstrap data
   boot_data <- mf
   boot_data[[".yhat"]] <- yhat
-  boot_data[[".y"]] <- mf[,response]
+  boot_data[[".y"]] <- mf[, response]
 
   # generator: simulate response into correct column name
   generate_data <- function(data, mle) {
@@ -338,7 +356,7 @@ bootstrap_asreml <- function(model,
 
   # Refit wrapper for boot()
   refit_asreml <- function(data, model, FUN, source, design) {
-    if(length(source) > 0){
+    if (length(source) > 0) {
       list2env(source, environment())
     }
     utils::capture.output(
@@ -348,18 +366,20 @@ bootstrap_asreml <- function(model,
     FUN(fit)
   }
 
-  if (!is.null(seed)) set.seed(seed)
+  if (!is.null(seed)) {
+    set.seed(seed)
+  }
   boot <- boot::boot(
-    data      = boot_data,
+    data = boot_data,
     statistic = refit_asreml,
-    sim       = "parametric",
-    ran.gen   = generate_data,
-    R         = nsim,
-    model     = model,
-    source    = source,
-    design    = model$design,
-    mle       = L,
-    FUN       = FUN,
+    sim = "parametric",
+    ran.gen = generate_data,
+    R = nsim,
+    model = model,
+    source = source,
+    design = model$design,
+    mle = L,
+    FUN = FUN,
     ...
   )
 
@@ -367,7 +387,6 @@ bootstrap_asreml <- function(model,
   asreml::asreml.options(design = design_default)
 
   boot
-
 }
 
 

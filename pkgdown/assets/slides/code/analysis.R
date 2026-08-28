@@ -10,8 +10,10 @@ library(stringr)
 library(ggsci)
 library(patchwork)
 
-data <- read.csv("data/2025-GRDC-Data-20251027-subset.csv",
-                 check.names = FALSE, stringsAsFactors = TRUE
+data <- read.csv(
+  "data/2025-GRDC-Data-20251027-subset.csv",
+  check.names = FALSE,
+  stringsAsFactors = TRUE
 )
 colnames(data) <- colnames(data) %>%
   str_remove_all("\\s*\\([^\\)]*\\)") %>% # remove (...) including content
@@ -19,8 +21,17 @@ colnames(data) <- colnames(data) %>%
 
 # Get variables
 meta_variable <- c(
-  "Genotype", "Row", "Range", "Row_Range", "Rep", "Day", "TOS",
-  "Leaf_Number", "Development", "Date", "Zadok_Score"
+  "Genotype",
+  "Row",
+  "Range",
+  "Row_Range",
+  "Rep",
+  "Day",
+  "TOS",
+  "Leaf_Number",
+  "Development",
+  "Date",
+  "Zadok_Score"
 )
 auxiliary_pheno <- colnames(data)[35:61]
 main_pheno <- colnames(data)[62:73]
@@ -29,11 +40,17 @@ main_pheno <- colnames(data)[62:73]
 hybrid <- readLines("data/hybrid.txt")
 
 # Subset data
-data_subset <- dplyr::select(data, all_of(c(meta_variable, auxiliary_pheno, main_pheno))) %>%
+data_subset <- dplyr::select(
+  data,
+  all_of(c(meta_variable, auxiliary_pheno, main_pheno))
+) %>%
   mutate(
     Leaf_Number = factor(Leaf_Number),
     Date = factor(Date),
-    Development = factor(Development, levels = c("Booting", "Anthesis", "Fill")),
+    Development = factor(
+      Development,
+      levels = c("Booting", "Anthesis", "Fill")
+    ),
     Hybrid = factor(ifelse(Genotype %in% hybrid, "Hybrid", "Non-hybrid")),
     across(main_pheno, log),
     Gs = log(Gs)
@@ -59,15 +76,20 @@ data_subset$Type <- data_subset$Hybrid
 data_subset$y <- data_subset$Gs
 
 frm <- formula(
-  paste0(r, "~ Hybrid * TOS * Development + (1 | Genotype)",
-         " + (Development | Genotype)",
-         " + (Development | Genotype:TOS)",
-         " + (1 | Date) ",
-         " + (1 | Row_Range / Leaf_Number)")
+  paste0(
+    r,
+    "~ Hybrid * TOS * Development + (1 | Genotype)",
+    " + (Development | Genotype)",
+    " + (Development | Genotype:TOS)",
+    " + (1 | Date) ",
+    " + (1 | Row_Range / Leaf_Number)"
+  )
 )
 
 model <- lmer(
-  y ~ Type * Treatment * Stage +
+  y ~ Type *
+    Treatment *
+    Stage +
     (1 | Genotype) +
     (Stage | Genotype) +
     (Stage | Genotype:Treatment) +

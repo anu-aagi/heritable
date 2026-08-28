@@ -9,16 +9,23 @@ test_that("H2 for asreml works", {
   truth_random_asreml <- c(
     "Cullis" = 0.8090841,
     "Oakey" = 0.8090728,
-    "Piepho" = 0.8079645 ,
+    "Piepho" = 0.8079645,
     "Delta" = 0.8090841,
     "Standard" = 0.7502958
   )
 
   asreml_H2_all_methods <- H2(asreml_model_random, target = "gen")
 
-  expect_equal(setNames(as.numeric(asreml_H2_all_methods), names(asreml_H2_all_methods)), truth_random_asreml, tolerance = 1e-3)
-  expect_equal(H2_Delta(asreml_model_random, target = "gen", type = "BLUE"), 0.8079647, tolerance = 1e-3)
-
+  expect_equal(
+    setNames(as.numeric(asreml_H2_all_methods), names(asreml_H2_all_methods)),
+    truth_random_asreml,
+    tolerance = 1e-3
+  )
+  expect_equal(
+    H2_Delta(asreml_model_random, target = "gen", type = "BLUE"),
+    0.8079647,
+    tolerance = 1e-3
+  )
 
   # Different residual structure -----------------------------------------------
   asreml_model_R <- readRDS(file = test_path("fixtures/asreml_model_R.rds"))
@@ -27,13 +34,15 @@ test_that("H2 for asreml works", {
 
   # GxE models -----------------------------------------------------------------
   #TODO: Commented out because in development
-  asreml_model_g_by_e <- readRDS(file = test_path("fixtures/asreml_model_g_by_e.rds"))
+  asreml_model_g_by_e <- readRDS(
+    file = test_path("fixtures/asreml_model_g_by_e.rds")
+  )
 
   # expect_error(H2(asreml_model_g_by_e, target = "gen"))
 })
 
 
-test_that("H2 works for lme4",{
+test_that("H2 works for lme4", {
   skip_if_not_installed("lme4")
   skip_on_cran()
 
@@ -60,12 +69,24 @@ test_that("H2 works for lme4",{
 
   lmer_H2_all_methods <- H2(lmer_model_random, target = "gen")
 
-  expect_equal(setNames(as.numeric(lmer_H2_all_methods), names(lmer_H2_all_methods)), truth_random_lme4, tolerance = 1e-3)
-  expect_equal(H2_Delta(lmer_model_random, target = "gen", type = "BLUE"), 0.8079647, tolerance = 1e-3)
+  expect_equal(
+    setNames(as.numeric(lmer_H2_all_methods), names(lmer_H2_all_methods)),
+    truth_random_lme4,
+    tolerance = 1e-3
+  )
+  expect_equal(
+    H2_Delta(lmer_model_random, target = "gen", type = "BLUE"),
+    0.8079647,
+    tolerance = 1e-3
+  )
 
   # lme4 Random "gen" single RE----------------------------------------------------------
   lettuce_lme4 <- readRDS(test_path("fixtures/lettuce_lme4.rds"))
-  expect_equal(H2_Piepho(lettuce_lme4, "gen"), H2_Standard(lettuce_lme4, "gen"), tolerance = 1e-3)
+  expect_equal(
+    H2_Piepho(lettuce_lme4, "gen"),
+    H2_Standard(lettuce_lme4, "gen"),
+    tolerance = 1e-3
+  )
 })
 
 test_that("H2 can handle multiple methods", {
@@ -76,14 +97,21 @@ test_that("H2 can handle multiple methods", {
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
 
   # Test multiple methods
-  res_multi <- H2(asreml_model_random, target = "gen", method = c("Cullis", "Oakey"))
+  res_multi <- H2(
+    asreml_model_random,
+    target = "gen",
+    method = c("Cullis", "Oakey")
+  )
   expect_named(res_multi, c("Cullis", "Oakey"))
   expect_equal(res_multi[["Cullis"]], 0.8090841, tolerance = 1e-3)
   expect_equal(res_multi[["Oakey"]], 0.8090728, tolerance = 1e-3)
 
   # Test all methods
-  res_all <- H2(asreml_model_random, target = "gen",
-                method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard"))
+  res_all <- H2(
+    asreml_model_random,
+    target = "gen",
+    method = c("Cullis", "Oakey", "Delta", "Piepho", "Standard")
+  )
   expect_named(res_all, c("Cullis", "Oakey", "Delta", "Piepho", "Standard"))
   expect_length(res_all, 5)
   expect_type(res_all, "double")
@@ -97,14 +125,29 @@ test_that("asreml methods work", {
 
   asreml_model_random <- readRDS(test_path("fixtures/asreml_model_random.rds"))
 
-  expect_equal(H2_Cullis.asreml(asreml_model_random, target = "gen"), 0.8090841, tolerance = 1e-3)
-  expect_equal(H2_Oakey.asreml(asreml_model_random, target = "gen"), 0.8090728, tolerance = 1e-3)
-  expect_equal(H2_Piepho.asreml(asreml_model_random, target = "gen"), 0.8079645, tolerance = 1e-3)
-  expect_equal(H2_Standard.asreml(asreml_model_random, target = "gen"), 0.7505988, tolerance = 1e-3)
+  expect_equal(
+    H2_Cullis.asreml(asreml_model_random, target = "gen"),
+    0.8090841,
+    tolerance = 1e-3
+  )
+  expect_equal(
+    H2_Oakey.asreml(asreml_model_random, target = "gen"),
+    0.8090728,
+    tolerance = 1e-3
+  )
+  expect_equal(
+    H2_Piepho.asreml(asreml_model_random, target = "gen"),
+    0.8079645,
+    tolerance = 1e-3
+  )
+  expect_equal(
+    H2_Standard.asreml(asreml_model_random, target = "gen"),
+    0.7505988,
+    tolerance = 1e-3
+  )
 })
 
 test_that("What happens when user fits a fixed genotype model", {
   asreml_model_fixed <- readRDS(test_path("fixtures/asreml_model_fixed.rds"))
   expect_error(H2(asreml_model_fixed, "gen"))
-
 })

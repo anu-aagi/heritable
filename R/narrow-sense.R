@@ -92,29 +92,33 @@
 #' H2(lettuce_asreml, target = "gen", method = c("Standard", "Delta"))
 #' }
 #' @export
-h2 <- function(model,
-               target,
-               method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-               options = NULL,
-               marginal = TRUE,
-               stratification = NULL,
-               source = list(),
-               vc = NULL,
-               ...) {
+h2 <- function(
+  model,
+  target,
+  method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  source = list(),
+  vc = NULL,
+  ...
+) {
   UseMethod("h2")
 }
 
 #' @noRd
 #' @export
-h2.default <- function(model,
-                       target,
-                       method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
-                       options = NULL,
-                       marginal = TRUE,
-                       stratification = NULL,
-                       source = list(),
-                       vc = NULL,
-                       ...) {
+h2.default <- function(
+  model,
+  target,
+  method = c("Cullis", "Oakey", "Piepho", "Delta", "Standard"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  source = list(),
+  vc = NULL,
+  ...
+) {
   method <- match.arg(
     method,
     c("Cullis", "Oakey", "Piepho", "Delta", "Standard", "Reliability"),
@@ -124,34 +128,73 @@ h2.default <- function(model,
   initial_checks(model, target, options = options)
 
   # Check correct model specification.
-  if(options$check %||% TRUE){
+  if (options$check %||% TRUE) {
     check_model_specification(model, target, "narrow_sense", source)
   }
 
   # Check design exists
   model <- check_design_exists(model, source = source)
 
-  if(is.null(vc)){
+  if (is.null(vc)) {
     # Build variance component
-    vc <- var_comp(model,
-                   target = target,
-                   source = source,
-                   marginal = marginal,
-                   stratification = stratification,
-                   ...)
+    vc <- var_comp(
+      model,
+      target = target,
+      source = source,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
 
   h2_values <- sapply(method, function(m) {
-    switch(m,
-           Cullis = h2_Cullis(model, target, options = list(check = FALSE), vc = vc, ...),
-           Oakey = h2_Oakey(model, target, options = list(check = FALSE), vc = vc, ...),
-           Piepho = h2_Piepho(model, target, options = list(check = FALSE), vc = vc, ...),
-           Delta = h2_Delta(model, target, options = list(check = FALSE), vc = vc, ...),
-           Standard = h2_Standard(model, target, options = list(check = FALSE), vc = vc, ...),
-           Reliability = h2_Reliability(model, target, options = list(check = FALSE), vc = vc, ...),
-           cli::cli_abort(
-             "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
-           )
+    switch(
+      m,
+      Cullis = h2_Cullis(
+        model,
+        target,
+        options = list(check = FALSE),
+        vc = vc,
+        ...
+      ),
+      Oakey = h2_Oakey(
+        model,
+        target,
+        options = list(check = FALSE),
+        vc = vc,
+        ...
+      ),
+      Piepho = h2_Piepho(
+        model,
+        target,
+        options = list(check = FALSE),
+        vc = vc,
+        ...
+      ),
+      Delta = h2_Delta(
+        model,
+        target,
+        options = list(check = FALSE),
+        vc = vc,
+        ...
+      ),
+      Standard = h2_Standard(
+        model,
+        target,
+        options = list(check = FALSE),
+        vc = vc,
+        ...
+      ),
+      Reliability = h2_Reliability(
+        model,
+        target,
+        options = list(check = FALSE),
+        vc = vc,
+        ...
+      ),
+      cli::cli_abort(
+        "{.fn h2} is not implemented for method {.value m} of class{?es} {.code {class(model)}}"
+      )
     )
   })
 
@@ -167,14 +210,15 @@ h2.default <- function(model,
     stratification = stratification
   )
   dots <- list(...)
-  if(length(dots) > 0){
+  if (length(dots) > 0) {
     args <- c(args, dots)
   }
 
-  structure(h2_values,
-            class = c("heritable", class(h2_values)),
-            type = "narrow_sense",
-            args = args
+  structure(
+    h2_values,
+    class = c("heritable", class(h2_values)),
+    type = "narrow_sense",
+    args = args
   )
 }
 
@@ -235,13 +279,15 @@ h2.default <- function(model,
 #' H2_Standard(lettuce_asreml, target = "gen")
 #' }
 #' @export
-h2_Standard <- function(model,
-                        target,
-                        options = NULL,
-                        marginal = TRUE,
-                        stratification = NULL,
-                        vc = NULL,
-                        ...) {
+h2_Standard <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Standard")
 }
 
@@ -286,13 +332,15 @@ h2_Standard <- function(model,
 #' H2_Oakey(lettuce_lme4, target = "gen")
 #' @seealso [H2_Oakey()], [h2_Oakey()]
 #' @export
-h2_Oakey <- function(model,
-                     target,
-                     options  = NULL,
-                     marginal = TRUE,
-                     stratification = NULL,
-                     vc = NULL,
-                     ...) {
+h2_Oakey <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Oakey")
 }
 
@@ -330,32 +378,38 @@ h2_Oakey <- function(model,
 #' H2_Reliability(lettuce_lme4, target = "gen")
 #' H2_Reliability_by_genotype(lettuce_lme4, target = "gen")
 #' @export
-h2_Reliability <- function(model,
-                           target,
-                           options = NULL,
-                           marginal = TRUE,
-                           stratification = NULL,
-                           vc = NULL,
-                           ...) {
+h2_Reliability <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Reliability")
 }
 
 #' @noRd
 #' @export
-h2_Reliability.default <- function(model,
-                                   target,
-                                   options = NULL,
-                                   marginal = TRUE,
-                                   stratification = NULL,
-                                   vc = NULL,
-                                   ...) {
-  r2 <- h2_Reliability_by_genotype(model,
-                                   target,
-                                   options = options,
-                                   marginal = marginal,
-                                   stratification = stratification,
-                                   vc = vc,
-                                   ...)
+h2_Reliability.default <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
+  r2 <- h2_Reliability_by_genotype(
+    model,
+    target,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 
   if (is.atomic(r2) && length(r2) == 1 && is.na(r2)) {
     return(NA)
@@ -366,13 +420,15 @@ h2_Reliability.default <- function(model,
 
 #' @rdname H2_Reliability
 #' @export
-h2_Reliability_by_genotype <- function(model,
-                                       target,
-                                       options = NULL,
-                                       marginal = TRUE,
-                                       stratification = NULL,
-                                       vc = NULL,
-                                       ...) {
+h2_Reliability_by_genotype <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Reliability_by_genotype")
 }
 
@@ -443,37 +499,43 @@ h2_Reliability_by_genotype <- function(model,
 #'
 #' H2_Delta(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-h2_Delta <- function(model,
-                     target,
-                     type = c("BLUP", "BLUE"),
-                     options = NULL,
-                     marginal = TRUE,
-                     stratification = NULL,
-                     vc = NULL,
-                     ...) {
+h2_Delta <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Delta")
 }
 
 #' @noRd
 #' @export
-h2_Delta.default <- function(model,
-                             target,
-                             type = c("BLUP", "BLUE"),
-                             options = NULL,
-                             marginal = TRUE,
-                             stratification = NULL,
-                             vc = NULL,
-                             ...) {
+h2_Delta.default <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   type <- match.arg(type)
 
-  h2D_ij <- h2_Delta_pairwise(model,
-                              target,
-                              type = type,
-                              options = options,
-                              marginal =  marginal,
-                              stratification = stratification,
-                              vc = vc,
-                              ...)
+  h2D_ij <- h2_Delta_pairwise(
+    model,
+    target,
+    type = type,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 
   if (is.atomic(h2D_ij) && length(h2D_ij) == 1 && is.na(h2D_ij)) {
     return(NA)
@@ -482,9 +544,10 @@ h2_Delta.default <- function(model,
   delta_g <- mean(attr(h2D_ij, "delta_g")[upper.tri(h2D_ij)])
   delta_pev <- mean(attr(h2D_ij, "delta_pev")[upper.tri(h2D_ij)])
 
-  switch(type,
-         "BLUP" = 1 - delta_pev / delta_g,
-         "BLUE" = delta_g / (delta_g + delta_pev)
+  switch(
+    type,
+    "BLUP" = 1 - delta_pev / delta_g,
+    "BLUE" = delta_g / (delta_g + delta_pev)
   )
 }
 
@@ -553,43 +616,49 @@ h2_Delta.default <- function(model,
 #'
 #' H2_Delta_by_genotype(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-h2_Delta_by_genotype <- function(model,
-                                 target,
-                                 type = c("BLUP", "BLUE"),
-                                 options = NULL,
-                                 marginal = TRUE,
-                                 stratification = NULL,
-                                 vc = NULL,
-                                 ...) {
+h2_Delta_by_genotype <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Delta_by_genotype")
 }
 
 #' @noRd
 #' @export
-h2_Delta_by_genotype.default <- function(model,
-                                         target,
-                                         type = c("BLUP", "BLUE"),
-                                         options = NULL,
-                                         marginal = TRUE,
-                                         stratification = NULL,
-                                         vc = NULL,
-                                         ...) {
+h2_Delta_by_genotype.default <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   type <- match.arg(type)
 
-  h2D_ij <- h2_Delta_pairwise(model,
-                              target,
-                              type = type,
-                              options = options,
-                              marginal =  marginal,
-                              stratification = stratification,
-                              vc = vc,
-                              ...)
+  h2D_ij <- h2_Delta_pairwise(
+    model,
+    target,
+    type = type,
+    options = options,
+    marginal = marginal,
+    stratification = stratification,
+    vc = vc,
+    ...
+  )
 
   delta_g <- attr(h2D_ij, "delta_g")
   delta_pev <- attr(h2D_ij, "delta_pev")
-  delta_pev <- Matrix::rowSums(delta_pev)/(ncol(delta_pev)-1)
+  delta_pev <- Matrix::rowSums(delta_pev) / (ncol(delta_pev) - 1)
 
-  if(type == "BLUP"){
+  if (type == "BLUP") {
     return(1 - delta_pev / delta_g)
   } else {
     return(delta_g / (delta_g + delta_pev))
@@ -643,14 +712,16 @@ h2_Delta_by_genotype.default <- function(model,
 #'
 #' H2_Delta_pairwise(lettuce_asreml, target = "gen", type = "BLUP")
 #' }
-h2_Delta_pairwise <- function(model,
-                              target,
-                              type = c("BLUP", "BLUE"),
-                              options = NULL,
-                              marginal = TRUE,
-                              stratification = NULL,
-                              vc = NULL,
-                              ...) {
+h2_Delta_pairwise <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Delta_pairwise")
 }
 
@@ -704,13 +775,15 @@ h2_Delta_pairwise <- function(model,
 #' H2_Cullis(lettuce_asreml, target = "gen")
 #' }
 
-h2_Cullis <- function(model,
-                      target,
-                      options = NULL,
-                      marginal = TRUE,
-                      stratification = NULL,
-                      vc = NULL,
-                      ...) {
+h2_Cullis <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Cullis")
 }
 
@@ -764,12 +837,14 @@ h2_Cullis <- function(model,
 #'
 #' H2_Piepho(lettuce_asreml, target = "gen")
 #' }
-h2_Piepho <- function(model,
-                      target,
-                      options = NULL,
-                      marginal = TRUE,
-                      stratification = NULL,
-                      vc = NULL,
-                      ...) {
+h2_Piepho <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   UseMethod("h2_Piepho")
 }

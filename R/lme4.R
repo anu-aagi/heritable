@@ -1,12 +1,14 @@
 #' @noRd
 #' @export
-h2_Standard.lmerMod <- function(model,
-                               target,
-                               options = NULL,
-                               marginal = TRUE,
-                               stratification = NULL,
-                               vc = NULL,
-                               ...) {
+h2_Standard.lmerMod <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -20,45 +22,51 @@ h2_Standard.lmerMod <- function(model,
   }
 
   # Get genotype variance
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = FALSE,
+      calc_V = TRUE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   V <- vc$V
   Z <- vc$Z
   G <- vc$G
   idx <- vc$idx
 
-  if(vc$marginal || !is.null(vc$stratification)){
+  if (vc$marginal || !is.null(vc$stratification)) {
     X <- vc$X
     W <- vc$W
 
     active_g <- attr(W, "active")
 
-    X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+    X_tilde <- cbind(X, Z[, idx, drop = FALSE])
     C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
-    C <- C[-seq_len(ncol(X)),]
+    C <- C[-seq_len(ncol(X)), ]
     C <- crossprod(C, W)
-    W <-  t(C) %*% Z[,idx]
-    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+    W <- t(C) %*% Z[, idx]
+    G_g <- W %*% G[idx, idx, drop = FALSE] %*% t(W)
 
-    h2_Standard <-  h2_Standard_parameters(G_g, V, C, active_g)
+    h2_Standard <- h2_Standard_parameters(G_g, V, C, active_g)
 
     # Check estimability
     # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
     # c <- c(rep(0, ), W[,1] - W[,3])
     # plot(c - P %*% c)
-
   } else {
     g <- stats::model.frame(model)[[target]]
     gnames <- levels(g)
     Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
     C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
-    W <- t(C) %*% Z[,idx] # C^T Z G Z C
-    G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+    W <- t(C) %*% Z[, idx] # C^T Z G Z C
+    G_g <- W %*% G[idx, idx, drop = FALSE] %*% t(W)
 
     h2_Standard <- h2_Standard_parameters(G_g, V, C, NULL)
-
   }
 
   return(h2_Standard)
@@ -67,13 +75,15 @@ h2_Standard.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-h2_Oakey.lmerMod <- function(model,
-                            target,
-                            options = NULL,
-                            marginal = TRUE,
-                            stratification = NULL,
-                            vc = NULL,
-                            ...) {
+h2_Oakey.lmerMod <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -86,9 +96,17 @@ h2_Oakey.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -98,13 +116,15 @@ h2_Oakey.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-h2_Reliability_by_genotype.lmerMod <- function(model,
-                                               target,
-                                               options = NULL,
-                                               marginal = TRUE,
-                                               stratification = NULL,
-                                               vc = NULL,
-                                               ...) {
+h2_Reliability_by_genotype.lmerMod <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -117,9 +137,17 @@ h2_Reliability_by_genotype.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
 
   # Parametrise is the same for broad sense and narrow sense.
@@ -129,14 +157,16 @@ h2_Reliability_by_genotype.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-h2_Delta_pairwise.lmerMod <- function(model,
-                                     target,
-                                     type = c("BLUP", "BLUE"),
-                                     options = NULL,
-                                     marginal = TRUE,
-                                     stratification = NULL,
-                                     vc = NULL,
-                                     ...) {
+h2_Delta_pairwise.lmerMod <- function(
+  model,
+  target,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
   type <- match.arg(type)
 
@@ -152,24 +182,40 @@ h2_Delta_pairwise.lmerMod <- function(model,
 
   # Check if target is random or fixed
   if (type == "BLUE") {
-    h2_Delta <- h2_Delta_BLUE_pairwise.lmerMod(model, target, options,
-                                              marginal, stratification, vc, ...)
+    h2_Delta <- h2_Delta_BLUE_pairwise.lmerMod(
+      model,
+      target,
+      options,
+      marginal,
+      stratification,
+      vc,
+      ...
+    )
   } else if (type == "BLUP") {
-    h2_Delta <- h2_Delta_BLUP_pairwise.lmerMod(model, target, options,
-                                              marginal, stratification, vc, ...)
+    h2_Delta <- h2_Delta_BLUP_pairwise.lmerMod(
+      model,
+      target,
+      options,
+      marginal,
+      stratification,
+      vc,
+      ...
+    )
   }
 
   return(h2_Delta)
 }
 
 #' @keywords internal
-h2_Delta_BLUP_pairwise.lmerMod<- function(model,
-                                         target,
-                                         options = NULL,
-                                         marginal = TRUE,
-                                         stratification = NULL,
-                                         vc = NULL,
-                                         ...) {
+h2_Delta_BLUP_pairwise.lmerMod <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -182,9 +228,17 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   gnames <- vc$gnames
   G_g <- vc$G_g
@@ -209,12 +263,15 @@ h2_Delta_BLUP_pairwise.lmerMod<- function(model,
 }
 
 #' @keywords internal
-h2_Delta_BLUE_pairwise.lmerMod<- function(model,
-                                         target,
-                                         options = NULL,
-                                         marginal = TRUE,
-                                         stratification = NULL,
-                                         vc = NULL, ...) {
+h2_Delta_BLUE_pairwise.lmerMod <- function(
+  model,
+  target,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -228,9 +285,17 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
   }
 
   # Get genotype variance
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = FALSE,
+      calc_V = FALSE,
+      calc_C11 = TRUE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   gnames <- vc$gnames
 
@@ -301,13 +366,15 @@ h2_Delta_BLUE_pairwise.lmerMod<- function(model,
 
 #' @noRd
 #' @export
-h2_Cullis.lmerMod <- function(model,
-                              target = NULL,
-                              options = NULL,
-                              marginal = TRUE,
-                              stratification = NULL,
-                              vc = NULL,
-                              ...) {
+h2_Cullis.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -320,9 +387,17 @@ h2_Cullis.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -337,13 +412,15 @@ h2_Cullis.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-h2_Piepho.lmerMod <- function(model,
-                              target = NULL,
-                              options = NULL,
-                              marginal = TRUE,
-                              stratification = NULL,
-                              vc = NULL,
-                              ...) {
+h2_Piepho.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -357,9 +434,17 @@ h2_Piepho.lmerMod <- function(model,
   }
 
   # Get genotype variance
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = TRUE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = FALSE,
+      calc_V = TRUE,
+      calc_C11 = TRUE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   gnames <- vc$gnames
 
@@ -401,13 +486,15 @@ h2_Piepho.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-H2_Standard.lmerMod <- function(model,
-                                target = NULL,
-                                options = NULL,
-                                marginal = TRUE,
-                                stratification = NULL,
-                                vc = NULL,
-                                ...) {
+H2_Standard.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -424,11 +511,19 @@ H2_Standard.lmerMod <- function(model,
   trms <- pull_terms_without_specials(model)$random
 
   # Only use the simple definition when there is only main genetic effect.
-  if(all(trms == target)){
+  if (all(trms == target)) {
     # Get genotype variance
-    if(is.null(vc)){
-      G_g <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = FALSE,
-                      marginal = marginal, stratification = stratification, ...)$G_g
+    if (is.null(vc)) {
+      G_g <- var_comp(
+        model,
+        target,
+        calc_C22 = FALSE,
+        calc_V = FALSE,
+        calc_C11 = FALSE,
+        marginal = marginal,
+        stratification = stratification,
+        ...
+      )$G_g
     } else {
       G_g <- vc$G_g
     }
@@ -442,11 +537,18 @@ H2_Standard.lmerMod <- function(model,
 
     H2_Standard <- H2_Standard_parameters(s2_g, s2_eps, n_r)
   } else {
-
     # Get genotype variance
-    if(is.null(vc)){
-      vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = TRUE, calc_C11 = FALSE,
-                     marginal = marginal, stratification = stratification, ...)
+    if (is.null(vc)) {
+      vc <- var_comp(
+        model,
+        target,
+        calc_C22 = FALSE,
+        calc_V = TRUE,
+        calc_C11 = FALSE,
+        marginal = marginal,
+        stratification = stratification,
+        ...
+      )
     }
 
     V <- vc$V
@@ -454,20 +556,20 @@ H2_Standard.lmerMod <- function(model,
     G <- vc$G
     idx <- vc$idx
 
-    if(vc$marginal || !is.null(vc$stratification)){
+    if (vc$marginal || !is.null(vc$stratification)) {
       X <- vc$X
       W <- vc$W
 
       active_g <- attr(W, "active")
 
-      X_tilde <- cbind(X, Z[, idx, drop=FALSE])
+      X_tilde <- cbind(X, Z[, idx, drop = FALSE])
       C <- ginv_sym_sparse(crossprod(X_tilde)) %*% t(X_tilde)
-      C <- C[-seq_len(ncol(X)),]
+      C <- C[-seq_len(ncol(X)), ]
       C <- crossprod(C, W)
-      W <-  t(C) %*% Z[,idx]
-      G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+      W <- t(C) %*% Z[, idx]
+      G_g <- W %*% G[idx, idx, drop = FALSE] %*% t(W)
 
-      H2_Standard <-  h2_Standard_parameters(G_g, V, C, active_g)
+      H2_Standard <- h2_Standard_parameters(G_g, V, C, active_g)
 
       # Check estimability
       # P <- t(X_tilde) %*% ginv_sym_sparse(tcrossprod(X_tilde)) %*% X_tilde
@@ -491,20 +593,16 @@ H2_Standard.lmerMod <- function(model,
       # 1/mean((delta_y/delta_g)[lower.tri(delta_y)], na.rm=TRUE)
       #
       # this yields the same result as using the above code.
-
-
     } else {
       g <- stats::model.frame(model)[[target]]
       gnames <- levels(g)
       Z_g <- Matrix::sparse.model.matrix(~ 0 + g)
       C <- Z_g %*% Matrix::Diagonal(x = 1 / as.numeric(Matrix::colSums(Z_g)))
-      W <- t(C) %*% Z[,idx] # C^T Z G Z C
-      G_g <- W %*% G[idx,idx,drop=FALSE] %*% t(W)
+      W <- t(C) %*% Z[, idx] # C^T Z G Z C
+      G_g <- W %*% G[idx, idx, drop = FALSE] %*% t(W)
 
       H2_Standard <- h2_Standard_parameters(G_g, V, C, NULL)
-
     }
-
   }
 
   return(H2_Standard)
@@ -513,13 +611,15 @@ H2_Standard.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-H2_Cullis.lmerMod <- function(model,
-                              target = NULL,
-                              options = NULL,
-                              marginal = TRUE,
-                              stratification = NULL,
-                              vc = NULL,
-                              ...) {
+H2_Cullis.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -532,9 +632,17 @@ H2_Cullis.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   s2_g <- mean(diag(vc$G_g))
   n <- vc$n_g
@@ -548,13 +656,15 @@ H2_Cullis.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-H2_Oakey.lmerMod <- function(model,
-                             target = NULL,
-                             options = NULL,
-                             marginal = TRUE,
-                             stratification = NULL,
-                             vc = NULL,
-                             ...) {
+H2_Oakey.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -567,9 +677,17 @@ H2_Oakey.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   G_g_inv <- ginv_sym_sparse(vc$G_g)
 
@@ -578,13 +696,15 @@ H2_Oakey.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-H2_Reliability_by_genotype.lmerMod <- function(model,
-                                               target = NULL,
-                                               options = NULL,
-                                               marginal = TRUE,
-                                               stratification = NULL,
-                                               vc = NULL,
-                                               ...) {
+H2_Reliability_by_genotype.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -597,9 +717,17 @@ H2_Reliability_by_genotype.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
 
   r2 <- H2_Reliability_parameters(vc$G_g, vc$C22_g)
@@ -608,13 +736,15 @@ H2_Reliability_by_genotype.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-H2_Piepho.lmerMod <- function(model,
-                              target = NULL,
-                              options = NULL,
-                              marginal = TRUE,
-                              stratification = NULL,
-                              vc = NULL,
-                              ...) {
+H2_Piepho.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -628,9 +758,17 @@ H2_Piepho.lmerMod <- function(model,
   }
 
   # Get genotype variance
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = FALSE,
+      calc_V = FALSE,
+      calc_C11 = TRUE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   gnames <- vc$gnames
 
@@ -670,14 +808,16 @@ H2_Piepho.lmerMod <- function(model,
 
 #' @noRd
 #' @export
-H2_Delta_pairwise.lmerMod <- function(model,
-                                      target = NULL,
-                                      type = c("BLUP", "BLUE"),
-                                      options = NULL,
-                                      marginal = TRUE,
-                                      stratification = NULL,
-                                      vc = NULL,
-                                      ...) {
+H2_Delta_pairwise.lmerMod <- function(
+  model,
+  target = NULL,
+  type = c("BLUP", "BLUE"),
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
   type <- match.arg(type)
 
@@ -693,23 +833,40 @@ H2_Delta_pairwise.lmerMod <- function(model,
 
   # Check if target is random or fixed
   if (type == "BLUE") {
-    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(model, target, options,
-                                               marginal, stratification, vc, ...)
+    H2_Delta <- H2_Delta_BLUE_pairwise.lmerMod(
+      model,
+      target,
+      options,
+      marginal,
+      stratification,
+      vc,
+      ...
+    )
   } else if (type == "BLUP") {
-    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(model, target, options,
-                                               marginal, stratification, vc, ...)
+    H2_Delta <- H2_Delta_BLUP_pairwise.lmerMod(
+      model,
+      target,
+      options,
+      marginal,
+      stratification,
+      vc,
+      ...
+    )
   }
 
   return(H2_Delta)
 }
 
 #' @keywords internal
-H2_Delta_BLUE_pairwise.lmerMod <- function(model,
-                                           target = NULL,
-                                           options = NULL,
-                                           marginal = TRUE,
-                                           stratification = NULL,
-                                           vc = NULL, ...) {
+H2_Delta_BLUE_pairwise.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -723,9 +880,17 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
   }
 
   # Get genotype variance
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = FALSE, calc_V = FALSE, calc_C11 = TRUE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = FALSE,
+      calc_V = FALSE,
+      calc_C11 = TRUE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   gnames <- vc$gnames
 
@@ -734,12 +899,12 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
   G_g_tilde <- vc$G_g_tilde_no_cov
   s2_g_tilde <- mean(var_diff(G_g_tilde)[upper.tri(G_g_tilde)]) / 2
 
-  H2_Delta_BLUE <- H2_Delta_parameters(2*s2_g_tilde, delta, "BLUE")
+  H2_Delta_BLUE <- H2_Delta_parameters(2 * s2_g_tilde, delta, "BLUE")
 
   dimnames(H2_Delta_BLUE) <- list(gnames, gnames)
   diag(H2_Delta_BLUE) <- NA
 
-  attr(H2_Delta_BLUE, "delta_g") <- 2*s2_g_tilde
+  attr(H2_Delta_BLUE, "delta_g") <- 2 * s2_g_tilde
   attr(H2_Delta_BLUE, "delta_pev") <- delta
 
   H2_Delta_BLUE
@@ -791,12 +956,15 @@ H2_Delta_BLUE_pairwise.lmerMod <- function(model,
 }
 
 #' @keywords internal
-H2_Delta_BLUP_pairwise.lmerMod <- function(model,
-                                           target = NULL,
-                                           options = NULL,
-                                           marginal = TRUE,
-                                           stratification = NULL,
-                                           vc = NULL, ...) {
+H2_Delta_BLUP_pairwise.lmerMod <- function(
+  model,
+  target = NULL,
+  options = NULL,
+  marginal = TRUE,
+  stratification = NULL,
+  vc = NULL,
+  ...
+) {
   initial_checks(model, target, options)
 
   if (options$check %||% TRUE) {
@@ -809,9 +977,17 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
     return(NA)
   }
 
-  if(is.null(vc)){
-    vc <- var_comp(model, target, calc_C22 = TRUE, calc_V = FALSE, calc_C11 = FALSE,
-                   marginal = marginal, stratification = stratification, ...)
+  if (is.null(vc)) {
+    vc <- var_comp(
+      model,
+      target,
+      calc_C22 = TRUE,
+      calc_V = FALSE,
+      calc_C11 = FALSE,
+      marginal = marginal,
+      stratification = stratification,
+      ...
+    )
   }
   gnames <- vc$gnames
   s2_g <- mean(diag(vc$G_g))
@@ -821,14 +997,13 @@ H2_Delta_BLUP_pairwise.lmerMod <- function(model,
   delta <- var_diff(C22_g)
 
   # H2 Delta BLUP
-  H2_Delta_BLUP <- H2_Delta_parameters(2*s2_g, delta, "BLUP")
+  H2_Delta_BLUP <- H2_Delta_parameters(2 * s2_g, delta, "BLUP")
 
   dimnames(H2_Delta_BLUP) <- list(vc$gnames, vc$gnames)
   diag(H2_Delta_BLUP) <- NA
 
-  attr(H2_Delta_BLUP, "delta_g") <- 2*s2_g
+  attr(H2_Delta_BLUP, "delta_g") <- 2 * s2_g
   attr(H2_Delta_BLUP, "delta_pev") <- delta
 
   H2_Delta_BLUP
-
 }

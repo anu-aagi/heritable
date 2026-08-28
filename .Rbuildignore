@@ -18,3 +18,5 @@
 ^CRAN-SUBMISSION$
 ^vignettes/articles$
 ^CODE_OF_CONDUCT\.md$
+^\.vscode$
+^[.]?air[.]toml$

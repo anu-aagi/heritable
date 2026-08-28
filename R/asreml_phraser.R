@@ -9,14 +9,24 @@ phrase_G <- function(G_params, ...) {
 
   G_list <- list()
   v <- G_params[["variance"]][["initial"]]
-  if (is.na(v)) v <- 1
+  if (is.na(v)) {
+    v <- 1
+  }
 
   for (trm in terms) {
     spec <- G_params[[trm]][["model"]]
-    if (spec == "id") G_list[[trm]] <- phrase_id(G_params[[trm]])
-    if (spec == "idv") G_list[[trm]] <- phrase_idv(G_params[[trm]])
-    if (spec == "diag") G_list[[trm]] <- phrase_diag(G_params[[trm]])
-    if (spec == "ar1") G_list[[trm]] <- phrase_ar1(G_params[[trm]])
+    if (spec == "id") {
+      G_list[[trm]] <- phrase_id(G_params[[trm]])
+    }
+    if (spec == "idv") {
+      G_list[[trm]] <- phrase_idv(G_params[[trm]])
+    }
+    if (spec == "diag") {
+      G_list[[trm]] <- phrase_diag(G_params[[trm]])
+    }
+    if (spec == "ar1") {
+      G_list[[trm]] <- phrase_ar1(G_params[[trm]])
+    }
     if (spec == "vm") G_list[[trm]] <- phrase_vm(G_params[[trm]], ...)
   }
 
@@ -98,21 +108,23 @@ phrase_vm <- function(G_params, source = list(), ...) {
   name_GRM <- stringr::str_match(
     vm_par,
     "source\\s*=\\s*([^\\s,\\)]+)"
-  )[,2]
+  )[, 2]
 
-  if(is.na(name_GRM)){
+  if (is.na(name_GRM)) {
     name_GRM <- stringr::str_match(
       vm_par,
       "vm\\([^,]+,\\s*([^\\s,\\)]+)"
-    )[,2]
+    )[, 2]
   }
 
-  if (!is.null(source[[name_GRM]])){
+  if (!is.null(source[[name_GRM]])) {
     GRM_source <- source[[name_GRM]]
-  } else if (exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)){
-    GRM_source <- get(name_GRM, envir = .GlobalEnv,  inherits = FALSE)
+  } else if (exists(name_GRM, envir = .GlobalEnv, inherits = FALSE)) {
+    GRM_source <- get(name_GRM, envir = .GlobalEnv, inherits = FALSE)
   } else {
-    cli::cli_abort("GRM used in model was neither provided nor found in the global environment.")
+    cli::cli_abort(
+      "GRM used in model was neither provided nor found in the global environment."
+    )
   }
 
   # TODO: inverted GRM source will not be inverted back, debug in the future.
@@ -138,4 +150,3 @@ phrase_vm <- function(G_params, source = list(), ...) {
 
   GRM
 }
-

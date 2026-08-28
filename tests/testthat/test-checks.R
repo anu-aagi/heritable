@@ -14,9 +14,20 @@ test_that("Inner checks are triggered", {
   asreml_model_failed_converge <- asreml_model_random
   asreml_model_failed_converge$converge <- FALSE
 
-  expect_error(H2(model = c(asreml_model_random, asreml_model_fixed), target = target))
-  expect_warning(H2(lmer_model_failed_converge, target = target, method = "Oakey"))
-  expect_warning(H2(asreml_model_failed_converge, target = target, method = "Oakey"))
+  expect_error(H2(
+    model = c(asreml_model_random, asreml_model_fixed),
+    target = target
+  ))
+  expect_warning(H2(
+    lmer_model_failed_converge,
+    target = target,
+    method = "Oakey"
+  ))
+  expect_warning(H2(
+    asreml_model_failed_converge,
+    target = target,
+    method = "Oakey"
+  ))
   expect_error(H2(model = asreml_model_random, target = "foo"))
   expect_error(H2(model = asreml_model_fixed, target = "gen"))
 
@@ -54,7 +65,10 @@ test_that("Non-Gaussian lme4 models are rejected with an informative error", {
   # GLMMs abort with an informative error, not a cryptic dispatch failure
   expect_error(H2(glmm_bin, target = "gen", method = "Cullis"), "identity link")
   expect_error(h2(glmm_bin, target = "gen", method = "Cullis"), "identity link")
-  expect_error(H2(glmm_pois, target = "gen", method = "Cullis"), "identity link")
+  expect_error(
+    H2(glmm_pois, target = "gen", method = "Cullis"),
+    "identity link"
+  )
 
   # The check itself: Gaussian identity passes, non-Gaussian aborts
   expect_error(check_model_family(lmm), NA)
@@ -64,7 +78,7 @@ test_that("Non-Gaussian lme4 models are rejected with an informative error", {
   expect_true(is.finite(H2(lmm, target = "gen", method = "Cullis")))
 })
 
-test_that("We can find GRM",{
+test_that("We can find GRM", {
   asreml_model_grm <- readRDS(test_path("fixtures/asreml_model_grm.rds"))
 
   expect_error(check_GRM_exists(asreml_model_grm, "gen"))
@@ -72,13 +86,16 @@ test_that("We can find GRM",{
   data("lettuce_GRM")
 
   expect_true(
-    do.call(c,
-            check_GRM_exists(asreml_model_grm, "gen", source = list(lettuce_GRM = lettuce_GRM))
-            )
+    do.call(
+      c,
+      check_GRM_exists(
+        asreml_model_grm,
+        "gen",
+        source = list(lettuce_GRM = lettuce_GRM)
+      )
+    )
   )
   expect_true(
-    do.call(c,
-             check_GRM_exists(asreml_model_grm, "gen")
-           )
+    do.call(c, check_GRM_exists(asreml_model_grm, "gen"))
   )
 })

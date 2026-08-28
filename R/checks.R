@@ -31,7 +31,7 @@ initial_checks <- function(model, target, options) {
     check_target_exists(model, target)
 
     # Check if target is random
-    if(!check_target_random(model, target)){
+    if (!check_target_random(model, target)) {
       cli::cli_abort(
         "The target {.var {target}} is fitted as both fixed and random effect"
       )
@@ -39,7 +39,6 @@ initial_checks <- function(model, target, options) {
 
     # Check if the target is specified as both fixed and random
     check_target_both(model, target)
-
   }
 }
 
@@ -192,17 +191,27 @@ check_model_family.glmmTMB <- function(model) {
   #   * for a single intercept column the covariance code is necessarily plain
   #     ("us"/"diag"/"homdiag" all coincide), so `diag(1 | g)` -- identical to
   #     `(1 | g)` -- is correctly accepted without a special case.
-  vcc  <- glmmTMB::VarCorr(model)$cond
+  vcc <- glmmTMB::VarCorr(model)$cond
   cnms <- model$modelInfo$reTrms$cond$cnms
-  code <- vapply(vcc, function(v) {
-    bc <- attr(v, "blockCode")
-    if (is.null(bc)) "us" else names(bc)
-  }, character(1))
-  is_plain_intercept <- vapply(cnms, function(cc) {
-    length(cc) == 1L && identical(unname(cc), "(Intercept)")
-  }, logical(1))
+  code <- vapply(
+    vcc,
+    function(v) {
+      bc <- attr(v, "blockCode")
+      if (is.null(bc)) "us" else names(bc)
+    },
+    character(1)
+  )
+  is_plain_intercept <- vapply(
+    cnms,
+    function(cc) {
+      length(cc) == 1L && identical(unname(cc), "(Intercept)")
+    },
+    logical(1)
+  )
   if (any(!is_plain_intercept)) {
-    found <- unique(ifelse(code != "us", code, "random slope")[!is_plain_intercept])
+    found <- unique(ifelse(code != "us", code, "random slope")[
+      !is_plain_intercept
+    ])
     cli::cli_abort(
       c(
         "Only plain random-effect intercepts {.code (1 | group)} are currently supported for {.pkg glmmTMB} models.",
@@ -228,7 +237,7 @@ check_model_family <- function(model) {
 #' @keywords internal
 check_all_random_terms_match_target <- function(model, target) {
   matched_grp <- pull_terms_without_specials(model)$random == target
-  if(!all(matched_grp)){
+  if (!all(matched_grp)) {
     FALSE
   } else {
     TRUE
@@ -282,52 +291,62 @@ check_target_both <- function(model, target) {
     any(grepl(target, model_terms$fixed, fixed = TRUE)) &&
       any(grepl(target, model_terms$random, fixed = TRUE))
   ) {
-    cli::cli_abort("The target {.code {target}} is fitted as both fixed and random effect")
+    cli::cli_abort(
+      "The target {.code {target}} is fitted as both fixed and random effect"
+    )
   }
 }
 
 # Check if the design matrix exists, otherwise builds one.
 #' @keywords internal
-check_design_exists <- function(model, build_design = TRUE, build_mf = TRUE, source = list()){
-
-  if(!inherits(model, "asreml")){
+check_design_exists <- function(
+  model,
+  build_design = TRUE,
+  build_mf = TRUE,
+  source = list()
+) {
+  if (!inherits(model, "asreml")) {
     return(model)
   }
 
-  if(build_design){
+  if (build_design) {
     # Get the design matrix
     design <- model$design
     if (is.null(design)) {
-      cli::cli_inform("A design matrix was not found in the asreml object. Building a design matrix.")
+      cli::cli_inform(
+        "A design matrix was not found in the asreml object. Building a design matrix."
+      )
       build_design <- TRUE
     } else {
       build_design <- FALSE
     }
   }
 
-  if(build_mf){
+  if (build_mf) {
     # Get the design matrix
     mf <- model$mf
     if (is.null(mf)) {
-      cli::cli_inform("A model frame was not found in the asreml object. Building a model frame.")
+      cli::cli_inform(
+        "A model frame was not found in the asreml object. Building a model frame."
+      )
       build_mf <- TRUE
     } else {
       build_mf <- FALSE
     }
   }
 
-  if(build_design && build_mf){
+  if (build_design && build_mf) {
     design_default <- asreml::asreml.options()$design
     asreml::asreml.options(design = TRUE)
     model <- asreml::update.asreml(model, model.frame = TRUE)
     asreml::asreml.options(design = design_default)
   }
 
-  if(!build_design && build_mf){
+  if (!build_design && build_mf) {
     model <- asreml::update.asreml(model, model.frame = TRUE)
   }
 
-  if(build_design && !build_mf){
+  if (build_design && !build_mf) {
     design_default <- asreml::asreml.options()$design
     asreml::asreml.options(design = TRUE)
     model <- asreml::update.asreml(model, model.frame = TRUE)
@@ -341,61 +360,69 @@ check_design_exists <- function(model, build_design = TRUE, build_mf = TRUE, sou
 ########################### Method specific check ##############################
 # Helper function to check if GRM exists in environment
 #' @keywords internal
-check_GRM_exists <- function(model, target = NULL, source = list(), return = FALSE) {
-
-  if(!is.list(source)){
+check_GRM_exists <- function(
+  model,
+  target = NULL,
+  source = list(),
+  return = FALSE
+) {
+  if (!is.list(source)) {
     cli::cli_abort("source must be a named list.")
   }
 
   trms <- pull_terms(model)$random
   trms_no_special <- pull_terms_without_specials(model)$random
 
-  if(!is.null(target)){
-    contain_target <- sapply(trms_no_special, function(trm){
-      target %in% stringr::str_split(trm, ":")[[1]]
-    }, USE.NAMES = FALSE)
+  if (!is.null(target)) {
+    contain_target <- sapply(
+      trms_no_special,
+      function(trm) {
+        target %in% stringr::str_split(trm, ":")[[1]]
+      },
+      USE.NAMES = FALSE
+    )
   } else {
     contain_target <- rep(TRUE, length(model$G.param))
   }
 
   trms <- lapply(model$G.param[contain_target], function(x) {
     x <- lapply(x[-1], function(y) {
-      if(y[["model"]] == "vm") y[["facnam"]] else NULL
-    }) |> unname()
+      if (y[["model"]] == "vm") y[["facnam"]] else NULL
+    }) |>
+      unname()
     do.call(c, x)
-  }) |> unname()
+  }) |>
+    unname()
   trms <- do.call(c, trms)
 
   if (length(trms) > 0) {
     name_GRM <- stringr::str_match(
       trms,
       "source\\s*=\\s*([^\\s,\\)]+)"
-    )[,2]
+    )[, 2]
     na_idx <- is.na(name_GRM)
 
     name_GRM[na_idx] <- stringr::str_match(
       trms[na_idx],
       "vm\\([^,]+,\\s*([^\\s,\\)]+)"
-    )[,2]
+    )[, 2]
 
     name_GRM <- unique(name_GRM)
 
-    for(x in name_GRM){
-
-      if(!is.null(source[[x]])){
-
-        if(!return) source[[x]] <- TRUE
-
+    for (x in name_GRM) {
+      if (!is.null(source[[x]])) {
+        if (!return) source[[x]] <- TRUE
       } else if (exists(x, envir = .GlobalEnv, inherits = FALSE)) {
-
-        source[[x]] <- if(return) get(x, envir = .GlobalEnv, inherits = FALSE) else TRUE
-
+        source[[x]] <- if (return) {
+          get(x, envir = .GlobalEnv, inherits = FALSE)
+        } else {
+          TRUE
+        }
       } else {
         # Source doesn't exist and not supplied
         cli::cli_abort("Cannot find the source {.code {x}}.")
       }
     }
-
   }
   source
 }
@@ -405,10 +432,13 @@ check_GRM_exists <- function(model, target = NULL, source = list(), return = FAL
 #' For asreml, target as a random effect can only be specified once as target
 #' @keywords internal
 #' @noRd
-check_model_specification.asreml <- function(model, target,
-                                             type = c("broad_sense", "narrow_sense"),
-                                             source = list(),
-                                             ...){
+check_model_specification.asreml <- function(
+  model,
+  target,
+  type = c("broad_sense", "narrow_sense"),
+  source = list(),
+  ...
+) {
   type <- match.arg(type)
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
@@ -417,14 +447,18 @@ check_model_specification.asreml <- function(model, target,
   # Check GRM exists
   check_GRM_exists(model, target, source)
 
-  if(target %in% ran_trms){
-    if(type == "broad_sense"){
-      if(sum(ran_trms == target)!=1){
-        cli::cli_warn("The target {.code {target}} as a grouping variable should be specified once. Heritability calculation can be misleading.")
+  if (target %in% ran_trms) {
+    if (type == "broad_sense") {
+      if (sum(ran_trms == target) != 1) {
+        cli::cli_warn(
+          "The target {.code {target}} as a grouping variable should be specified once. Heritability calculation can be misleading."
+        )
       } else {
         simple_model <- !any(ran_trms == target & spec != "id")
-        if(!simple_model){
-          cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code id({target})}. Heritability calculation can be misleading.")
+        if (!simple_model) {
+          cli::cli_warn(
+            "The target {.code {target}} should be modelled as a random term without special: {.code id({target})}. Heritability calculation can be misleading."
+          )
         }
       }
     }
@@ -433,47 +467,73 @@ check_model_specification.asreml <- function(model, target,
 
 #' @keywords internal
 #' @noRd
-check_model_specification.lmerMod <- function(model, target,
-                                              type = c("broad_sense", "narrow_sense"),
-                                              ...){
+check_model_specification.lmerMod <- function(
+  model,
+  target,
+  type = c("broad_sense", "narrow_sense"),
+  ...
+) {
   type <- match.arg(type)
   ran_trms <- pull_terms_without_specials(model)$random
   ran_trms_with_special <- pull_terms(model)$random
 
-  if(target %in% ran_trms){
-    if(type == "broad_sense"){
-      if(sum(ran_trms == target)!=1){
-        cli::cli_warn("Duplicated random intercept detected for the target {.code {target}}. Heritability calculation can be misleading.")
+  if (target %in% ran_trms) {
+    if (type == "broad_sense") {
+      if (sum(ran_trms == target) != 1) {
+        cli::cli_warn(
+          "Duplicated random intercept detected for the target {.code {target}}. Heritability calculation can be misleading."
+        )
       } else {
         grp_name <- attr(ran_trms_with_special, "grouping_variable")
-        simple_intercept  <- attr(ran_trms_with_special, "simple_intercept")
-        contain_intercept  <- attr(ran_trms_with_special, "contain_intercept")
-        simple_model <- all(simple_intercept[contain_intercept & grp_name== target])
-        if(!simple_model){
-          cli::cli_warn("The target {.code {target}} should be modelled as a random term without special: {.code (1 | {target})}. Heritability calculation can be misleading.")
+        simple_intercept <- attr(ran_trms_with_special, "simple_intercept")
+        contain_intercept <- attr(ran_trms_with_special, "contain_intercept")
+        simple_model <- all(simple_intercept[
+          contain_intercept & grp_name == target
+        ])
+        if (!simple_model) {
+          cli::cli_warn(
+            "The target {.code {target}} should be modelled as a random term without special: {.code (1 | {target})}. Heritability calculation can be misleading."
+          )
         }
       }
     }
   }
-
 }
 
 #' @keywords internal
 #' @noRd
-check_model_specification.glmmTMB <- function(model, target,
-                                              type = c("broad_sense", "narrow_sense"),
-                                              ...){
+check_model_specification.glmmTMB <- function(
+  model,
+  target,
+  type = c("broad_sense", "narrow_sense"),
+  ...
+) {
   # Body is purely attribute-based (pull_terms), so the lme4 logic is shared.
   check_model_specification.lmerMod(model, target, type = match.arg(type), ...)
 }
 
 #' @keywords internal
 #' @noRd
-check_model_specification <- function(model, target,
-                                      type = c("broad_sense", "narrow_sense"),
-                                      ...) {
+check_model_specification <- function(
+  model,
+  target,
+  type = c("broad_sense", "narrow_sense"),
+  ...
+) {
   UseMethod("check_model_specification")
 }
-.S3method("check_model_specification", "asreml", check_model_specification.asreml)
-.S3method("check_model_specification", "lmerMod", check_model_specification.lmerMod)
-.S3method("check_model_specification", "glmmTMB", check_model_specification.glmmTMB)
+.S3method(
+  "check_model_specification",
+  "asreml",
+  check_model_specification.asreml
+)
+.S3method(
+  "check_model_specification",
+  "lmerMod",
+  check_model_specification.lmerMod
+)
+.S3method(
+  "check_model_specification",
+  "glmmTMB",
+  check_model_specification.glmmTMB
+)
