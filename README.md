@@ -2,7 +2,7 @@
 
 <!-- README.md is generated from README.qmd. Please edit that file -->
 
-# heritable
+# heritable <img src="man/figures/logo.png" align="right" height="139" alt="heritable logo" />
 
 <!-- badges: start -->
 
